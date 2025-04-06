@@ -5,6 +5,7 @@ import { RollingRock } from './RollingRock';
 import { Stump } from './Stump';
 import { LargePool } from './LargePool';
 import { LotusLeaf } from './LotusLeaf';
+import { Chestnut } from './Chestnut';
 
 export class Game {
     private app: PIXI.Application;
@@ -13,7 +14,7 @@ export class Game {
     private obstacles: PIXI.Graphics;
     private screenText: PIXI.Text;
     private gameOverText: PIXI.Text;
-    private speed: number = 5;
+    private speed: number = 4.5;
     private keys: { [key: string]: boolean } = {};
     private velocityY: number = 0;
     private gravity: number = 0.5;
@@ -36,6 +37,14 @@ export class Game {
     private stump: Stump;
     private largePool: LargePool;
     private lotusLeaf: LotusLeaf;
+    private chestnuts: Chestnut[] = [];
+    private lastChestnutSpawnTime: number = 0;
+    private readonly CHESTNUT_SPAWN_INTERVAL: number = 1000; // 1秒
+    private readonly MAX_CHESTNUTS: number = 3; // 最大3つまで
+    private readonly GRAVITY: number = 0.5;
+    private readonly JUMP_FORCE: number = -12;
+    private readonly MOVE_SPEED: number = 3.5; // 4.05から3.5に変更
+    private readonly SCREEN_WIDTH: number = 800;
 
     constructor() {
         // PIXIアプリケーションを初期化
@@ -111,6 +120,9 @@ export class Game {
         // 蓮の葉の初期化
         this.lotusLeaf = new LotusLeaf(this.app, this.obstacles, this);
 
+        // いがぐりの初期化
+        this.chestnuts = Array(3).fill(null).map(() => new Chestnut(this.app, this.obstacles, this));
+
         // キーボード入力のハンドリングをセットアップ
         this.setupKeyboardInput();
 
@@ -163,6 +175,27 @@ export class Game {
         this.drawTree(this.app.screen.width - 100);
     }
 
+    private drawForestSilhouette(): void {
+        this.background.beginFill(0x000000, 0.8);
+        
+        // 不規則な森のシルエットを作成
+        let x = 0;
+        while (x < this.app.screen.width) {
+            const treeHeight = 150 + Math.random() * 100;
+            const treeWidth = 40 + Math.random() * 30;
+            
+            // 木の形を描く
+            this.background.moveTo(x, this.app.screen.height - 110);
+            this.background.lineTo(x + treeWidth/2, this.app.screen.height - 110 - treeHeight);
+            this.background.lineTo(x + treeWidth, this.app.screen.height - 110);
+            this.background.lineTo(x, this.app.screen.height - 110);
+            
+            x += treeWidth * 0.7; // 木々を少し重ねる
+        }
+        
+        this.background.endFill();
+    }
+
     private drawTree(x: number): void {
         // 幹
         this.background.beginFill(0x8B4513);
@@ -210,27 +243,6 @@ export class Game {
                 size
             );
         }
-        this.background.endFill();
-    }
-
-    private drawForestSilhouette(): void {
-        this.background.beginFill(0x000000, 0.8);
-        
-        // 不規則な森のシルエットを作成
-        let x = 0;
-        while (x < this.app.screen.width) {
-            const treeHeight = 150 + Math.random() * 100;
-            const treeWidth = 40 + Math.random() * 30;
-            
-            // 木の形を描く
-            this.background.moveTo(x, this.app.screen.height - 110);
-            this.background.lineTo(x + treeWidth/2, this.app.screen.height - 110 - treeHeight);
-            this.background.lineTo(x + treeWidth, this.app.screen.height - 110);
-            this.background.lineTo(x, this.app.screen.height - 110);
-            
-            x += treeWidth * 0.7; // 木々を少し重ねる
-        }
-        
         this.background.endFill();
     }
 
@@ -310,44 +322,48 @@ export class Game {
     }
 
     private drawObstacles(): void {
+        // 画面遷移時にいがぐりをリセット
+        if (this.currentScreen !== 8) {
+            this.chestnuts.forEach(chestnut => chestnut.reset());
+        }
+
         this.obstacles.clear();
         
-        if (this.currentScreen === 2) {
-            // 岩の描画
-            this.rock.draw();
-            // 描画後にobstaclesを再描画
-            this.app.stage.removeChild(this.obstacles);
-            this.app.stage.addChild(this.obstacles);
-        } else if (this.currentScreen === 3) {
-            // 画面3の障害物（池）
-            this.pool.draw();
-            // 描画後にobstaclesを再描画
-            this.app.stage.removeChild(this.obstacles);
-            this.app.stage.addChild(this.obstacles);
-        } else if (this.currentScreen === 4) {
-            // 画面4の転がる石
-            this.rollingRock.draw();
-            // 描画後にobstaclesを再描画
-            this.app.stage.removeChild(this.obstacles);
-            this.app.stage.addChild(this.obstacles);
-        } else if (this.currentScreen === 5) {
-            // 画面5の切り株
-            this.stump.draw();
-            // 描画後にobstaclesを再描画
-            this.app.stage.removeChild(this.obstacles);
-            this.app.stage.addChild(this.obstacles);
-            console.log("切り株を描画しました");
-        } else if (this.currentScreen === 6) {
-            // 画面6の大きな池と蓮の葉
-            this.largePool.draw();
-            this.lotusLeaf.draw(this.largePool.getPoolBounds());
-        } else if (this.currentScreen === 7) {
-            // 画面7の岩と転がる岩
-            this.rock.draw();
-            this.rollingRock.draw();
-            // 描画後にobstaclesを再描画
-            this.app.stage.removeChild(this.obstacles);
-            this.app.stage.addChild(this.obstacles);
+        switch (this.currentScreen) {
+            case 1:
+                // 画面1では障害物なし
+                break;
+            case 2:
+                // 画面2では岩を描画
+                this.rock.draw();
+                break;
+            case 3:
+                // 画面3では転がる岩を描画
+                this.rollingRock.draw();
+                break;
+            case 4:
+                // 画面4では切り株を描画
+                this.stump.draw();
+                break;
+            case 5:
+                // 画面5では切り株を描画
+                this.stump.draw();
+                break;
+            case 6:
+                // 画面6では大きな池と蓮の葉を描画
+                this.largePool.draw();
+                this.lotusLeaf.draw(this.largePool.getPoolBounds());
+                break;
+            case 7:
+                // 画面7では岩と転がる岩を描画
+                this.rock.draw();
+                this.rollingRock.draw();
+                break;
+            case 8:
+                // 画面8では背景のみを描画（いがぐりは別途描画）
+                break;
+            default:
+                break;
         }
     }
 
@@ -378,6 +394,14 @@ export class Game {
         } else if (this.currentScreen === 7) {
             // 画面7の岩と転がる岩との衝突判定
             return this.rock.checkCollision() || this.rollingRock.checkCollision();
+        } else if (this.currentScreen === 8) {
+            // いがぐりとの衝突判定
+            for (const chestnut of this.chestnuts) {
+                if (chestnut.checkCollision(this.player.x, this.player.y)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         return false;
@@ -409,6 +433,10 @@ export class Game {
         this.stump.reset();
         this.largePool.reset();
         this.lotusLeaf.reset();
+
+        // いがぐりをリセット
+        this.chestnuts.forEach(chestnut => chestnut.reset());
+        this.lastChestnutSpawnTime = 0;
     }
 
     private setupKeyboardInput(): void {
@@ -454,6 +482,14 @@ export class Game {
                 if (this.currentScreen === 7) {
                     this.rollingRock.reset();
                 }
+
+                // 画面8に移行したら最後のいがぐり生成時間をリセット
+                if (this.currentScreen === 8) {
+                    this.lastChestnutSpawnTime = Date.now();
+                }
+
+                // 画面遷移時に必ずいがぐりをリセット
+                this.chestnuts.forEach(chestnut => chestnut.reset());
             }
         });
 
@@ -527,6 +563,26 @@ export class Game {
             this.rollingRock.update();
             // 障害物の再描画（画面7の場合も毎フレーム更新）
             this.drawObstacles();
+        }
+
+        // 画面8のいがぐりの更新
+        if (this.currentScreen === 8) {
+            const currentTime = Date.now();
+            
+            // 1秒ごとに新しいいがぐりを生成
+            if (currentTime - this.lastChestnutSpawnTime >= this.CHESTNUT_SPAWN_INTERVAL) {
+                // 非アクティブないがぐりを探して生成
+                const inactiveChestnut = this.chestnuts.find(chestnut => !chestnut.isActiveState());
+                if (inactiveChestnut) {
+                    inactiveChestnut.spawn();
+                    this.lastChestnutSpawnTime = currentTime;
+                }
+            }
+
+            // すべてのいがぐりを更新
+            for (const chestnut of this.chestnuts) {
+                chestnut.update();
+            }
         }
 
         // 画面端での処理
