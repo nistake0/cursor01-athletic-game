@@ -476,8 +476,8 @@ export class Game {
         window.addEventListener('keydown', (e) => {
             this.keys[e.key] = true;
             
-            // スペースキーでジャンプ
-            if (e.key === ' ' && this.isGrounded) {
+            // スペースキーまたは上キーでジャンプ
+            if ((e.key === ' ' || e.key === 'ArrowUp') && this.isGrounded) {
                 this.velocityY = -12;
                 this.isGrounded = false;
             }
