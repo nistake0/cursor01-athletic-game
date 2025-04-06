@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import { Rock } from './Rock';
 
 class Game {
     private app: PIXI.Application;
@@ -27,6 +28,8 @@ class Game {
     private lotusSpeed: number = 2;
     private isOnLotus: boolean = false;
     private poolBounds: any;
+    // 障害物のインスタンスを追加
+    private rock: Rock;
 
     constructor() {
         // PIXIアプリケーションを初期化
@@ -87,6 +90,9 @@ class Game {
         this.app.stage.addChild(this.player);
         this.app.stage.addChild(this.screenText);
         this.app.stage.addChild(this.gameOverText);
+
+        // 障害物のインスタンスを初期化
+        this.rock = new Rock(this.app, this.obstacles, this.player);
 
         // キーボード入力のハンドリングをセットアップ
         this.setupKeyboardInput();
@@ -293,21 +299,11 @@ class Game {
         }
         
         if (this.currentScreen === 2) {
-            // 画面2の障害物（石）
-            this.obstacles.beginFill(0x808080);
-            this.obstacles.lineStyle(2, 0x000000);
-            
-            const rockX = 400;
-            const rockY = this.app.screen.height - 100; // 位置を下げる
-            const rockWidth = 60;
-            const rockHeight = 40;
-            
-            this.obstacles.moveTo(rockX, rockY);
-            this.obstacles.lineTo(rockX + rockWidth, rockY);
-            this.obstacles.lineTo(rockX + rockWidth - 10, rockY - rockHeight);
-            this.obstacles.lineTo(rockX + 10, rockY - rockHeight);
-            this.obstacles.lineTo(rockX, rockY);
-            this.obstacles.endFill();
+            // 岩の描画
+            this.rock.draw();
+            // 描画後にobstaclesを再描画
+            this.app.stage.removeChild(this.obstacles);
+            this.app.stage.addChild(this.obstacles);
         } else if (this.currentScreen === 3) {
             // 画面3の障害物（池）
             this.obstacles.lineStyle(2, 0x000000);
@@ -519,26 +515,8 @@ class Game {
 
     private checkCollision(): boolean {
         if (this.currentScreen === 2) {
-            // 石との衝突判定
-            const playerBounds = {
-                left: this.player.x - 15,
-                right: this.player.x + 15,
-                top: this.player.y - 35,
-                bottom: this.player.y
-            };
-
-            const rockBounds = {
-                left: 400,
-                right: 460,
-                top: this.app.screen.height - 140, // 位置調整に合わせて更新
-                bottom: this.app.screen.height - 100
-            };
-
-            return !(playerBounds.right < rockBounds.left || 
-                    playerBounds.left > rockBounds.right || 
-                    playerBounds.bottom < rockBounds.top || 
-                    playerBounds.top > rockBounds.bottom);
-
+            // 岩との衝突判定
+            return this.rock.checkCollision();
         } else if (this.currentScreen === 3) {
             // 池との衝突判定
             const playerBottom = this.player.y;
@@ -833,6 +811,11 @@ class Game {
         // 重力とジャンプの処理
         this.velocityY += this.gravity;
         this.player.y += this.velocityY;
+
+        // 画面2の岩の更新
+        if (this.currentScreen === 2) {
+            this.rock.update();
+        }
 
         // 画面6の蓮の葉の更新
         if (this.currentScreen === 6) {
