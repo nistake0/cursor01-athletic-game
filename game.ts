@@ -92,10 +92,10 @@ export class Game {
         this.gameOverText.y = this.app.screen.height / 2;
         this.gameOverText.visible = false;
 
-        // レイヤー順に追加
-        this.app.stage.addChild(this.player);
+        // レイヤー順に追加（プレイヤーは最後に追加して最前面に表示）
         this.app.stage.addChild(this.screenText);
         this.app.stage.addChild(this.gameOverText);
+        this.app.stage.addChild(this.player);
 
         // 障害物のインスタンスを初期化
         this.rock = new Rock(this.app, this.obstacles, this.player);
@@ -341,6 +341,13 @@ export class Game {
             // 画面6の大きな池と蓮の葉
             this.largePool.draw();
             this.lotusLeaf.draw(this.largePool.getPoolBounds());
+        } else if (this.currentScreen === 7) {
+            // 画面7の岩と転がる岩
+            this.rock.draw();
+            this.rollingRock.draw();
+            // 描画後にobstaclesを再描画
+            this.app.stage.removeChild(this.obstacles);
+            this.app.stage.addChild(this.obstacles);
         }
     }
 
@@ -368,6 +375,9 @@ export class Game {
 
             // 池との衝突判定を後に行う
             return this.largePool.checkCollision();
+        } else if (this.currentScreen === 7) {
+            // 画面7の岩と転がる岩との衝突判定
+            return this.rock.checkCollision() || this.rollingRock.checkCollision();
         }
 
         return false;
@@ -439,6 +449,11 @@ export class Game {
                 if (this.currentScreen === 6) {
                     this.stump = new Stump(this.app, this.obstacles, this);
                 }
+                
+                // 画面7に移行したら転がる岩をリセット
+                if (this.currentScreen === 7) {
+                    this.rollingRock.reset();
+                }
             }
         });
 
@@ -469,9 +484,6 @@ export class Game {
             this.player.x += this.speed;
             this.direction = 1;
         }
-
-        // スティックマンの再描画
-        this.drawStickMan();
 
         // 重力とジャンプの処理
         this.velocityY += this.gravity;
@@ -506,6 +518,14 @@ export class Game {
             // 蓮の葉の更新
             this.lotusLeaf.update(this.largePool.getPoolBounds());
             // 蓮の葉の位置が更新されたら障害物を再描画
+            this.drawObstacles();
+        }
+
+        // 画面7の岩と転がる岩の更新
+        if (this.currentScreen === 7) {
+            this.rock.update();
+            this.rollingRock.update();
+            // 障害物の再描画（画面7の場合も毎フレーム更新）
             this.drawObstacles();
         }
 
@@ -545,8 +565,17 @@ export class Game {
             this.player.y = groundY;
             this.velocityY = 0;
             this.isGrounded = true;
-            this.isOnLotus = false; // 地面に着地したら蓮の葉フラグをリセット
+        } else {
+            this.isGrounded = false;
         }
+
+        // スティックマンの再描画（常に最後に行う）
+        this.drawStickMan();
+        // プレイヤーを最前面に表示
+        if (this.player.parent) {
+            this.player.parent.removeChild(this.player);
+        }
+        this.app.stage.addChild(this.player);
     }
 
     public getPlayer(): { x: number; y: number } {

@@ -40,11 +40,15 @@ export class Rock {
             bottom: this.player.y
         };
 
+        // 岩の位置を取得（updateメソッドで動かした場合の位置を考慮）
+        const time = Date.now() / 1000;
+        const rockY = this.app.screen.height - 100 + Math.sin(time) * 5;
+        
         const rockBounds = {
             left: 400,
             right: 460,
-            top: this.app.screen.height - 140, // 位置調整に合わせて更新
-            bottom: this.app.screen.height - 100
+            top: rockY - 40, // 岩の高さを考慮
+            bottom: rockY
         };
 
         return !(playerBounds.right < rockBounds.left || 
@@ -53,9 +57,27 @@ export class Rock {
                 playerBounds.top > rockBounds.bottom);
     }
 
-    // 岩の更新処理（必要に応じて）
+    // 岩の更新処理
     public update(): void {
-        // 画面2の岩は動かないので、現時点では何もしない
-        // 将来的に岩が動くようになった場合に実装
+        // 画面7では岩が動くようにする
+        // 岩の位置を少し上下に揺らす
+        const time = Date.now() / 1000;
+        const rockY = this.app.screen.height - 100 + Math.sin(time) * 5;
+        
+        // 岩を再描画
+        this.obstacles.clear();
+        this.obstacles.beginFill(0x808080);
+        this.obstacles.lineStyle(2, 0x000000);
+        
+        const rockX = 400;
+        const rockWidth = 60;
+        const rockHeight = 40;
+        
+        this.obstacles.moveTo(rockX, rockY);
+        this.obstacles.lineTo(rockX + rockWidth, rockY);
+        this.obstacles.lineTo(rockX + rockWidth - 10, rockY - rockHeight);
+        this.obstacles.lineTo(rockX + 10, rockY - rockHeight);
+        this.obstacles.lineTo(rockX, rockY);
+        this.obstacles.endFill();
     }
 } 
