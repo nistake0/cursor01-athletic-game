@@ -353,8 +353,8 @@ export class Game {
                 this.stump.draw();
                 break;
             case 5:
-                // 画面5では切り株を描画
-                this.stump.draw();
+                // 画面5では転がる岩を描画
+                this.rollingRock.draw();
                 break;
             case 6:
                 // 画面6では大きな池と蓮の葉を描画
@@ -400,8 +400,8 @@ export class Game {
                 // 画面4の切り株との衝突判定
                 return this.stump.checkCollision();
             case 5:
-                // 画面5の切り株との衝突判定
-                return this.stump.checkCollision();
+                // 画面5の転がる岩の衝突判定
+                return this.rollingRock.checkCollision();
             case 6:
                 // 画面6の大きな池との衝突判定
                 return this.largePool.checkCollision();
@@ -577,14 +577,14 @@ export class Game {
         }
 
         // 画面4の転がる石の更新
-        if (this.currentScreen === 4) {
+        if (this.currentScreen === 5) {
             this.rollingRock.update();
             // 障害物の再描画（画面4の場合のみ毎フレーム更新）
             this.drawObstacles();
         }
 
         // 画面5の切り株の更新
-        if (this.currentScreen === 5) {
+        if (this.currentScreen === 4) {
             this.stump.update();
             // 障害物の再描画（画面5の場合も毎フレーム更新）
             this.drawObstacles();
