@@ -338,8 +338,8 @@ export class Game {
                 this.rock.draw();
                 break;
             case 3:
-                // 画面3では転がる岩を描画
-                this.rollingRock.draw();
+                // 画面3では小さい池を描画
+                this.pool.draw();
                 break;
             case 4:
                 // 画面4では切り株を描画
