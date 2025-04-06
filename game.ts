@@ -3,6 +3,7 @@ import { Rock } from './Rock';
 import { Pool } from './Pool';
 import { RollingRock } from './RollingRock';
 import { Stump } from './Stump';
+import { LargePool } from './LargePool';
 
 export class Game {
     private app: PIXI.Application;
@@ -32,6 +33,7 @@ export class Game {
     private pool: Pool;
     private rollingRock: RollingRock;
     private stump: Stump;
+    private largePool: LargePool;
 
     constructor() {
         // PIXIアプリケーションを初期化
@@ -100,6 +102,9 @@ export class Game {
 
         // 画面5の切り株の初期化
         this.stump = new Stump(this.app, this.obstacles, this);
+
+        // 大きな池の初期化
+        this.largePool = new LargePool(this.app, this.obstacles, this);
 
         // キーボード入力のハンドリングをセットアップ
         this.setupKeyboardInput();
@@ -325,41 +330,17 @@ export class Game {
             this.stump.draw();
         } else if (this.currentScreen === 6) {
             // 画面6の大きな池と蓮の葉
-            const screenWidth = this.app.screen.width;
-            const poolWidth = screenWidth * 2/3;
-            const poolStartX = (screenWidth - poolWidth) / 2;
-            const poolEndX = poolStartX + poolWidth;
-            const poolY = this.app.screen.height - 80; // 池の位置を下げる
-            const poolDepth = 40; // 池の深さを調整
-
-            // 池を楕円形で描画
-            this.obstacles.beginFill(0x4169E1);
-            this.obstacles.lineStyle(2, 0x000000);
-            this.obstacles.drawEllipse(
-                poolStartX + poolWidth/2, // 中心X
-                poolY - poolDepth/2,      // 中心Y
-                poolWidth/2,              // 幅の半径
-                poolDepth/2               // 高さの半径
-            );
+            // 池を先に描画
+            this.largePool.draw();
             
-            // 池の水面の反射効果（楕円に合わせて調整）
-            this.obstacles.lineStyle(1, 0xFFFFFF, 0.3);
-            const reflectionCount = 10;
-            for (let i = 0; i < reflectionCount; i++) {
-                const angle = (i / reflectionCount) * Math.PI;
-                const x = poolStartX + poolWidth/2 + Math.cos(angle) * (poolWidth/2 - 10);
-                const y = poolY - poolDepth/2 + Math.sin(angle) * (poolDepth/2 - 5);
-                this.obstacles.moveTo(x, y);
-                this.obstacles.lineTo(x + 5, y);
-            }
-
-            // 蓮の葉を描画
-            const lotusWidth = poolWidth / 5;
+            // 蓮の葉を後から描画（池の上に表示される）
+            const poolBounds = this.largePool.getPoolBounds();
+            const lotusWidth = poolBounds.width / 5;
             const lotusHeight = 10;
             
             // 蓮の葉の初期位置を設定（初回のみ）
             if (this.lotusX === 0) {
-                this.lotusX = poolStartX + 50; // 左端から少し離して開始
+                this.lotusX = poolBounds.left + 50; // 左端から少し離して開始
             }
 
             // 蓮の葉本体（濃い緑）
@@ -367,7 +348,7 @@ export class Game {
             this.obstacles.lineStyle(2, 0x006400);
             this.obstacles.drawEllipse(
                 this.lotusX + lotusWidth/2,
-                poolY - poolDepth/2 + 5, // 水面の上に配置
+                poolBounds.top + 5, // 水面の上に配置
                 lotusWidth/2,
                 lotusHeight
             );
@@ -377,24 +358,11 @@ export class Game {
             for (let i = 0; i < 3; i++) {
                 this.obstacles.drawEllipse(
                     this.lotusX + lotusWidth/2,
-                    poolY - poolDepth/2 + 5,
+                    poolBounds.top + 5,
                     lotusWidth/2 - 10 - i*8,
                     lotusHeight - 2 - i*2
                 );
             }
-
-            // 池の範囲を保存（衝突判定用）
-            this.poolBounds = {
-                left: poolStartX,
-                right: poolEndX,
-                top: poolY - poolDepth/2, // 池の上限を水面の位置に変更
-                bottom: poolY,
-                width: poolWidth,
-                centerX: poolStartX + poolWidth/2,
-                centerY: poolY - poolDepth/2,
-                radiusX: poolWidth/2,
-                radiusY: poolDepth/2
-            };
         }
     }
 
@@ -412,30 +380,25 @@ export class Game {
             // 切り株との衝突判定
             return this.stump.checkCollision();
         } else if (this.currentScreen === 6) {
-            const playerBottom = this.player.y;
-            const playerTop = this.player.y - 35;
-            const playerLeft = this.player.x - 15;
-            const playerRight = this.player.x + 15;
-            const playerVelocityY = this.velocityY;
-
             // 蓮の葉との衝突判定
-            const lotusWidth = this.poolBounds.width / 5;
+            const poolBounds = this.largePool.getPoolBounds();
+            const lotusWidth = poolBounds.width / 5;
             const lotusLeft = this.lotusX;
             const lotusRight = this.lotusX + lotusWidth;
-            const lotusY = this.poolBounds.top + 5; // 水面の位置を池の上限に合わせる
+            const lotusY = poolBounds.top + 5; // 水面の位置を池の上限に合わせる
 
             // デバッグ情報の表示
             console.log("===デバッグ情報===");
             console.log("池のbound:", {
-                left: this.poolBounds.left,
-                right: this.poolBounds.right,
-                top: this.poolBounds.top,
-                bottom: this.poolBounds.bottom
+                left: poolBounds.left,
+                right: poolBounds.right,
+                top: poolBounds.top,
+                bottom: poolBounds.bottom
             });
             console.log("プレーヤーの位置:", {
-                right: playerRight,
-                left: playerLeft,
-                bottom: playerBottom
+                right: this.player.x + 15,
+                left: this.player.x - 15,
+                bottom: this.player.y
             });
             console.log("蓮の葉のbound:", {
                 left: lotusLeft,
@@ -446,11 +409,11 @@ export class Game {
             console.log("================");
 
             // 蓮の葉に乗っているかどうかを先に判定
-            if ((playerBottom >= lotusY - 35 && // 判定範囲をさらに広げる
-                playerBottom <= lotusY + 35 && // 判定範囲をさらに広げる
-                playerVelocityY >= -8 && // 上昇中でもより許容
-                playerRight >= lotusLeft - 15 && // 判定範囲をさらに広げる
-                playerLeft <= lotusRight + 15)) {
+            if ((this.player.y >= lotusY - 35 && // 判定範囲をさらに広げる
+                this.player.y <= lotusY + 35 && // 判定範囲をさらに広げる
+                this.velocityY >= -8 && // 上昇中でもより許容
+                this.player.x + 15 >= lotusLeft - 15 && // 判定範囲をさらに広げる
+                this.player.x - 15 <= lotusRight + 15)) {
                 
                 // 蓮の葉に乗った時の処理
                 this.player.y = lotusY;
@@ -465,23 +428,14 @@ export class Game {
             }
 
             // 蓮の葉から外れた場合はフラグをリセット
-            if (!(playerBottom === lotusY &&
-                playerRight >= lotusLeft &&
-                playerLeft <= lotusRight)) {
+            if (!(this.player.y === lotusY &&
+                this.player.x + 15 >= lotusLeft &&
+                this.player.x - 15 <= lotusRight)) {
                 this.isOnLotus = false;
             }
 
             // 池との衝突判定を後に行う
-            // プレーヤーが池の範囲内にいて、蓮の葉に乗っていない場合
-            if (playerRight >= this.poolBounds.left && 
-                playerLeft <= this.poolBounds.right && 
-                playerBottom >= this.poolBounds.top - 20 && // 池の上限より少し上から判定
-                !this.isOnLotus) { // 蓮の葉に乗っていない場合のみ
-                
-                // デバッグ用：衝突判定の範囲を可視化
-                console.log("池に落ちました！");
-                return true; // ゲームオーバー
-            }
+            return this.largePool.checkCollision();
         }
 
         return false;
@@ -511,6 +465,7 @@ export class Game {
         // 転がる岩のリセット
         this.rollingRock.reset();
         this.stump.reset();
+        this.largePool.reset();
     }
 
     private setupKeyboardInput(): void {
@@ -603,23 +558,24 @@ export class Game {
         // 画面6の蓮の葉の更新
         if (this.currentScreen === 6) {
             // 蓮の葉の移動
+            const poolBounds = this.largePool.getPoolBounds();
             this.lotusX += this.lotusSpeed * this.lotusDirection;
             
             // 池の端での反転（余裕を持たせる）
-            const lotusWidth = this.poolBounds.width / 5;
+            const lotusWidth = poolBounds.width / 5;
             const margin = 30; // 端での余裕
-            if (this.lotusX <= this.poolBounds.left + margin) {
-                this.lotusX = this.poolBounds.left + margin;
+            if (this.lotusX <= poolBounds.left + margin) {
+                this.lotusX = poolBounds.left + margin;
                 this.lotusDirection = 1;
-            } else if (this.lotusX + lotusWidth >= this.poolBounds.right - margin) {
-                this.lotusX = this.poolBounds.right - margin - lotusWidth;
+            } else if (this.lotusX + lotusWidth >= poolBounds.right - margin) {
+                this.lotusX = poolBounds.right - margin - lotusWidth;
                 this.lotusDirection = -1;
             }
 
             // 蓮の葉との衝突判定をここでも行う
             const lotusLeft = this.lotusX;
             const lotusRight = this.lotusX + lotusWidth;
-            const lotusY = this.poolBounds.top + 5; // 水面の位置を池の上限に合わせる
+            const lotusY = poolBounds.top + 5; // 水面の位置を池の上限に合わせる
             
             // 蓮の葉に乗っているかどうかを判定
             if ((this.player.y >= lotusY - 35 && // 判定範囲をさらに広げる
@@ -674,6 +630,7 @@ export class Game {
             // 画面遷移時に転がる岩と切り株をリセット
             this.rollingRock.reset();
             this.stump.reset();
+            this.largePool.reset();
             
             // 画面6に移行したら切り株を完全にクリア
             if (this.currentScreen === 6) {
@@ -694,6 +651,10 @@ export class Game {
             this.isGrounded = true;
             this.isOnLotus = false; // 地面に着地したら蓮の葉フラグをリセット
         }
+    }
+
+    public getPlayer(): { x: number; y: number } {
+        return this.player;
     }
 }
 
