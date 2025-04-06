@@ -31,6 +31,7 @@ export class Stump {
     }
 
     public draw(): void {
+        console.log("切り株の描画を開始します");
         // 既存の切り株をクリア
         this.stumps.forEach(stump => {
             this.obstacles.removeChild(stump);
@@ -38,7 +39,8 @@ export class Stump {
         this.stumps = [];
 
         // 切り株を描画
-        this.stumpData.forEach(data => {
+        this.stumpData.forEach((data, index) => {
+            console.log(`切り株${index + 1}を描画: x=${data.x}, height=${data.height}`);
             const stump = new PIXI.Graphics();
             
             // 切り株の本体（茶色）
@@ -55,6 +57,7 @@ export class Stump {
                 stumpWidth,
                 data.height
             );
+            stump.endFill();
             
             // 年輪を描画
             stump.lineStyle(1, 0x3D1F00);
@@ -80,15 +83,7 @@ export class Stump {
             this.obstacles.addChild(stump);
             this.stumps.push(stump);
         });
-        
-        // 切り株を最前面に表示
-        this.obstacles.endFill();
-        
-        // 障害物を一旦削除して最前面に再追加
-        if (this.obstacles.parent) {
-            this.obstacles.parent.removeChild(this.obstacles);
-        }
-        this.app.stage.addChild(this.obstacles);
+        console.log("切り株の描画が完了しました");
     }
 
     public checkCollision(): boolean {

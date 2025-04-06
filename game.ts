@@ -333,6 +333,10 @@ export class Game {
         } else if (this.currentScreen === 5) {
             // 画面5の切り株
             this.stump.draw();
+            // 描画後にobstaclesを再描画
+            this.app.stage.removeChild(this.obstacles);
+            this.app.stage.addChild(this.obstacles);
+            console.log("切り株を描画しました");
         } else if (this.currentScreen === 6) {
             // 画面6の大きな池と蓮の葉
             this.largePool.draw();
@@ -420,10 +424,21 @@ export class Game {
                 this.player.x = 50;
                 this.screenText.text = `Screen: ${this.currentScreen}`;
                 this.drawBackground();
+                
+                // 障害物をクリアしてから再描画
+                this.obstacles.clear();
                 this.drawObstacles();
                 
-                // 画面遷移時に転がる岩をリセット
+                // 画面遷移時に各障害物をリセット
                 this.rollingRock.reset();
+                this.stump.reset();
+                this.largePool.reset();
+                this.lotusLeaf.reset();
+                
+                // 画面6に移行したら切り株を完全にクリア
+                if (this.currentScreen === 6) {
+                    this.stump = new Stump(this.app, this.obstacles, this);
+                }
             }
         });
 
@@ -482,6 +497,8 @@ export class Game {
         // 画面5の切り株の更新
         if (this.currentScreen === 5) {
             this.stump.update();
+            // 障害物の再描画（画面5の場合も毎フレーム更新）
+            this.drawObstacles();
         }
 
         // 画面6の蓮の葉の更新
