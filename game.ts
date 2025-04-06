@@ -6,6 +6,7 @@ import { Stump } from './Stump';
 import { LargePool } from './LargePool';
 import { LotusLeaf } from './LotusLeaf';
 import { Chestnut } from './Chestnut';
+import { Bee } from './Bee';
 
 export class Game {
     private app: PIXI.Application;
@@ -45,6 +46,9 @@ export class Game {
     private readonly JUMP_FORCE: number = -12;
     private readonly MOVE_SPEED: number = 3.5; // 4.05から3.5に変更
     private readonly SCREEN_WIDTH: number = 800;
+    private bee: Bee;
+    private lastBeeSpawnTime: number = 0;
+    private readonly BEE_SPAWN_INTERVAL: number = 2000; // 2秒ごとに蜂を生成
 
     constructor() {
         // PIXIアプリケーションを初期化
@@ -122,6 +126,9 @@ export class Game {
 
         // いがぐりの初期化
         this.chestnuts = Array(3).fill(null).map(() => new Chestnut(this.app, this.obstacles, this));
+
+        // 蜂の初期化
+        this.bee = new Bee(this.app, this.obstacles, this);
 
         // キーボード入力のハンドリングをセットアップ
         this.setupKeyboardInput();
@@ -362,49 +369,57 @@ export class Game {
             case 8:
                 // 画面8では背景のみを描画（いがぐりは別途描画）
                 break;
+            case 9:
+                // 画面9では小さい池と転がる岩を描画
+                this.pool.draw();
+                this.rollingRock.draw();
+                break;
+            case 10:
+                // 画面10では蜂を描画
+                this.bee.draw();
+                break;
             default:
                 break;
         }
     }
 
     private checkCollision(): boolean {
-        if (this.currentScreen === 2) {
-            // 岩との衝突判定
-            return this.rock.checkCollision();
-        } else if (this.currentScreen === 3) {
-            // 池との衝突判定
-            return this.pool.checkCollision();
-        } else if (this.currentScreen === 4) {
-            // 転がる石との衝突判定
-            return this.rollingRock.checkCollision();
-        } else if (this.currentScreen === 5) {
-            // 切り株との衝突判定
-            return this.stump.checkCollision();
-        } else if (this.currentScreen === 6) {
-            // 蓮の葉との衝突判定を先に行う
-            this.lotusLeaf.checkCollision(this.largePool.getPoolBounds());
-
-            // 蓮の葉に乗っている場合は池との衝突判定をスキップ
-            if (this.lotusLeaf.isPlayerOnLotus()) {
-                return false;
-            }
-
-            // 池との衝突判定を後に行う
-            return this.largePool.checkCollision();
-        } else if (this.currentScreen === 7) {
-            // 画面7の岩と転がる岩との衝突判定
-            return this.rock.checkCollision() || this.rollingRock.checkCollision();
-        } else if (this.currentScreen === 8) {
-            // いがぐりとの衝突判定
-            for (const chestnut of this.chestnuts) {
-                if (chestnut.checkCollision(this.player.x, this.player.y)) {
-                    return true;
+        switch (this.currentScreen) {
+            case 2:
+                // 画面2の岩との衝突判定
+                return this.rock.checkCollision();
+            case 3:
+                // 画面3の池との衝突判定
+                return this.pool.checkCollision();
+            case 4:
+                // 画面4の切り株との衝突判定
+                return this.stump.checkCollision();
+            case 5:
+                // 画面5の切り株との衝突判定
+                return this.stump.checkCollision();
+            case 6:
+                // 画面6の大きな池との衝突判定
+                return this.largePool.checkCollision();
+            case 7:
+                // 画面7の岩と転がる岩との衝突判定
+                return this.rock.checkCollision() || this.rollingRock.checkCollision();
+            case 8:
+                // 画面8のいがぐりとの衝突判定
+                for (const chestnut of this.chestnuts) {
+                    if (chestnut.checkCollision(this.player.x, this.player.y)) {
+                        return true;
+                    }
                 }
-            }
-            return false;
+                return false;
+            case 9:
+                // 画面9の小さい池と転がる岩との衝突判定
+                return this.pool.checkCollision() || this.rollingRock.checkCollision();
+            case 10:
+                // 画面10の蜂との衝突判定
+                return this.bee.checkCollision(this.player.x, this.player.y);
+            default:
+                return false;
         }
-
-        return false;
     }
 
     private gameOver(): void {
@@ -437,26 +452,23 @@ export class Game {
         // いがぐりをリセット
         this.chestnuts.forEach(chestnut => chestnut.reset());
         this.lastChestnutSpawnTime = 0;
+
+        // 蜂をリセット
+        this.bee.reset();
+        this.lastBeeSpawnTime = 0;
     }
 
     private setupKeyboardInput(): void {
-        const keys: { [key: string]: boolean } = {};
-
-        window.addEventListener('keydown', (e: KeyboardEvent) => {
-            keys[e.key] = true;
+        window.addEventListener('keydown', (e) => {
+            this.keys[e.key] = true;
             
-            // ジャンプ処理
-            if ((e.key === 'ArrowUp' || e.key === ' ') && this.isGrounded && !this.isGameOver) {
-                this.velocityY = this.jumpForce;
+            // スペースキーでジャンプ
+            if (e.key === ' ' && this.isGrounded) {
+                this.velocityY = -12;
                 this.isGrounded = false;
             }
 
-            // リスタート処理
-            if (e.key === ' ' && this.isGameOver) {
-                this.restart();
-            }
-
-            // デバッグ用：エスケープキーで次の画面に移動
+            // ESCキーで次の画面へ
             if (e.key === 'Escape' && !this.isGameOver) {
                 this.currentScreen++;
                 this.player.x = 50;
@@ -467,7 +479,7 @@ export class Game {
                 this.obstacles.clear();
                 this.drawObstacles();
                 
-                // 画面遷移時に各障害物をリセット
+                // 画面遷移時に転がる岩と切り株をリセット
                 this.rollingRock.reset();
                 this.stump.reset();
                 this.largePool.reset();
@@ -490,14 +502,29 @@ export class Game {
 
                 // 画面遷移時に必ずいがぐりをリセット
                 this.chestnuts.forEach(chestnut => chestnut.reset());
+
+                // 画面9に移行したら転がる岩をリセット
+                if (this.currentScreen === 9) {
+                    this.rollingRock.reset();
+                }
+
+                // 画面10に移行したら蜂をリセット
+                if (this.currentScreen === 10) {
+                    this.bee.reset();
+                    this.lastBeeSpawnTime = Date.now();
+                }
+
+                // 画面10以外に移行した場合も蜂をリセット
+                if (this.currentScreen !== 10) {
+                    this.bee.reset();
+                    this.lastBeeSpawnTime = 0;
+                }
             }
         });
 
-        window.addEventListener('keyup', (e: KeyboardEvent) => {
-            keys[e.key] = false;
+        window.addEventListener('keyup', (e) => {
+            this.keys[e.key] = false;
         });
-
-        this.keys = keys;
     }
 
     private gameLoop(): void {
@@ -585,6 +612,31 @@ export class Game {
             }
         }
 
+        // 画面9の転がる岩の更新
+        if (this.currentScreen === 9) {
+            this.rollingRock.update();
+            // 障害物の再描画（画面9の場合も毎フレーム更新）
+            this.drawObstacles();
+        }
+
+        // 画面10の蜂の更新
+        if (this.currentScreen === 10) {
+            const currentTime = Date.now();
+            
+            // 2秒ごとに新しい蜂を生成
+            if (currentTime - this.lastBeeSpawnTime >= this.BEE_SPAWN_INTERVAL) {
+                if (!this.bee.isActiveState()) {
+                    this.bee.spawn();
+                    this.lastBeeSpawnTime = currentTime;
+                }
+            }
+
+            // 蜂の更新
+            this.bee.update();
+            // 障害物の再描画
+            this.drawObstacles();
+        }
+
         // 画面端での処理
         if (this.player.x <= 30) {
             this.player.x = 30;
@@ -607,6 +659,36 @@ export class Game {
             // 画面6に移行したら切り株を完全にクリア
             if (this.currentScreen === 6) {
                 this.stump = new Stump(this.app, this.obstacles, this);
+            }
+            
+            // 画面7に移行したら転がる岩をリセット
+            if (this.currentScreen === 7) {
+                this.rollingRock.reset();
+            }
+
+            // 画面8に移行したら最後のいがぐり生成時間をリセット
+            if (this.currentScreen === 8) {
+                this.lastChestnutSpawnTime = Date.now();
+            }
+
+            // 画面遷移時に必ずいがぐりをリセット
+            this.chestnuts.forEach(chestnut => chestnut.reset());
+
+            // 画面9に移行したら転がる岩をリセット
+            if (this.currentScreen === 9) {
+                this.rollingRock.reset();
+            }
+
+            // 画面10に移行したら蜂をリセット
+            if (this.currentScreen === 10) {
+                this.bee.reset();
+                this.lastBeeSpawnTime = Date.now();
+            }
+
+            // 画面10以外に移行した場合も蜂をリセット
+            if (this.currentScreen !== 10) {
+                this.bee.reset();
+                this.lastBeeSpawnTime = 0;
             }
         }
 
