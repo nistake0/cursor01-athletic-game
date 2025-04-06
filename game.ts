@@ -330,7 +330,7 @@ export class Game {
 
     private drawObstacles(): void {
         // 画面遷移時にいがぐりをリセット
-        if (this.currentScreen !== 8) {
+        if (this.currentScreen !== 8 && this.currentScreen !== 11) {
             this.chestnuts.forEach(chestnut => chestnut.reset());
         }
 
@@ -378,6 +378,11 @@ export class Game {
                 // 画面10では蜂を描画
                 this.bee.draw();
                 break;
+            case 11:
+                // 画面11では切り株といがぐりを描画
+                this.stump.draw();
+                // いがぐりは別途描画（gameLoopで更新）
+                break;
             default:
                 break;
         }
@@ -417,6 +422,15 @@ export class Game {
             case 10:
                 // 画面10の蜂との衝突判定
                 return this.bee.checkCollision(this.player.x, this.player.y);
+            case 11:
+                // 画面11の切り株といがぐりとの衝突判定
+                if (this.stump.checkCollision()) return true;
+                for (const chestnut of this.chestnuts) {
+                    if (chestnut.checkCollision(this.player.x, this.player.y)) {
+                        return true;
+                    }
+                }
+                return false;
             default:
                 return false;
         }
@@ -637,6 +651,29 @@ export class Game {
             this.drawObstacles();
         }
 
+        // 画面11の切り株といがぐりの更新
+        if (this.currentScreen === 11) {
+            const currentTime = Date.now();
+            
+            // 1秒ごとに新しいいがぐりを生成
+            if (currentTime - this.lastChestnutSpawnTime >= this.CHESTNUT_SPAWN_INTERVAL) {
+                // 非アクティブないがぐりを探して生成
+                const inactiveChestnut = this.chestnuts.find(chestnut => !chestnut.isActiveState());
+                if (inactiveChestnut) {
+                    inactiveChestnut.spawn();
+                    this.lastChestnutSpawnTime = currentTime;
+                }
+            }
+
+            // すべてのいがぐりを更新
+            for (const chestnut of this.chestnuts) {
+                chestnut.update();
+            }
+
+            // 障害物の再描画
+            this.drawObstacles();
+        }
+
         // 画面端での処理
         if (this.player.x <= 30) {
             this.player.x = 30;
@@ -671,8 +708,10 @@ export class Game {
                 this.lastChestnutSpawnTime = Date.now();
             }
 
-            // 画面遷移時に必ずいがぐりをリセット
-            this.chestnuts.forEach(chestnut => chestnut.reset());
+            // 画面遷移時に必ずいがぐりをリセット（画面8と11以外）
+            if (this.currentScreen !== 8 && this.currentScreen !== 11) {
+                this.chestnuts.forEach(chestnut => chestnut.reset());
+            }
 
             // 画面9に移行したら転がる岩をリセット
             if (this.currentScreen === 9) {
@@ -689,6 +728,11 @@ export class Game {
             if (this.currentScreen !== 10) {
                 this.bee.reset();
                 this.lastBeeSpawnTime = 0;
+            }
+
+            // 画面11に移行したら最後のいがぐり生成時間をリセット
+            if (this.currentScreen === 11) {
+                this.lastChestnutSpawnTime = Date.now();
             }
         }
 
