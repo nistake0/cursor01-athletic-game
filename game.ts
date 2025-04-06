@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { Rock } from './Rock';
 import { Pool } from './Pool';
+import { RollingRock } from './RollingRock';
 
 class Game {
     private app: PIXI.Application;
@@ -20,10 +21,6 @@ class Game {
     private isMoving: boolean = false;
     private currentScreen: number = 1;
     private isGameOver: boolean = false;
-    private rollingRockX: number = 800;
-    private rollingRockSpeed: number = 4;
-    private rollingRockRotation: number = 0;
-    // 蓮の葉の状態を追加
     private lotusX: number = 0;
     private lotusDirection: number = 1; // 1: 右向き, -1: 左向き
     private lotusSpeed: number = 2;
@@ -32,6 +29,7 @@ class Game {
     // 障害物のインスタンスを追加
     private rock: Rock;
     private pool: Pool;
+    private rollingRock: RollingRock;
 
     constructor() {
         // PIXIアプリケーションを初期化
@@ -96,6 +94,7 @@ class Game {
         // 障害物のインスタンスを初期化
         this.rock = new Rock(this.app, this.obstacles, this.player);
         this.pool = new Pool(this.app, this.obstacles, this.player);
+        this.rollingRock = new RollingRock(this.app, this.obstacles, this.player);
 
         // キーボード入力のハンドリングをセットアップ
         this.setupKeyboardInput();
@@ -297,9 +296,6 @@ class Game {
 
     private drawObstacles(): void {
         this.obstacles.clear();
-        while (this.obstacles.children.length > 0) {
-            this.obstacles.removeChildAt(0);
-        }
         
         if (this.currentScreen === 2) {
             // 岩の描画
@@ -315,57 +311,10 @@ class Game {
             this.app.stage.addChild(this.obstacles);
         } else if (this.currentScreen === 4) {
             // 画面4の転がる石
-            
-            // 既存の子要素をすべて削除
-            while (this.obstacles.children.length > 0) {
-                this.obstacles.removeChildAt(0);
-            }
-            
-            const rockCenterX = this.rollingRockX;
-            const rockCenterY = this.app.screen.height - 115;
-            
-            // 新しいGraphicsオブジェクトを作成して回転を適用
-            const rock = new PIXI.Graphics();
-            
-            // 石の本体（不規則な形状）
-            rock.beginFill(0x808080);
-            rock.lineStyle(2, 0x000000);
-            
-            // 不規則な岩の形を描画（原点中心）
-            rock.moveTo(-30, 15);
-            rock.lineTo(-35, 0);
-            rock.lineTo(-30, -20);
-            rock.lineTo(-15, -35);
-            rock.lineTo(15, -35);
-            rock.lineTo(30, -20);
-            rock.lineTo(35, 0);
-            rock.lineTo(30, 15);
-            rock.lineTo(-30, 15);
-            
-            rock.endFill();
-            
-            // 岩の質感を表現する線
-            rock.lineStyle(2, 0x666666);
-            // 横線（不規則）
-            rock.moveTo(-25, -20);
-            rock.lineTo(25, -15);
-            
-            rock.moveTo(-28, 0);
-            rock.lineTo(28, 5);
-            
-            rock.moveTo(-20, 10);
-            rock.lineTo(20, 8);
-            
-            // 斜めの線で立体感を出す
-            rock.moveTo(-15, -25);
-            rock.lineTo(-5, 10);
-
-            // 回転と位置を設定
-            rock.position.set(rockCenterX, rockCenterY);
-            rock.rotation = this.rollingRockRotation;
-
-            // 描画したrockをobstaclesに追加
-            this.obstacles.addChild(rock);
+            this.rollingRock.draw();
+            // 描画後にobstaclesを再描画
+            this.app.stage.removeChild(this.obstacles);
+            this.app.stage.addChild(this.obstacles);
         } else if (this.currentScreen === 5) {
             // 画面5の切り株
             const screenWidth = this.app.screen.width;
@@ -502,32 +451,7 @@ class Game {
             return this.pool.checkCollision();
         } else if (this.currentScreen === 4) {
             // 転がる石との衝突判定
-            const playerBounds = {
-                left: this.player.x - 15,
-                right: this.player.x + 15,
-                top: this.player.y - 35,
-                bottom: this.player.y
-            };
-
-            const rockBounds = {
-                left: this.rollingRockX - 35,
-                right: this.rollingRockX + 35,
-                top: this.app.screen.height - 150,
-                bottom: this.app.screen.height - 100
-            };
-
-            // デバッグ用：衝突判定の範囲を可視化（開発中のみ）
-            /*
-            this.obstacles.lineStyle(1, 0xFF0000, 0.5);
-            this.obstacles.drawRect(rockBounds.left, rockBounds.top, 
-                                 rockBounds.right - rockBounds.left, 
-                                 rockBounds.bottom - rockBounds.top);
-            */
-
-            return !(playerBounds.right < rockBounds.left || 
-                    playerBounds.left > rockBounds.right || 
-                    playerBounds.bottom < rockBounds.top || 
-                    playerBounds.top > rockBounds.bottom);
+            return this.rollingRock.checkCollision();
         } else if (this.currentScreen === 5) {
             // 切り株との衝突判定
             const screenWidth = this.app.screen.width;
@@ -703,13 +627,14 @@ class Game {
         this.player.x = 50;
         this.player.y = this.app.screen.height - 120;
         this.velocityY = 0;
-        this.rollingRockX = this.app.screen.width + 50;
-        this.rollingRockRotation = 0;
         this.lotusX = 0; // 蓮の葉の位置をリセット
         this.isOnLotus = false;
         this.screenText.text = `Screen: ${this.currentScreen}`;
         this.drawBackground();
         this.drawObstacles();
+        
+        // 転がる岩のリセット
+        this.rollingRock.reset();
     }
 
     private setupKeyboardInput(): void {
@@ -736,6 +661,9 @@ class Game {
                 this.screenText.text = `Screen: ${this.currentScreen}`;
                 this.drawBackground();
                 this.drawObstacles();
+                
+                // 画面遷移時に転がる岩をリセット
+                this.rollingRock.reset();
             }
         });
 
@@ -782,6 +710,13 @@ class Game {
         // 画面3の池の更新
         if (this.currentScreen === 3) {
             this.pool.update();
+        }
+
+        // 画面4の転がる石の更新
+        if (this.currentScreen === 4) {
+            this.rollingRock.update();
+            // 障害物の再描画（画面4の場合のみ毎フレーム更新）
+            this.drawObstacles();
         }
 
         // 画面6の蓮の葉の更新
@@ -851,20 +786,9 @@ class Game {
             this.screenText.text = `Screen: ${this.currentScreen}`;
             this.drawBackground();
             this.drawObstacles();
-        }
-
-        // 画面4の転がる石の更新
-        if (this.currentScreen === 4) {
-            this.rollingRockX -= this.rollingRockSpeed;
-            this.rollingRockRotation -= 0.1;
             
-            // 石が画面外に出たら右端に戻す
-            if (this.rollingRockX < -50) {
-                this.rollingRockX = this.app.screen.width + 50;
-            }
-
-            // 障害物の再描画（画面4の場合のみ毎フレーム更新）
-            this.drawObstacles();
+            // 画面遷移時に転がる岩をリセット
+            this.rollingRock.reset();
         }
 
         // 障害物との衝突判定
