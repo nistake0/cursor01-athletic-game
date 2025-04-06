@@ -2,8 +2,9 @@ import * as PIXI from 'pixi.js';
 import { Rock } from './Rock';
 import { Pool } from './Pool';
 import { RollingRock } from './RollingRock';
+import { Stump } from './Stump';
 
-class Game {
+export class Game {
     private app: PIXI.Application;
     private player: PIXI.Graphics;
     private background: PIXI.Graphics;
@@ -30,6 +31,7 @@ class Game {
     private rock: Rock;
     private pool: Pool;
     private rollingRock: RollingRock;
+    private stump: Stump;
 
     constructor() {
         // PIXIアプリケーションを初期化
@@ -95,6 +97,9 @@ class Game {
         this.rock = new Rock(this.app, this.obstacles, this.player);
         this.pool = new Pool(this.app, this.obstacles, this.player);
         this.rollingRock = new RollingRock(this.app, this.obstacles, this.player);
+
+        // 画面5の切り株の初期化
+        this.stump = new Stump(this.app, this.obstacles, this);
 
         // キーボード入力のハンドリングをセットアップ
         this.setupKeyboardInput();
@@ -317,56 +322,7 @@ class Game {
             this.app.stage.addChild(this.obstacles);
         } else if (this.currentScreen === 5) {
             // 画面5の切り株
-            const screenWidth = this.app.screen.width;
-            const totalWidth = screenWidth * 2/3;
-            const startX = (screenWidth - totalWidth) / 2 + 50;
-            const spacing = totalWidth / 4;
-
-            const stumps = [
-                { x: startX + spacing * 4, height: 80 },  // 一番右の切り株
-                { x: startX + spacing * 3, height: 120 }, // 2番目
-                { x: startX + spacing * 2, height: 60 },  // 真ん中
-                { x: startX + spacing, height: 100 },     // 4番目
-                { x: startX, height: 40 }                 // 一番左の切り株
-            ];
-
-            stumps.forEach(stump => {
-                // 切り株の本体（茶色）
-                this.obstacles.beginFill(0x8B4513);
-                this.obstacles.lineStyle(2, 0x3D1F00);
-                
-                const stumpWidth = 40;
-                const baseY = this.app.screen.height - 80; // stickmanの高さの半分程度下げる
-                
-                // 切り株の本体を描画
-                this.obstacles.drawRect(
-                    stump.x - stumpWidth/2,
-                    baseY - stump.height,
-                    stumpWidth,
-                    stump.height
-                );
-                
-                // 年輪を描画
-                this.obstacles.lineStyle(1, 0x3D1F00);
-                for (let i = 1; i <= 3; i++) {
-                    const ringRadius = (stumpWidth/2) - (i * 5);
-                    this.obstacles.beginFill(0x8B4513);
-                    this.obstacles.drawEllipse(
-                        stump.x,
-                        baseY - stump.height,
-                        ringRadius,
-                        ringRadius/2
-                    );
-                    this.obstacles.endFill();
-                }
-
-                // 木の皮のテクスチャ（縦線）
-                this.obstacles.lineStyle(1, 0x3D1F00);
-                for (let i = 0; i < stumpWidth; i += 4) {
-                    this.obstacles.moveTo(stump.x - stumpWidth/2 + i, baseY - stump.height);
-                    this.obstacles.lineTo(stump.x - stumpWidth/2 + i, baseY);
-                }
-            });
+            this.stump.draw();
         } else if (this.currentScreen === 6) {
             // 画面6の大きな池と蓮の葉
             const screenWidth = this.app.screen.width;
@@ -454,91 +410,7 @@ class Game {
             return this.rollingRock.checkCollision();
         } else if (this.currentScreen === 5) {
             // 切り株との衝突判定
-            const screenWidth = this.app.screen.width;
-            const totalWidth = screenWidth * 2/3;
-            const startX = (screenWidth - totalWidth) / 2 + 50;
-            const spacing = totalWidth / 4;
-
-            const stumps = [
-                { x: startX + spacing * 4, height: 80 },
-                { x: startX + spacing * 3, height: 120 },
-                { x: startX + spacing * 2, height: 60 },
-                { x: startX + spacing, height: 100 },
-                { x: startX, height: 40 }
-            ];
-
-            const playerBottom = this.player.y;
-            const playerTop = this.player.y - 35;
-            const playerLeft = this.player.x - 15;
-            const playerRight = this.player.x + 15;
-            const playerVelocityY = this.velocityY;
-            const playerCenterX = this.player.x;
-
-            for (const stump of stumps) {
-                const stumpWidth = 40;
-                const stumpLeft = stump.x - stumpWidth/2;
-                const stumpRight = stump.x + stumpWidth/2;
-                // 衝突判定用の位置を上に調整（描画位置より20px上）
-                const collisionBaseY = this.app.screen.height - 100; // 衝突判定用の基準位置
-                const stumpTop = collisionBaseY - stump.height;
-                const stumpBottom = collisionBaseY;
-
-                // 上からの着地判定（改善版）
-                if (playerBottom >= stumpTop - 5 && // 少し上からの判定を開始
-                    playerBottom <= stumpTop + 15 && // 判定範囲を広げる
-                    playerVelocityY >= 0 && 
-                    playerRight >= stumpLeft && 
-                    playerLeft <= stumpRight) {
-                    
-                    this.player.y = stumpTop;
-                    this.velocityY = 0;
-                    this.isGrounded = true;
-                    return false;
-                }
-
-                // 横からの衝突判定（通り抜け防止）
-                if (playerBottom > stumpTop &&
-                    playerTop < stumpBottom) {
-                    // 右からの衝突
-                    if (playerLeft <= stumpRight && 
-                        playerLeft >= stumpRight - 10 && // 判定範囲を広げる
-                        playerRight > stumpRight) {
-                        this.player.x = stumpRight + 15;
-                        return false;
-                    }
-                    // 左からの衝突
-                    if (playerRight >= stumpLeft && 
-                        playerRight <= stumpLeft + 10 && // 判定範囲を広げる
-                        playerLeft < stumpLeft) {
-                        this.player.x = stumpLeft - 15;
-                        return false;
-                    }
-                }
-
-                // 下からの衝突判定（改善版）
-                if (playerTop <= stumpBottom && 
-                    playerTop >= stumpTop - 5 && // 判定範囲を広げる
-                    playerRight >= stumpLeft && 
-                    playerLeft <= stumpRight) {
-                    this.velocityY = 0;
-                    this.player.y = stumpBottom + 35;
-                    return false;
-                }
-
-                // 高速移動時の追加衝突判定
-                if (Math.abs(this.velocityY) > 10) { // 高速移動時
-                    const nextPlayerBottom = playerBottom + this.velocityY;
-                    if (nextPlayerBottom >= stumpTop &&
-                        nextPlayerBottom <= stumpBottom &&
-                        playerRight >= stumpLeft &&
-                        playerLeft <= stumpRight) {
-                        this.player.y = stumpTop;
-                        this.velocityY = 0;
-                        this.isGrounded = true;
-                        return false;
-                    }
-                }
-            }
+            return this.stump.checkCollision();
         } else if (this.currentScreen === 6) {
             const playerBottom = this.player.y;
             const playerTop = this.player.y - 35;
@@ -578,7 +450,7 @@ class Game {
                 playerBottom <= lotusY + 35 && // 判定範囲をさらに広げる
                 playerVelocityY >= -8 && // 上昇中でもより許容
                 playerRight >= lotusLeft - 15 && // 判定範囲をさらに広げる
-                playerLeft <= lotusRight + 15)) { // 判定範囲をさらに広げる
+                playerLeft <= lotusRight + 15)) {
                 
                 // 蓮の葉に乗った時の処理
                 this.player.y = lotusY;
@@ -631,10 +503,14 @@ class Game {
         this.isOnLotus = false;
         this.screenText.text = `Screen: ${this.currentScreen}`;
         this.drawBackground();
+        
+        // 障害物をクリアしてから再描画
+        this.obstacles.clear();
         this.drawObstacles();
         
         // 転がる岩のリセット
         this.rollingRock.reset();
+        this.stump.reset();
     }
 
     private setupKeyboardInput(): void {
@@ -719,6 +595,11 @@ class Game {
             this.drawObstacles();
         }
 
+        // 画面5の切り株の更新
+        if (this.currentScreen === 5) {
+            this.stump.update();
+        }
+
         // 画面6の蓮の葉の更新
         if (this.currentScreen === 6) {
             // 蓮の葉の移動
@@ -785,10 +666,14 @@ class Game {
             this.player.x = 50;
             this.screenText.text = `Screen: ${this.currentScreen}`;
             this.drawBackground();
+            
+            // 障害物をクリアしてから再描画
+            this.obstacles.clear();
             this.drawObstacles();
             
-            // 画面遷移時に転がる岩をリセット
+            // 画面遷移時に転がる岩と切り株をリセット
             this.rollingRock.reset();
+            this.stump.reset();
         }
 
         // 障害物との衝突判定
