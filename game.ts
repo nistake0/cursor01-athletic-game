@@ -626,7 +626,7 @@ export class Game {
                 this.player.y <= lotusY + 35 && // 判定範囲をさらに広げる
                 this.velocityY >= -8 && // 上昇中でもより許容
                 this.player.x + 15 >= lotusLeft - 15 && // 判定範囲をさらに広げる
-                this.player.x - 15 <= lotusRight + 15)) { // 判定範囲をさらに広げる
+                this.player.x - 15 <= lotusRight + 15)) {
                 
                 // 蓮の葉に乗った時の処理
                 this.player.y = lotusY;
@@ -674,6 +674,11 @@ export class Game {
             // 画面遷移時に転がる岩と切り株をリセット
             this.rollingRock.reset();
             this.stump.reset();
+            
+            // 画面6に移行したら切り株を完全にクリア
+            if (this.currentScreen === 6) {
+                this.stump = new Stump(this.app, this.obstacles, this);
+            }
         }
 
         // 障害物との衝突判定
