@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { Rock } from './Rock';
+import { Pool } from './Pool';
 
 class Game {
     private app: PIXI.Application;
@@ -30,6 +31,7 @@ class Game {
     private poolBounds: any;
     // 障害物のインスタンスを追加
     private rock: Rock;
+    private pool: Pool;
 
     constructor() {
         // PIXIアプリケーションを初期化
@@ -93,6 +95,7 @@ class Game {
 
         // 障害物のインスタンスを初期化
         this.rock = new Rock(this.app, this.obstacles, this.player);
+        this.pool = new Pool(this.app, this.obstacles, this.player);
 
         // キーボード入力のハンドリングをセットアップ
         this.setupKeyboardInput();
@@ -306,33 +309,10 @@ class Game {
             this.app.stage.addChild(this.obstacles);
         } else if (this.currentScreen === 3) {
             // 画面3の障害物（池）
-            this.obstacles.lineStyle(2, 0x000000);
-            
-            // 4つの池を配置
-            const poolWidth = 64;
-            const poolSpacing = 150; // 間隔を広げて4つの池をバランスよく配置
-            const startX = 170; // 開始位置を調整
-            const poolY = this.app.screen.height - 98;
-            
-            for (let i = 0; i < 4; i++) { // 5から4に変更
-                const poolX = startX + i * poolSpacing;
-                
-                // 池の水
-                this.obstacles.beginFill(0x4169E1);
-                this.obstacles.drawEllipse(poolX, poolY, poolWidth / 2, 8);
-                this.obstacles.endFill();
-                
-                // 池の縁
-                this.obstacles.lineStyle(2, 0x8B4513);
-                this.obstacles.beginFill(0x8B4513, 0);
-                this.obstacles.drawEllipse(poolX, poolY, poolWidth / 2 + 2, 10);
-                this.obstacles.endFill();
-
-                // 水面の反射効果
-                this.obstacles.lineStyle(1, 0xFFFFFF, 0.5);
-                this.obstacles.moveTo(poolX - poolWidth / 3, poolY - 3);
-                this.obstacles.lineTo(poolX + poolWidth / 3, poolY - 3);
-            }
+            this.pool.draw();
+            // 描画後にobstaclesを再描画
+            this.app.stage.removeChild(this.obstacles);
+            this.app.stage.addChild(this.obstacles);
         } else if (this.currentScreen === 4) {
             // 画面4の転がる石
             
@@ -519,25 +499,7 @@ class Game {
             return this.rock.checkCollision();
         } else if (this.currentScreen === 3) {
             // 池との衝突判定
-            const playerBottom = this.player.y;
-            const poolY = this.app.screen.height - 98;
-            const poolWidth = 64;
-            const poolSpacing = 150; // 間隔を広げて4つの池をバランスよく配置
-            const startX = 170; // 開始位置を調整
-
-            // プレイヤーが地面にいる場合のみ判定
-            if (playerBottom >= this.app.screen.height - 121) {
-                // 各池との判定
-                for (let i = 0; i < 4; i++) { // 5から4に変更
-                    const poolX = startX + i * poolSpacing;
-                    const distanceFromPool = Math.abs(this.player.x - poolX);
-                    
-                    // プレイヤーが池の範囲内にいるか判定
-                    if (distanceFromPool < poolWidth / 2) {
-                        return true;
-                    }
-                }
-            }
+            return this.pool.checkCollision();
         } else if (this.currentScreen === 4) {
             // 転がる石との衝突判定
             const playerBounds = {
@@ -815,6 +777,11 @@ class Game {
         // 画面2の岩の更新
         if (this.currentScreen === 2) {
             this.rock.update();
+        }
+
+        // 画面3の池の更新
+        if (this.currentScreen === 3) {
+            this.pool.update();
         }
 
         // 画面6の蓮の葉の更新

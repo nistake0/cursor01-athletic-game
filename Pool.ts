@@ -1,0 +1,76 @@
+import * as PIXI from 'pixi.js';
+
+export class Pool {
+    private app: PIXI.Application;
+    private obstacles: PIXI.Graphics;
+    private player: PIXI.Graphics;
+
+    constructor(app: PIXI.Application, obstacles: PIXI.Graphics, player: PIXI.Graphics) {
+        this.app = app;
+        this.obstacles = obstacles;
+        this.player = player;
+    }
+
+    // 池の描画処理
+    public draw(): PIXI.Graphics {
+        this.obstacles.lineStyle(2, 0x000000);
+        
+        // 4つの池を配置
+        const poolWidth = 64;
+        const poolSpacing = 150; // 間隔を広げて4つの池をバランスよく配置
+        const startX = 170; // 開始位置を調整
+        const poolY = this.app.screen.height - 98;
+        
+        for (let i = 0; i < 4; i++) {
+            const poolX = startX + i * poolSpacing;
+            
+            // 池の水
+            this.obstacles.beginFill(0x4169E1);
+            this.obstacles.drawEllipse(poolX, poolY, poolWidth / 2, 8);
+            this.obstacles.endFill();
+            
+            // 池の縁
+            this.obstacles.lineStyle(2, 0x8B4513);
+            this.obstacles.beginFill(0x8B4513, 0);
+            this.obstacles.drawEllipse(poolX, poolY, poolWidth / 2 + 2, 10);
+            this.obstacles.endFill();
+
+            // 水面の反射効果
+            this.obstacles.lineStyle(1, 0xFFFFFF, 0.5);
+            this.obstacles.moveTo(poolX - poolWidth / 3, poolY - 3);
+            this.obstacles.lineTo(poolX + poolWidth / 3, poolY - 3);
+        }
+        
+        return this.obstacles;
+    }
+
+    // 池との衝突判定
+    public checkCollision(): boolean {
+        const playerBottom = this.player.y;
+        const poolY = this.app.screen.height - 98;
+        const poolWidth = 64;
+        const poolSpacing = 150; // 間隔を広げて4つの池をバランスよく配置
+        const startX = 170; // 開始位置を調整
+
+        // プレイヤーが地面にいる場合のみ判定
+        if (playerBottom >= this.app.screen.height - 121) {
+            // 各池との判定
+            for (let i = 0; i < 4; i++) {
+                const poolX = startX + i * poolSpacing;
+                const distanceFromPool = Math.abs(this.player.x - poolX);
+                
+                // プレイヤーが池の範囲内にいるか判定
+                if (distanceFromPool < poolWidth / 2) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    // 池の更新処理（必要に応じて）
+    public update(): void {
+        // 池は動かないので、現時点では何もしない
+    }
+} 
