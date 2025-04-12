@@ -1,0 +1,61 @@
+// プレイヤー関連
+export const PLAYER = {
+  MOVE_SPEED: 5,
+  JUMP_FORCE: -12,
+  GRAVITY: 0.5,
+  INITIAL_X: 50,
+  INITIAL_Y: 480, // SCREEN.HEIGHT - 120
+  GROUND_Y: 480, // SCREEN.HEIGHT - 120
+};
+
+// 画面関連
+export const SCREEN = {
+  WIDTH: 800,
+  HEIGHT: 600,
+  BACKGROUND_COLOR: 0x87CEEB, // 空色
+  GROUND_COLOR: 0xCCCCCC,
+  GRASS_COLOR: 0x33CC33,
+  FOREST_COLOR: 0x000000,
+  FOREST_ALPHA: 0.8,
+};
+
+// 障害物関連
+export const OBSTACLES = {
+  CHESTNUT: {
+    SPAWN_INTERVAL: 1000, // 1秒
+    MAX_COUNT: 3,
+  },
+  BEE: {
+    SPAWN_INTERVAL: 2000, // 2秒
+  },
+};
+
+// テキスト関連
+export const TEXT = {
+  SCREEN: {
+    FONT_FAMILY: 'Arial',
+    FONT_SIZE: 24,
+    FILL: 0xFFFFFF,
+    STROKE: 0x000000,
+    STROKE_THICKNESS: 4,
+  },
+  GAME_OVER: {
+    FONT_FAMILY: 'Arial',
+    FONT_SIZE: 48,
+    FILL: 0xFF0000,
+    STROKE: 0x000000,
+    STROKE_THICKNESS: 6,
+  },
+};
+
+// 背景関連
+export const BACKGROUND = {
+  GRADIENT_STEPS: 20,
+  START_COLOR: 0x87CEEB, // 空色
+  END_COLOR: 0x4682B4,   // より濃い青
+  TREE_MIN_HEIGHT: 150,
+  TREE_MAX_HEIGHT: 250,
+  TREE_MIN_WIDTH: 40,
+  TREE_MAX_WIDTH: 70,
+  TREE_OVERLAP: 0.7,
+}; 

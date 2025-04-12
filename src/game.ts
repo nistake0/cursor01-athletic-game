@@ -7,6 +7,7 @@ import { LargePool } from './LargePool';
 import { LotusLeaf } from './LotusLeaf';
 import { Chestnut } from './Chestnut';
 import { Bee } from './Bee';
+import { PLAYER, SCREEN, OBSTACLES, TEXT, BACKGROUND } from './utils/constants';
 
 export class Game {
     private app: PIXI.Application;
@@ -47,9 +48,9 @@ export class Game {
     constructor() {
         // PIXIアプリケーションを初期化
         this.app = new PIXI.Application({
-            width: 800,
-            height: 600,
-            backgroundColor: 0x87CEEB, // 空色
+            width: SCREEN.WIDTH,
+            height: SCREEN.HEIGHT,
+            backgroundColor: SCREEN.BACKGROUND_COLOR,
             antialias: true,
             resolution: window.devicePixelRatio || 1,
             autoDensity: true
@@ -70,16 +71,16 @@ export class Game {
         // スティックマンを作成
         this.player = new PIXI.Graphics();
         this.drawStickMan();
-        this.player.x = 50; // 左端付近に配置
-        this.player.y = this.app.screen.height - 120;
+        this.player.x = PLAYER.INITIAL_X;
+        this.player.y = PLAYER.INITIAL_Y;
 
         // 画面番号テキストを作成
         this.screenText = new PIXI.Text(`Screen: ${this.currentScreen}`, {
-            fontFamily: 'Arial',
-            fontSize: 24,
-            fill: 0xFFFFFF,
-            stroke: 0x000000,
-            strokeThickness: 4,
+            fontFamily: TEXT.SCREEN.FONT_FAMILY,
+            fontSize: TEXT.SCREEN.FONT_SIZE,
+            fill: TEXT.SCREEN.FILL,
+            stroke: TEXT.SCREEN.STROKE,
+            strokeThickness: TEXT.SCREEN.STROKE_THICKNESS,
             align: 'center'
         });
         this.screenText.x = 20;
@@ -87,11 +88,11 @@ export class Game {
 
         // ゲームオーバーテキストを作成（初期状態は非表示）
         this.gameOverText = new PIXI.Text('GAME OVER\nPress SPACE to restart', {
-            fontFamily: 'Arial',
-            fontSize: 48,
-            fill: 0xFF0000,
-            stroke: 0x000000,
-            strokeThickness: 6,
+            fontFamily: TEXT.GAME_OVER.FONT_FAMILY,
+            fontSize: TEXT.GAME_OVER.FONT_SIZE,
+            fill: TEXT.GAME_OVER.FILL,
+            stroke: TEXT.GAME_OVER.STROKE,
+            strokeThickness: TEXT.GAME_OVER.STROKE_THICKNESS,
             align: 'center'
         });
         this.gameOverText.anchor.set(0.5);
@@ -119,7 +120,7 @@ export class Game {
         this.lotusLeaf = new LotusLeaf(this.app, this.obstacles, this);
 
         // いがぐりの初期化
-        this.chestnuts = Array(3).fill(null).map(() => new Chestnut(this.app, this.obstacles, this));
+        this.chestnuts = Array(OBSTACLES.CHESTNUT.MAX_COUNT).fill(null).map(() => new Chestnut(this.app, this.obstacles, this));
 
         // 蜂の初期化
         this.bee = new Bee(this.app, this.obstacles, this);
@@ -136,11 +137,11 @@ export class Game {
 
         // 空のグラデーション
         const height = this.app.screen.height;
-        const steps = 20;
+        const steps = BACKGROUND.GRADIENT_STEPS;
         for (let i = 0; i < steps; i++) {
             const ratio = i / steps;
-            const startColor = 0x87CEEB; // 空色
-            const endColor = 0x4682B4;   // より濃い青
+            const startColor = BACKGROUND.START_COLOR;
+            const endColor = BACKGROUND.END_COLOR;
             const color = this.lerpColor(startColor, endColor, ratio);
             
             this.background.beginFill(color);
@@ -157,15 +158,15 @@ export class Game {
         this.drawForestSilhouette();
 
         // 地面（グレー）
-        this.background.beginFill(0xCCCCCC);
+        this.background.beginFill(SCREEN.GROUND_COLOR);
         this.background.drawRect(0, this.app.screen.height - 100, this.app.screen.width, 50);
         this.background.endFill();
 
         // 草
-        this.background.beginFill(0x33CC33);
+        this.background.beginFill(SCREEN.GRASS_COLOR);
         this.background.drawRect(0, this.app.screen.height - 110, this.app.screen.width, 10);
         for (let x = 0; x < this.app.screen.width; x += 15) {
-            this.background.beginFill(0x33CC33);
+            this.background.beginFill(SCREEN.GRASS_COLOR);
             const height = 5 + Math.random() * 15;
             this.background.drawRect(x, this.app.screen.height - 110 - height, 8, height);
             this.background.endFill();
@@ -177,13 +178,13 @@ export class Game {
     }
 
     private drawForestSilhouette(): void {
-        this.background.beginFill(0x000000, 0.8);
+        this.background.beginFill(SCREEN.FOREST_COLOR, SCREEN.FOREST_ALPHA);
         
         // 不規則な森のシルエットを作成
         let x = 0;
         while (x < this.app.screen.width) {
-            const treeHeight = 150 + Math.random() * 100;
-            const treeWidth = 40 + Math.random() * 30;
+            const treeHeight = BACKGROUND.TREE_MIN_HEIGHT + Math.random() * (BACKGROUND.TREE_MAX_HEIGHT - BACKGROUND.TREE_MIN_HEIGHT);
+            const treeWidth = BACKGROUND.TREE_MIN_WIDTH + Math.random() * (BACKGROUND.TREE_MAX_WIDTH - BACKGROUND.TREE_MIN_WIDTH);
             
             // 木の形を描く
             this.background.moveTo(x, this.app.screen.height - 110);
@@ -191,7 +192,7 @@ export class Game {
             this.background.lineTo(x + treeWidth, this.app.screen.height - 110);
             this.background.lineTo(x, this.app.screen.height - 110);
             
-            x += treeWidth * 0.7; // 木々を少し重ねる
+            x += treeWidth * BACKGROUND.TREE_OVERLAP; // 木々を少し重ねる
         }
         
         this.background.endFill();
@@ -446,8 +447,8 @@ export class Game {
         this.isGameOver = false;
         this.gameOverText.visible = false;
         this.currentScreen = 1;
-        this.player.x = 50;
-        this.player.y = this.app.screen.height - 120;
+        this.player.x = PLAYER.INITIAL_X;
+        this.player.y = PLAYER.INITIAL_Y;
         this.velocityY = 0;
         this.screenText.text = `Screen: ${this.currentScreen}`;
         this.drawBackground();
@@ -473,7 +474,7 @@ export class Game {
 
     private moveToNextScreen(): void {
         this.currentScreen++;
-        this.player.x = 50;
+        this.player.x = PLAYER.INITIAL_X;
         this.screenText.text = `Screen: ${this.currentScreen}`;
         this.drawBackground();
         
@@ -536,7 +537,7 @@ export class Game {
             
             // スペースキーまたは上キーでジャンプ
             if ((e.key === ' ' || e.key === 'ArrowUp') && this._isGrounded) {
-                this.velocityY = -12;
+                this.velocityY = PLAYER.JUMP_FORCE;
                 this._isGrounded = false;
             }
 
@@ -569,17 +570,17 @@ export class Game {
 
         // 左右の移動処理
         if (this.keys['ArrowLeft']) {
-            this.player.x -= this.MOVE_SPEED;
+            this.player.x -= PLAYER.MOVE_SPEED;
             this.direction = -1;
         }
         if (this.keys['ArrowRight']) {
-            this.player.x += this.MOVE_SPEED;
+            this.player.x += PLAYER.MOVE_SPEED;
             this.direction = 1;
         }
 
         // 重力とジャンプの処理
         if (!this._isGrounded) {
-            this.velocityY += this.gravity;
+            this.velocityY += PLAYER.GRAVITY;
             this.player.y += this.velocityY;
         }
 
@@ -628,7 +629,7 @@ export class Game {
             const currentTime = Date.now();
             
             // 1秒ごとに新しいいがぐりを生成
-            if (currentTime - this.lastChestnutSpawnTime >= this.CHESTNUT_SPAWN_INTERVAL) {
+            if (currentTime - this.lastChestnutSpawnTime >= OBSTACLES.CHESTNUT.SPAWN_INTERVAL) {
                 // 非アクティブないがぐりを探して生成
                 const inactiveChestnut = this.chestnuts.find(chestnut => !chestnut.isActiveState());
                 if (inactiveChestnut) {
@@ -655,7 +656,7 @@ export class Game {
             const currentTime = Date.now();
             
             // 2秒ごとに新しい蜂を生成
-            if (currentTime - this.lastBeeSpawnTime >= this.BEE_SPAWN_INTERVAL) {
+            if (currentTime - this.lastBeeSpawnTime >= OBSTACLES.BEE.SPAWN_INTERVAL) {
                 if (!this.bee.isActiveState()) {
                     this.bee.spawn();
                     this.lastBeeSpawnTime = currentTime;
@@ -673,7 +674,7 @@ export class Game {
             const currentTime = Date.now();
             
             // 1秒ごとに新しいいがぐりを生成
-            if (currentTime - this.lastChestnutSpawnTime >= this.CHESTNUT_SPAWN_INTERVAL) {
+            if (currentTime - this.lastChestnutSpawnTime >= OBSTACLES.CHESTNUT.SPAWN_INTERVAL) {
                 // 非アクティブないがぐりを探して生成
                 const inactiveChestnut = this.chestnuts.find(chestnut => !chestnut.isActiveState());
                 if (inactiveChestnut) {
@@ -704,9 +705,8 @@ export class Game {
         }
 
         // 地面との衝突判定
-        const groundY = this.app.screen.height - 120;
-        if (this.player.y >= groundY) {
-            this.player.y = groundY;
+        if (this.player.y >= PLAYER.GROUND_Y) {
+            this.player.y = PLAYER.GROUND_Y;
             this.velocityY = 0;
             this._isGrounded = true;
         } else if (this.velocityY > 0) { // 落下中の場合のみ_isGroundedをfalseに設定
