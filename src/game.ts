@@ -11,6 +11,7 @@ import { BackgroundRenderer } from './renderers/BackgroundRenderer';
 import { PlayerRenderer } from './renderers/PlayerRenderer';
 import { UIManager } from './managers/UIManager';
 import { ChestnutManager } from './managers/ChestnutManager';
+import { BeeManager } from './managers/BeeManager';
 import { EventEmitter, GameEvent } from './utils/EventEmitter';
 import { InputManager, ActionType } from './managers/InputManager';
 
@@ -33,10 +34,9 @@ export class Game {
     private stump: Stump;
     private largePool: LargePool;
     private lotusLeaf: LotusLeaf;
-    private bee: Bee;
-    private lastBeeSpawnTime: number = 0;
     private backgroundRenderer: BackgroundRenderer;
     private chestnutManager: ChestnutManager;
+    private beeManager: BeeManager;
     private eventEmitter: EventEmitter;
     private inputManager: InputManager;
 
@@ -91,10 +91,10 @@ export class Game {
         this.largePool = new LargePool(this.app, this.obstacles, this);
 
         // 蓮の葉の初期化
-        this.lotusLeaf = new LotusLeaf(this.app, this.obstacles, this);
+        this.lotusLeaf = new LotusLeaf(this.app, this.obstacles, this, this.largePool.getPoolBounds());
 
-        // 蜂の初期化
-        this.bee = new Bee(this.app, this.obstacles, this);
+        // 蜂マネージャーの初期化
+        this.beeManager = new BeeManager(this.app, this.obstacles, this);
 
         // イベントエミッターとInputManagerの初期化
         this.eventEmitter = new EventEmitter();
@@ -161,7 +161,7 @@ export class Game {
             case 6:
                 // 画面6では大きな池と蓮の葉を描画
                 this.largePool.draw();
-                this.lotusLeaf.draw(this.largePool.getPoolBounds());
+                this.lotusLeaf.draw();
                 break;
             case 7:
                 // 画面7では岩と転がる岩を描画
@@ -179,7 +179,7 @@ export class Game {
                 break;
             case 10:
                 // 画面10では蜂を描画
-                this.bee.draw();
+                this.beeManager.render();
                 break;
             case 11:
                 // 画面11では切り株といがぐりを描画
@@ -208,7 +208,7 @@ export class Game {
             case 6:
                 // 画面6の大きな池と蓮の葉との衝突判定
                 // 蓮の葉の衝突判定を先に行う
-                this.lotusLeaf.checkCollision(this.largePool.getPoolBounds());
+                this.lotusLeaf.checkCollision();
                 // 蓮の葉に乗っている場合は池の判定をスキップ
                 if (this.lotusLeaf.isPlayerOnLotus()) {
                     return false;
@@ -229,7 +229,7 @@ export class Game {
                 return this.pool.checkCollision() || this.rollingRock.checkCollision();
             case 10:
                 // 画面10の蜂との衝突判定
-                return this.bee.checkCollision(this.playerRenderer.getPlayer().x, this.playerRenderer.getPlayer().y);
+                return this.beeManager.checkCollision();
             case 11:
                 // 画面11の切り株といがぐりとの衝突判定
                 if (this.stump.checkCollision()) return true;
@@ -290,8 +290,7 @@ export class Game {
                 break;
             case 10:
                 // 画面10に移行したら蜂をリセット
-                this.bee.reset();
-                this.lastBeeSpawnTime = Date.now();
+                this.beeManager.reset();
                 break;
             case 11:
                 // 画面11に移行
@@ -303,8 +302,7 @@ export class Game {
 
         // 画面10以外に移行した場合も蜂をリセット
         if (screenNumber !== 10) {
-            this.bee.reset();
-            this.lastBeeSpawnTime = 0;
+            this.beeManager.reset();
         }
     }
 
@@ -380,7 +378,7 @@ export class Game {
 
         // 画面6の蓮の葉の更新
         if (this.currentScreen === 6) {
-            this.lotusLeaf.update(this.largePool.getPoolBounds());
+            this.lotusLeaf.update();
         }
 
         // 画面7の岩と転がる岩の更新
@@ -403,17 +401,7 @@ export class Game {
         // 画面10の蜂の更新
         if (this.currentScreen === 10) {
             const currentTime = Date.now();
-            
-            // 2秒ごとに新しい蜂を生成
-            if (currentTime - this.lastBeeSpawnTime >= OBSTACLES.BEE.SPAWN_INTERVAL) {
-                if (!this.bee.isActiveState()) {
-                    this.bee.spawn();
-                    this.lastBeeSpawnTime = currentTime;
-                }
-            }
-
-            // 蜂の更新
-            this.bee.update();
+            this.beeManager.update(currentTime);
         }
 
         // 画面11の切り株といがぐりの更新
