@@ -225,6 +225,71 @@ export class Game {
         this.uiManager.showGameOver();
     }
 
+    private moveToNextScreen(): void {
+        this.currentScreen++;
+        this.playerRenderer.getPlayer().x = PLAYER.INITIAL_X;
+        this.uiManager.updateScreenNumber(this.currentScreen);
+        this.backgroundRenderer.render();
+        
+        // 新しい画面の初期化
+        this.initializeScreen(this.currentScreen);
+    }
+
+    private initializeScreen(screenNumber: number): void {
+        // 障害物をクリアしてから再描画
+        this.obstacles.clear();
+        this.drawObstacles();
+        
+        // 転がる岩と切り株をリセット
+        this.rollingRock.reset();
+        this.stump.reset();
+        this.largePool.reset();
+        this.lotusLeaf.reset();
+        
+        // 画面固有の初期化処理
+        switch (screenNumber) {
+            case 6:
+                // 画面6に移行したら切り株を完全にクリア
+                this.stump = new Stump(this.app, this.obstacles, this);
+                break;
+            case 7:
+                // 画面7に移行したら転がる岩をリセット
+                this.rollingRock.reset();
+                break;
+            case 8:
+                // 画面8に移行したら最後のいがぐり生成時間をリセット
+                this.lastChestnutSpawnTime = Date.now();
+                break;
+            case 9:
+                // 画面9に移行したら転がる岩をリセット
+                this.rollingRock.reset();
+                break;
+            case 10:
+                // 画面10に移行したら蜂をリセット
+                this.bee.reset();
+                this.lastBeeSpawnTime = Date.now();
+                break;
+            case 11:
+                // 画面11に移行したら最後のいがぐり生成時間をリセット
+                this.lastChestnutSpawnTime = Date.now();
+                break;
+            default:
+                // 画面1-5の場合は特別な処理なし
+                break;
+        }
+
+        // 画面8と11以外に移行したら必ずいがぐりをリセット
+        if (screenNumber !== 8 && screenNumber !== 11) {
+            this.chestnuts.forEach(chestnut => chestnut.reset());
+        }
+
+        // 画面10以外に移行した場合も蜂をリセット
+        if (screenNumber !== 10) {
+            this.bee.reset();
+            this.lastBeeSpawnTime = 0;
+        }
+    }
+
     private reset(): void {
         this.isGameOver = false;
         this.currentScreen = 1;
@@ -234,85 +299,11 @@ export class Game {
         this.uiManager.updateScreenNumber(this.currentScreen);
         this.backgroundRenderer.render();
         
-        // 障害物をクリアしてから再描画
-        this.obstacles.clear();
-        this.drawObstacles();
+        // 画面1の初期化
+        this.initializeScreen(1);
         
-        // 転がる岩のリセット
-        this.rollingRock.reset();
-        this.stump.reset();
-        this.largePool.reset();
-        this.lotusLeaf.reset();
-
-        // いがぐりをリセット
-        this.chestnuts.forEach(chestnut => chestnut.reset());
-        this.lastChestnutSpawnTime = 0;
-
-        // 蜂をリセット
-        this.bee.reset();
-        this.lastBeeSpawnTime = 0;
-
         // UIマネージャーのゲームオーバー表示を非表示にする
         this.uiManager.hideGameOver();
-    }
-
-    private moveToNextScreen(): void {
-        this.currentScreen++;
-        this.playerRenderer.getPlayer().x = PLAYER.INITIAL_X;
-        this.uiManager.updateScreenNumber(this.currentScreen);
-        this.backgroundRenderer.render();
-        
-        // 障害物をクリアしてから再描画
-        this.obstacles.clear();
-        this.drawObstacles();
-        
-        // 画面遷移時に転がる岩と切り株をリセット
-        this.rollingRock.reset();
-        this.stump.reset();
-        this.largePool.reset();
-        this.lotusLeaf.reset();
-        
-        // 画面6に移行したら切り株を完全にクリア
-        if (this.currentScreen === 6) {
-            this.stump = new Stump(this.app, this.obstacles, this);
-        }
-        
-        // 画面7に移行したら転がる岩をリセット
-        if (this.currentScreen === 7) {
-            this.rollingRock.reset();
-        }
-
-        // 画面8に移行したら最後のいがぐり生成時間をリセット
-        if (this.currentScreen === 8) {
-            this.lastChestnutSpawnTime = Date.now();
-        }
-
-        // 画面遷移時に必ずいがぐりをリセット（画面8と11以外）
-        if (this.currentScreen !== 8 && this.currentScreen !== 11) {
-            this.chestnuts.forEach(chestnut => chestnut.reset());
-        }
-
-        // 画面9に移行したら転がる岩をリセット
-        if (this.currentScreen === 9) {
-            this.rollingRock.reset();
-        }
-
-        // 画面10に移行したら蜂をリセット
-        if (this.currentScreen === 10) {
-            this.bee.reset();
-            this.lastBeeSpawnTime = Date.now();
-        }
-
-        // 画面10以外に移行した場合も蜂をリセット
-        if (this.currentScreen !== 10) {
-            this.bee.reset();
-            this.lastBeeSpawnTime = 0;
-        }
-
-        // 画面11に移行したら最後のいがぐり生成時間をリセット
-        if (this.currentScreen === 11) {
-            this.lastChestnutSpawnTime = Date.now();
-        }
     }
 
     private setupKeyboardInput(): void {
