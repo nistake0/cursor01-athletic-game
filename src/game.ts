@@ -177,42 +177,30 @@ export class Game {
         
         switch (this.currentScreen) {
             case 2:
-                // 画面2の岩との衝突判定
                 return this.rock.checkCollision(player);
             case 3:
-                // 画面3の池との衝突判定
                 return this.pool.checkCollision(player);
             case 4:
-                // 画面4の切り株との衝突判定
                 return this.stump.checkCollision(player);
             case 5:
-                // 画面5の転がる岩との衝突判定
                 return this.rollingRock.checkCollision(player);
             case 6:
-                // 画面6の大きな池と蓮の葉との衝突判定
-                // 蓮の葉の衝突判定を先に行う
-                this.lotusLeaf.checkCollision(player);
-                // 蓮の葉に乗っている場合は池の判定をスキップ
-                if (this.lotusLeaf.isPlayerOnLotus()) {
-                    return false;
-                }
-                // 蓮の葉に乗っていない場合のみ池の判定を行う
-                return this.largePool.checkCollision(player);
+                // 画面7や画面9と同じように、単純にcheckCollisionを順番に呼び出す
+                return this.lotusLeaf.checkCollision(player) || 
+                       this.largePool.checkCollision(player);
             case 7:
-                // 画面7の岩と転がる岩との衝突判定
-                return this.rock.checkCollision(player) || this.rollingRock.checkCollision(player);
+                return this.rock.checkCollision(player) || 
+                       this.rollingRock.checkCollision(player);
             case 8:
-                // 画面8のいがぐりとの衝突判定
                 return this.chestnutManager.checkCollision(player);
             case 9:
-                // 画面9の小さい池と転がる岩との衝突判定
-                return this.pool.checkCollision(player) || this.rollingRock.checkCollision(player);
+                return this.pool.checkCollision(player) || 
+                       this.rollingRock.checkCollision(player);
             case 10:
-                // 画面10の蜂との衝突判定
                 return this.beeManager.checkCollision(player);
             case 11:
-                // 画面11の切り株といがぐりとの衝突判定
-                return this.stump.checkCollision(player) || this.chestnutManager.checkCollision(player);
+                return this.stump.checkCollision(player) || 
+                       this.chestnutManager.checkCollision(player);
             default:
                 return false;
         }
@@ -254,18 +242,18 @@ export class Game {
                 this.stump = new Stump(this.app, this.obstacles, this);
                 break;
             case 7:
-                // 画面7に移行したら転がる岩をリセット
-                this.rollingRock.reset();
+        // 画面7に移行したら転がる岩をリセット
+            this.rollingRock.reset();
                 break;
             case 8:
                 // 画面8に移行
                 break;
             case 9:
-                // 画面9に移行したら転がる岩をリセット
-                this.rollingRock.reset();
+        // 画面9に移行したら転がる岩をリセット
+            this.rollingRock.reset();
                 break;
             case 10:
-                // 画面10に移行したら蜂をリセット
+        // 画面10に移行したら蜂をリセット
                 this.beeManager.reset();
                 break;
             case 11:
@@ -406,6 +394,10 @@ export class Game {
 
     public setPlayerPosition(x: number, y: number): void {
         this.playerManager.setPlayerPosition(x, y);
+    }
+
+    public getPlayerManager(): PlayerManager {
+        return this.playerManager;
     }
 }
 

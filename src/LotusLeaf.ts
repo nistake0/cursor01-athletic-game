@@ -64,7 +64,7 @@ export class LotusLeaf {
         }
 
         // プレイヤーが蓮の葉に乗っている場合の処理
-        if (this.isOnLotus) {
+        if (this.game.getPlayerManager().isOnLotus()) {
             const player = this.game.getPlayer();
             // 蓮の葉と一緒に移動
             player.x += this.lotusSpeed * this.lotusDirection;
@@ -80,41 +80,55 @@ export class LotusLeaf {
         }
     }
 
-    public checkCollision(player: PIXI.Graphics): boolean {
+    private getPlayerBoundsFromPlayer(player: PIXI.Graphics) {
+        return {
+            left: player.x - 15,
+            right: player.x + 15,
+            top: player.y - 35,
+            bottom: player.y
+        };
+    }
+
+    private getLotusBounds() {
         const lotusWidth = this.poolBounds.width / 5;
-        const lotusLeft = this.lotusX;
-        const lotusRight = this.lotusX + lotusWidth;
-        const lotusY = this.poolBounds.top + 5; // 水面の位置を池の上限に合わせる
+        return {
+            left: this.lotusX,
+            right: this.lotusX + lotusWidth,
+            top: this.poolBounds.top + 5,
+            bottom: this.poolBounds.top + 15
+        };
+    }
 
-        // デバッグ情報の表示
-        console.log("蓮の葉のbound:", {
-            left: lotusLeft,
-            right: lotusRight,
-            y: lotusY
-        });
-        console.log("isOnLotus:", this.isOnLotus);
+    private isOnLotusLeaf(playerBounds: any, lotusBounds: any): boolean {
+        return (
+            playerBounds.bottom >= lotusBounds.top - 35 &&
+            playerBounds.top <= lotusBounds.bottom + 35 &&
+            playerBounds.right >= lotusBounds.left - 15 &&
+            playerBounds.left <= lotusBounds.right + 15 &&
+            this.game.getVelocityY() >= 0
+        );
+    }
 
-        // 蓮の葉に乗っているかどうかを判定
-        if ((player.y >= lotusY - 35 && // 判定範囲をさらに広げる
-            player.y <= lotusY + 35 && // 判定範囲をさらに広げる
-            player.x >= lotusLeft - 15 && // 判定範囲をさらに広げる
-            player.x <= lotusRight + 15) && // 判定範囲をさらに広げる
-            this.game.getVelocityY() >= 0) { // 落下中のみ判定
-            this.isOnLotus = true;
-            return false; // 蓮の葉に乗っている場合は衝突しない
-        } else {
-            this.isOnLotus = false;
-            return false; // 蓮の葉との衝突は常にfalse
+    public checkCollision(player: PIXI.Graphics): boolean {
+        const playerBounds = this.getPlayerBoundsFromPlayer(player);
+        const lotusBounds = this.getLotusBounds();
+        
+        if (this.isOnLotusLeaf(playerBounds, lotusBounds)) {
+            this.game.getPlayerManager().setOnLotus(true);
+            return false;
         }
+        
+        this.game.getPlayerManager().setOnLotus(false);
+        return false;
     }
 
     public reset(): void {
         this.lotusX = 0;
         this.lotusDirection = 1;
-        this.isOnLotus = false;
+        this.game.getPlayerManager().setOnLotus(false);
     }
 
     public isPlayerOnLotus(): boolean {
-        return this.isOnLotus;
+        return this.game.getPlayerManager().isOnLotus();
     }
 } 

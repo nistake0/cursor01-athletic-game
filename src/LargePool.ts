@@ -78,36 +78,36 @@ export class LargePool {
         }
     }
 
+    private getPlayerBoundsFromPlayer(player: PIXI.Graphics) {
+        return {
+            left: player.x - 15,
+            right: player.x + 15,
+            top: player.y - 35,
+            bottom: player.y
+        };
+    }
+
+    private isInWater(playerBounds: any): boolean {
+        return (
+            playerBounds.right >= this.poolBounds.left && 
+            playerBounds.left <= this.poolBounds.right && 
+            playerBounds.bottom >= this.poolBounds.top - 20
+        );
+    }
+
     public checkCollision(player: PIXI.Graphics): boolean {
-        const playerBottom = player.y;
-        const playerTop = player.y - 35;
-        const playerLeft = player.x - 15;
-        const playerRight = player.x + 15;
-
-        // デバッグ情報の表示
-        console.log("===デバッグ情報===");
-        console.log("池のbound:", {
-            left: this.poolBounds.left,
-            right: this.poolBounds.right,
-            top: this.poolBounds.top,
-            bottom: this.poolBounds.bottom
-        });
-        console.log("プレーヤーの位置:", {
-            right: playerRight,
-            left: playerLeft,
-            bottom: playerBottom
-        });
-        console.log("================");
-
-        // 池との衝突判定
-        if (playerRight >= this.poolBounds.left && 
-            playerLeft <= this.poolBounds.right && 
-            playerBottom >= this.poolBounds.top - 20) {
-            
-            console.log("池に落ちました！");
-            return true; // ゲームオーバー
+        // 蓮の葉に乗っている場合は衝突判定をスキップ
+        if (this.game.getPlayerManager().isOnLotus()) {
+            return false;
         }
 
+        const playerBounds = this.getPlayerBoundsFromPlayer(player);
+        
+        // 通常の衝突判定処理
+        if (this.isInWater(playerBounds)) {
+            return true;
+        }
+        
         return false;
     }
 

@@ -19,6 +19,7 @@ export class PlayerManager {
     private direction: number = 1; // 1: 右向き, -1: 左向き
     private animationTime: number = 0;
     private isMoving: boolean = false;
+    private _isOnLotus: boolean = false;
     private eventEmitter: EventEmitter;
     private inputManager: InputManager;
 
@@ -156,5 +157,13 @@ export class PlayerManager {
 
     public getGame(): Game {
         return this.game;
+    }
+
+    public setOnLotus(value: boolean): void {
+        this._isOnLotus = value;
+    }
+
+    public isOnLotus(): boolean {
+        return this._isOnLotus;
     }
 } 
