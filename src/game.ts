@@ -12,6 +12,8 @@ import { BackgroundRenderer } from './renderers/BackgroundRenderer';
 import { PlayerRenderer } from './renderers/PlayerRenderer';
 import { UIManager } from './managers/UIManager';
 import { ChestnutManager } from './managers/ChestnutManager';
+import { EventEmitter, GameEvent } from './utils/EventEmitter';
+import { InputManager, KeyCode, ActionType } from './managers/InputManager';
 
 export class Game {
     private app: PIXI.Application;
@@ -19,7 +21,6 @@ export class Game {
     private uiManager: UIManager;
     private background: PIXI.Graphics;
     private obstacles: PIXI.Graphics;
-    private keys: { [key: string]: boolean } = {};
     private velocityY: number = 0;
     private _isGrounded: boolean = false;
     private direction: number = 1; // 1: 右向き, -1: 左向き
@@ -27,7 +28,6 @@ export class Game {
     private isMoving: boolean = false;
     private currentScreen: number = 1;
     private isGameOver: boolean = false;
-    // 障害物のインスタンスを追加
     private rock: Rock;
     private pool: Pool;
     private rollingRock: RollingRock;
@@ -38,6 +38,8 @@ export class Game {
     private lastBeeSpawnTime: number = 0;
     private backgroundRenderer: BackgroundRenderer;
     private chestnutManager: ChestnutManager;
+    private eventEmitter: EventEmitter;
+    private inputManager: InputManager;
 
     constructor() {
         // PIXIアプリケーションを初期化
@@ -95,13 +97,38 @@ export class Game {
         // 蜂の初期化
         this.bee = new Bee(this.app, this.obstacles, this);
 
-        // キーボード入力のハンドリングをセットアップ
-        this.setupKeyboardInput();
+        // イベントエミッターとInputManagerの初期化
+        this.eventEmitter = new EventEmitter();
+        this.inputManager = new InputManager(this.eventEmitter);
+        
+        // イベントリスナーの設定
+        this.setupEventListeners();
 
         this.chestnutManager = new ChestnutManager(this.app, this.obstacles, this);
 
         // ゲームループを開始
         this.app.ticker.add(() => this.gameLoop());
+    }
+
+    private setupEventListeners(): void {
+        this.eventEmitter.on(GameEvent.JUMP, () => {
+            if (this._isGrounded && !this.isGameOver) {
+                this.velocityY = PLAYER.JUMP_FORCE;
+                this._isGrounded = false;
+            }
+        });
+
+        this.eventEmitter.on(GameEvent.RESTART, () => {
+            if (this.isGameOver) {
+                this.reset();
+            }
+        });
+
+        this.eventEmitter.on(GameEvent.NEXT_SCREEN, () => {
+            if (!this.isGameOver) {
+                this.moveToNextScreen();
+            }
+        });
     }
 
     private drawObstacles(): void {
@@ -300,37 +327,15 @@ export class Game {
         this.chestnutManager.reset();
     }
 
-    private setupKeyboardInput(): void {
-        window.addEventListener('keydown', (e) => {
-            this.keys[e.key] = true;
-            
-            // スペースキーまたは上キーでジャンプ
-            if ((e.key === ' ' || e.key === 'ArrowUp') && this._isGrounded) {
-                this.velocityY = PLAYER.JUMP_FORCE;
-                this._isGrounded = false;
-            }
-
-            // ゲームオーバー時にスペースキーでリスタート
-            if (e.key === ' ' && this.isGameOver) {
-                this.reset();
-            }
-
-            // ESCキーで次の画面へ
-            if (e.key === 'Escape' && !this.isGameOver) {
-                this.moveToNextScreen();
-            }
-        });
-
-        window.addEventListener('keyup', (e) => {
-            this.keys[e.key] = false;
-        });
-    }
-
     private gameLoop(): void {
         if (this.isGameOver) return;
 
+        // InputManagerの状態を更新
+        this.inputManager.update();
+
         // 移動状態の更新
-        this.isMoving = this.keys['ArrowLeft'] || this.keys['ArrowRight'];
+        this.isMoving = this.inputManager.isActionActive(ActionType.MOVE_LEFT) || 
+                        this.inputManager.isActionActive(ActionType.MOVE_RIGHT);
         
         // アニメーション時間の更新
         if (this.isMoving) {
@@ -338,11 +343,11 @@ export class Game {
         }
 
         // 左右の移動処理
-        if (this.keys['ArrowLeft']) {
+        if (this.inputManager.isActionActive(ActionType.MOVE_LEFT)) {
             this.playerRenderer.getPlayer().x -= PLAYER.MOVE_SPEED;
             this.direction = -1;
         }
-        if (this.keys['ArrowRight']) {
+        if (this.inputManager.isActionActive(ActionType.MOVE_RIGHT)) {
             this.playerRenderer.getPlayer().x += PLAYER.MOVE_SPEED;
             this.direction = 1;
         }
