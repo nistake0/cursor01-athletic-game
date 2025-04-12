@@ -91,7 +91,7 @@ export class Game {
         this.largePool = new LargePool(this.app, this.obstacles, this);
 
         // 蓮の葉の初期化
-        this.lotusLeaf = new LotusLeaf(this.app, this.obstacles, this, this.largePool.getPoolBounds());
+        this.lotusLeaf = new LotusLeaf(this.obstacles, this, this.largePool.getPoolBounds());
 
         // 蜂マネージャーの初期化
         this.beeManager = new BeeManager(this.app, this.obstacles, this);

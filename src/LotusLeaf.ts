@@ -10,7 +10,7 @@ export class LotusLeaf {
     private isOnLotus: boolean = false;
     private poolBounds: { left: number; right: number; top: number; width: number };
 
-    constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game, poolBounds: { left: number; right: number; top: number; width: number }) {
+    constructor(obstacles: PIXI.Graphics, game: Game, poolBounds: { left: number; right: number; top: number; width: number }) {
         this.obstacles = obstacles;
         this.game = game;
         this.poolBounds = poolBounds;
