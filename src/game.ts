@@ -20,8 +20,6 @@ export class Game {
     private obstacles: PIXI.Graphics;
     private keys: { [key: string]: boolean } = {};
     private velocityY: number = 0;
-    private gravity: number = 0.5;
-    private jumpForce: number = -12;
     private _isGrounded: boolean = false;
     private direction: number = 1; // 1: 右向き, -1: 左向き
     private animationTime: number = 0;
@@ -39,10 +37,7 @@ export class Game {
     private lastChestnutSpawnTime: number = 0;
     private bee: Bee;
     private lastBeeSpawnTime: number = 0;
-    private readonly BEE_SPAWN_INTERVAL: number = 2000; // 2秒ごとに蜂を生成
     private backgroundRenderer: BackgroundRenderer;
-    private chestnutSpawnTimer: number = 0;
-    private beeSpawnTimer: number = 0;
 
     constructor() {
         // PIXIアプリケーションを初期化
