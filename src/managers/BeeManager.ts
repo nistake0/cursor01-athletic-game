@@ -18,7 +18,7 @@ export class BeeManager {
         this.bee = new Bee(this.app, this.obstacles, this.game);
     }
 
-    public render(): void {
+    public draw(): void {
         this.bee.draw();
     }
 

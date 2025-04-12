@@ -157,7 +157,7 @@ export class Game {
                 break;
             case 10:
                 // 画面10では蜂を描画
-                this.beeManager.render();
+                this.beeManager.draw();
                 break;
             case 11:
                 // 画面11では切り株といがぐりを描画
