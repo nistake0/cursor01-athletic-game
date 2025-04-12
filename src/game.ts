@@ -11,6 +11,7 @@ import { PLAYER, SCREEN, OBSTACLES, TEXT, BACKGROUND } from './utils/constants';
 import { BackgroundRenderer } from './renderers/BackgroundRenderer';
 import { PlayerRenderer } from './renderers/PlayerRenderer';
 import { UIManager } from './managers/UIManager';
+import { ChestnutManager } from './managers/ChestnutManager';
 
 export class Game {
     private app: PIXI.Application;
@@ -38,6 +39,7 @@ export class Game {
     private bee: Bee;
     private lastBeeSpawnTime: number = 0;
     private backgroundRenderer: BackgroundRenderer;
+    private chestnutManager: ChestnutManager;
 
     constructor() {
         // PIXIアプリケーションを初期化
@@ -101,6 +103,8 @@ export class Game {
         // キーボード入力のハンドリングをセットアップ
         this.setupKeyboardInput();
 
+        this.chestnutManager = new ChestnutManager(this.app, this.obstacles, this);
+
         // ゲームループを開始
         this.app.ticker.add(() => this.gameLoop());
     }
@@ -145,6 +149,7 @@ export class Game {
                 break;
             case 8:
                 // 画面8では背景のみを描画（いがぐりは別途描画）
+                this.chestnutManager.render();
                 break;
             case 9:
                 // 画面9では小さい池と転がる岩を描画
@@ -158,7 +163,7 @@ export class Game {
             case 11:
                 // 画面11では切り株といがぐりを描画
                 this.stump.draw();
-                // いがぐりは別途描画（gameLoopで更新）
+                this.chestnutManager.render();
                 break;
             default:
                 break;
@@ -194,10 +199,8 @@ export class Game {
                 return this.rock.checkCollision() || this.rollingRock.checkCollision();
             case 8:
                 // 画面8のいがぐりとの衝突判定
-                for (const chestnut of this.chestnuts) {
-                    if (chestnut.checkCollision(this.playerRenderer.getPlayer().x, this.playerRenderer.getPlayer().y)) {
-                        return true;
-                    }
+                if (this.chestnutManager.checkCollision(this.playerRenderer.getPlayer())) {
+                    return true;
                 }
                 return false;
             case 9:
@@ -209,10 +212,8 @@ export class Game {
             case 11:
                 // 画面11の切り株といがぐりとの衝突判定
                 if (this.stump.checkCollision()) return true;
-                for (const chestnut of this.chestnuts) {
-                    if (chestnut.checkCollision(this.playerRenderer.getPlayer().x, this.playerRenderer.getPlayer().y)) {
-                        return true;
-                    }
+                if (this.chestnutManager.checkCollision(this.playerRenderer.getPlayer())) {
+                    return true;
                 }
                 return false;
             default:
@@ -259,6 +260,7 @@ export class Game {
             case 8:
                 // 画面8に移行したら最後のいがぐり生成時間をリセット
                 this.lastChestnutSpawnTime = Date.now();
+                this.chestnutManager.reset();
                 break;
             case 9:
                 // 画面9に移行したら転がる岩をリセット
@@ -272,6 +274,7 @@ export class Game {
             case 11:
                 // 画面11に移行したら最後のいがぐり生成時間をリセット
                 this.lastChestnutSpawnTime = Date.now();
+                this.chestnutManager.reset();
                 break;
             default:
                 // 画面1-5の場合は特別な処理なし
@@ -304,6 +307,8 @@ export class Game {
         
         // UIマネージャーのゲームオーバー表示を非表示にする
         this.uiManager.hideGameOver();
+
+        this.chestnutManager.reset();
     }
 
     private setupKeyboardInput(): void {
@@ -394,21 +399,7 @@ export class Game {
         // 画面8のいがぐりの更新
         if (this.currentScreen === 8) {
             const currentTime = Date.now();
-            
-            // 1秒ごとに新しいいがぐりを生成
-            if (currentTime - this.lastChestnutSpawnTime >= OBSTACLES.CHESTNUT.SPAWN_INTERVAL) {
-                // 非アクティブないがぐりを探して生成
-                const inactiveChestnut = this.chestnuts.find(chestnut => !chestnut.isActiveState());
-                if (inactiveChestnut) {
-                    inactiveChestnut.spawn();
-                    this.lastChestnutSpawnTime = currentTime;
-                }
-            }
-
-            // すべてのいがぐりを更新
-            for (const chestnut of this.chestnuts) {
-                chestnut.update();
-            }
+            this.chestnutManager.update(currentTime);
         }
 
         // 画面9の転がる岩の更新
@@ -435,21 +426,7 @@ export class Game {
         // 画面11の切り株といがぐりの更新
         if (this.currentScreen === 11) {
             const currentTime = Date.now();
-            
-            // 1秒ごとに新しいいがぐりを生成
-            if (currentTime - this.lastChestnutSpawnTime >= OBSTACLES.CHESTNUT.SPAWN_INTERVAL) {
-                // 非アクティブないがぐりを探して生成
-                const inactiveChestnut = this.chestnuts.find(chestnut => !chestnut.isActiveState());
-                if (inactiveChestnut) {
-                    inactiveChestnut.spawn();
-                    this.lastChestnutSpawnTime = currentTime;
-                }
-            }
-
-            // すべてのいがぐりを更新
-            for (const chestnut of this.chestnuts) {
-                chestnut.update();
-            }
+            this.chestnutManager.update(currentTime);
         }
 
         // 画面端での処理
