@@ -9,10 +9,11 @@ import { Chestnut } from './Chestnut';
 import { Bee } from './Bee';
 import { PLAYER, SCREEN, OBSTACLES, TEXT, BACKGROUND } from './utils/constants';
 import { BackgroundRenderer } from './renderers/BackgroundRenderer';
+import { PlayerRenderer } from './renderers/PlayerRenderer';
 
 export class Game {
     private app: PIXI.Application;
-    private player: PIXI.Graphics;
+    private playerRenderer: PlayerRenderer;
     private background: PIXI.Graphics;
     private obstacles: PIXI.Graphics;
     private screenText: PIXI.Text;
@@ -73,11 +74,12 @@ export class Game {
         this.obstacles = new PIXI.Graphics();
         this.app.stage.addChild(this.obstacles);
 
-        // スティックマンを作成
-        this.player = new PIXI.Graphics();
-        this.drawStickMan();
-        this.player.x = PLAYER.INITIAL_X;
-        this.player.y = PLAYER.INITIAL_Y;
+        // プレイヤーレンダラーを初期化
+        this.playerRenderer = new PlayerRenderer(this.app, this);
+        this.playerRenderer.render();
+        const player = this.playerRenderer.getPlayer();
+        player.x = PLAYER.INITIAL_X;
+        player.y = PLAYER.INITIAL_Y;
 
         // 画面番号テキストを作成
         this.screenText = new PIXI.Text(`Screen: ${this.currentScreen}`, {
@@ -108,12 +110,12 @@ export class Game {
         // レイヤー順に追加（プレイヤーは最後に追加して最前面に表示）
         this.app.stage.addChild(this.screenText);
         this.app.stage.addChild(this.gameOverText);
-        this.app.stage.addChild(this.player);
+        this.app.stage.addChild(player);
 
         // 障害物のインスタンスを初期化
-        this.rock = new Rock(this.app, this.obstacles, this.player);
-        this.pool = new Pool(this.app, this.obstacles, this.player);
-        this.rollingRock = new RollingRock(this.app, this.obstacles, this.player);
+        this.rock = new Rock(this.app, this.obstacles, player);
+        this.pool = new Pool(this.app, this.obstacles, player);
+        this.rollingRock = new RollingRock(this.app, this.obstacles, player);
 
         // 画面5の切り株の初期化
         this.stump = new Stump(this.app, this.obstacles, this);
@@ -135,65 +137,6 @@ export class Game {
 
         // ゲームループを開始
         this.app.ticker.add(() => this.gameLoop());
-    }
-
-    private drawStickMan(): void {
-        this.player.clear();
-        
-        // より太い線と明るい色で描画
-        const bodyColor = 0xFF4444; // 明るい赤色
-        this.player.lineStyle(4, bodyColor); // 線を4ピクセルに
-        
-        // 頭（輪郭と塗りつぶし）
-        this.player.beginFill(bodyColor);
-        this.player.drawCircle(0, -20, 12);
-        this.player.endFill();
-        
-        // 体
-        this.player.moveTo(0, -8);
-        this.player.lineTo(0, 12);
-        
-        if (!this._isGrounded) {
-            // ジャンプ中の姿勢
-            // 腕を上げる
-            this.player.moveTo(0, 0);
-            this.player.lineTo(-20 * this.direction, -10);
-            this.player.moveTo(0, 0);
-            this.player.lineTo(20 * this.direction, -10);
-            
-            // 脚を曲げる
-            this.player.moveTo(0, 12);
-            this.player.lineTo(-15 * this.direction, 25);
-            this.player.moveTo(0, 12);
-            this.player.lineTo(15 * this.direction, 25);
-        } else {
-            // 通常の走る姿勢
-            // 腕のアニメーション
-            const armSwing = Math.sin(this.animationTime * 0.2) * (this.isMoving ? 0.5 : 0);
-            this.player.moveTo(0, 0);
-            this.player.lineTo(-15 * this.direction - armSwing * 10, 8);
-            this.player.moveTo(0, 0);
-            this.player.lineTo(15 * this.direction + armSwing * 10, 8);
-            
-            // 脚のアニメーション
-            const legSwing = Math.sin(this.animationTime * 0.2) * (this.isMoving ? 0.5 : 0);
-            this.player.moveTo(0, 12);
-            this.player.lineTo(-10 * this.direction - legSwing * 15, 35);
-            this.player.moveTo(0, 12);
-            this.player.lineTo(10 * this.direction + legSwing * 15, 35);
-        }
-
-        // 目（キャラクターに表情を付ける）
-        const eyeColor = 0xFFFFFF; // 白色
-        this.player.lineStyle(0);
-        this.player.beginFill(eyeColor);
-        this.player.drawCircle(6 * this.direction, -22, 4); // 目の位置を少し調整
-        this.player.endFill();
-        
-        // 瞳
-        this.player.beginFill(0x000000);
-        this.player.drawCircle(7 * this.direction, -22, 2);
-        this.player.endFill();
     }
 
     private drawObstacles(): void {
@@ -286,7 +229,7 @@ export class Game {
             case 8:
                 // 画面8のいがぐりとの衝突判定
                 for (const chestnut of this.chestnuts) {
-                    if (chestnut.checkCollision(this.player.x, this.player.y)) {
+                    if (chestnut.checkCollision(this.playerRenderer.getPlayer().x, this.playerRenderer.getPlayer().y)) {
                         return true;
                     }
                 }
@@ -296,12 +239,12 @@ export class Game {
                 return this.pool.checkCollision() || this.rollingRock.checkCollision();
             case 10:
                 // 画面10の蜂との衝突判定
-                return this.bee.checkCollision(this.player.x, this.player.y);
+                return this.bee.checkCollision(this.playerRenderer.getPlayer().x, this.playerRenderer.getPlayer().y);
             case 11:
                 // 画面11の切り株といがぐりとの衝突判定
                 if (this.stump.checkCollision()) return true;
                 for (const chestnut of this.chestnuts) {
-                    if (chestnut.checkCollision(this.player.x, this.player.y)) {
+                    if (chestnut.checkCollision(this.playerRenderer.getPlayer().x, this.playerRenderer.getPlayer().y)) {
                         return true;
                     }
                 }
@@ -320,8 +263,8 @@ export class Game {
         this.isGameOver = false;
         this.gameOverText.visible = false;
         this.currentScreen = 1;
-        this.player.x = PLAYER.INITIAL_X;
-        this.player.y = PLAYER.INITIAL_Y;
+        this.playerRenderer.getPlayer().x = PLAYER.INITIAL_X;
+        this.playerRenderer.getPlayer().y = PLAYER.INITIAL_Y;
         this.velocityY = 0;
         this.screenText.text = `Screen: ${this.currentScreen}`;
         this.backgroundRenderer.render();
@@ -347,7 +290,7 @@ export class Game {
 
     private moveToNextScreen(): void {
         this.currentScreen++;
-        this.player.x = PLAYER.INITIAL_X;
+        this.playerRenderer.getPlayer().x = PLAYER.INITIAL_X;
         this.screenText.text = `Screen: ${this.currentScreen}`;
         this.backgroundRenderer.render();
         
@@ -443,18 +386,18 @@ export class Game {
 
         // 左右の移動処理
         if (this.keys['ArrowLeft']) {
-            this.player.x -= PLAYER.MOVE_SPEED;
+            this.playerRenderer.getPlayer().x -= PLAYER.MOVE_SPEED;
             this.direction = -1;
         }
         if (this.keys['ArrowRight']) {
-            this.player.x += PLAYER.MOVE_SPEED;
+            this.playerRenderer.getPlayer().x += PLAYER.MOVE_SPEED;
             this.direction = 1;
         }
 
         // 重力とジャンプの処理
         if (!this._isGrounded) {
             this.velocityY += PLAYER.GRAVITY;
-            this.player.y += this.velocityY;
+            this.playerRenderer.getPlayer().y += this.velocityY;
         }
 
         // 画面4の切り株の更新と衝突判定
@@ -566,9 +509,9 @@ export class Game {
         }
 
         // 画面端での処理
-        if (this.player.x <= 30) {
-            this.player.x = 30;
-        } else if (this.player.x >= this.app.screen.width - 30) {
+        if (this.playerRenderer.getPlayer().x <= 30) {
+            this.playerRenderer.getPlayer().x = 30;
+        } else if (this.playerRenderer.getPlayer().x >= this.app.screen.width - 30) {
             this.moveToNextScreen();
         }
 
@@ -578,8 +521,8 @@ export class Game {
         }
 
         // 地面との衝突判定
-        if (this.player.y >= PLAYER.GROUND_Y) {
-            this.player.y = PLAYER.GROUND_Y;
+        if (this.playerRenderer.getPlayer().y >= PLAYER.GROUND_Y) {
+            this.playerRenderer.getPlayer().y = PLAYER.GROUND_Y;
             this.velocityY = 0;
             this._isGrounded = true;
         } else if (this.velocityY > 0) { // 落下中の場合のみ_isGroundedをfalseに設定
@@ -587,16 +530,17 @@ export class Game {
         }
 
         // スティックマンの再描画（常に最後に行う）
-        this.drawStickMan();
+        this.playerRenderer.render();
         // プレイヤーを最前面に表示
-        if (this.player.parent) {
-            this.player.parent.removeChild(this.player);
+        const player = this.playerRenderer.getPlayer();
+        if (player.parent) {
+            player.parent.removeChild(player);
         }
-        this.app.stage.addChild(this.player);
+        this.app.stage.addChild(player);
     }
 
-    public getPlayer(): { x: number; y: number } {
-        return this.player;
+    public getPlayer(): PIXI.Graphics {
+        return this.playerRenderer.getPlayer();
     }
 
     // プレイヤーの速度を取得
@@ -615,12 +559,28 @@ export class Game {
     }
 
     public setPlayerPosition(x: number, y: number): void {
-        this.player.x = x;
-        this.player.y = y;
+        const player = this.playerRenderer.getPlayer();
+        player.x = x;
+        player.y = y;
     }
 
     public isGrounded(): boolean {
         return this._isGrounded;
+    }
+
+    // プレイヤーの向きを取得する関数
+    public getPlayerDirection(): number {
+        return this.direction;
+    }
+
+    // プレイヤーが移動中かどうかを取得する関数
+    public isPlayerMoving(): boolean {
+        return this.isMoving;
+    }
+
+    // プレイヤーのアニメーション時間を取得する関数
+    public getPlayerAnimationTime(): number {
+        return this.animationTime;
     }
 }
 
