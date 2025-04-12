@@ -5,15 +5,14 @@ import { RollingRock } from './RollingRock';
 import { Stump } from './Stump';
 import { LargePool } from './LargePool';
 import { LotusLeaf } from './LotusLeaf';
-import { Chestnut } from './Chestnut';
 import { Bee } from './Bee';
-import { PLAYER, SCREEN, OBSTACLES, TEXT, BACKGROUND } from './utils/constants';
+import { PLAYER, SCREEN, OBSTACLES, BACKGROUND } from './utils/constants';
 import { BackgroundRenderer } from './renderers/BackgroundRenderer';
 import { PlayerRenderer } from './renderers/PlayerRenderer';
 import { UIManager } from './managers/UIManager';
 import { ChestnutManager } from './managers/ChestnutManager';
 import { EventEmitter, GameEvent } from './utils/EventEmitter';
-import { InputManager, KeyCode, ActionType } from './managers/InputManager';
+import { InputManager, ActionType } from './managers/InputManager';
 
 export class Game {
     private app: PIXI.Application;
