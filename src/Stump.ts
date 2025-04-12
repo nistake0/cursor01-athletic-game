@@ -84,8 +84,8 @@ export class Stump {
         });
     }
 
-    public checkCollision(): boolean {
-        const playerBounds = this.getPlayerBounds();
+    public checkCollision(player: PIXI.Graphics): boolean {
+        const playerBounds = this.getPlayerBoundsFromPlayer(player);
         let isOnAnyStump = false;
 
         // すべての切り株に対して判定
@@ -101,7 +101,7 @@ export class Stump {
             // 切り株に乗っている場合
             if (isOnStump) {
                 // プレイヤーの位置を切り株の上に固定（playerBottomがstumpTopと同じになるように）
-                this.game.setPlayerPosition(this.game.getPlayer().x, stumpBounds.top - 35);
+                this.game.setPlayerPosition(player.x, stumpBounds.top - 35);
                 this.game.setVelocityY(0);
                 this.game.setGrounded(true);
                 isOnAnyStump = true;
@@ -119,20 +119,20 @@ export class Stump {
                 if (playerBounds.left <= stumpBounds.right &&
                     playerBounds.left >= stumpBounds.right - 10 &&
                     playerBounds.right > stumpBounds.right) {
-                    this.game.setPlayerPosition(stumpBounds.right + 15, this.game.getPlayer().y);
+                    this.game.setPlayerPosition(stumpBounds.right + 15, player.y);
                 }
                 // 右側からの衝突
                 if (playerBounds.right >= stumpBounds.left &&
                     playerBounds.right <= stumpBounds.left + 10 &&
                     playerBounds.left < stumpBounds.left) {
-                    this.game.setPlayerPosition(stumpBounds.left - 15, this.game.getPlayer().y);
+                    this.game.setPlayerPosition(stumpBounds.left - 15, player.y);
                 }
                 // 下からの衝突
                 if (playerBounds.top <= stumpBounds.bottom &&
                     playerBounds.top >= stumpBounds.top - 5 &&
                     playerBounds.right >= stumpBounds.left &&
                     playerBounds.left <= stumpBounds.right) {
-                    this.game.setPlayerPosition(this.game.getPlayer().x, stumpBounds.bottom + 35);
+                    this.game.setPlayerPosition(player.x, stumpBounds.bottom + 35);
                 }
                 break;
             }
@@ -173,8 +173,8 @@ export class Stump {
         return { left: stumpLeft, right: stumpRight, bottom: stumpBottom, top: stumpTop };
     }
 
-    public update(): void {
-        // 切り株は動かないので何もしない
+    public update(currentTime: number): void {
+        // 切り株は動かないので、現時点では何もしない
     }
 
     public reset(): void {
@@ -189,8 +189,7 @@ export class Stump {
         return this.stumpData;
     }
 
-    private getPlayerBounds(): { left: number; right: number; bottom: number; top: number } {
-        const player = this.game.getPlayer();
+    private getPlayerBoundsFromPlayer(player: PIXI.Graphics): { left: number; right: number; bottom: number; top: number } {
         const playerLeft = player.x - 15;
         const playerRight = player.x + 15;
         const playerTop = player.y - 35;

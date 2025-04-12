@@ -78,8 +78,7 @@ export class LargePool {
         }
     }
 
-    public checkCollision(): boolean {
-        const player = this.game.getPlayer();
+    public checkCollision(player: PIXI.Graphics): boolean {
         const playerBottom = player.y;
         const playerTop = player.y - 35;
         const playerLeft = player.x - 15;

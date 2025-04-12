@@ -51,10 +51,10 @@ export class BeeManager {
         this.lastSpawnTime = 0;
     }
 
-    public checkCollision(): boolean {
+    public checkCollision(player: PIXI.Graphics): boolean {
         return this.bee.checkCollision(
-            this.game.getPlayer().x, 
-            this.game.getPlayer().y
+            player.x, 
+            player.y
         );
     }
 

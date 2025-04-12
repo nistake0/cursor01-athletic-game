@@ -80,8 +80,7 @@ export class LotusLeaf {
         }
     }
 
-    public checkCollision(): boolean {
-        const player = this.game.getPlayer();
+    public checkCollision(player: PIXI.Graphics): boolean {
         const lotusWidth = this.poolBounds.width / 5;
         const lotusLeft = this.lotusX;
         const lotusRight = this.lotusX + lotusWidth;

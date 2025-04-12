@@ -71,12 +71,12 @@ export class RollingRock {
     }
 
     // 転がる岩との衝突判定
-    public checkCollision(): boolean {
+    public checkCollision(player: PIXI.Graphics): boolean {
         const playerBounds = {
-            left: this.player.x - 15,
-            right: this.player.x + 15,
-            top: this.player.y - 35,
-            bottom: this.player.y
+            left: player.x - 15,
+            right: player.x + 15,
+            top: player.y - 35,
+            bottom: player.y
         };
 
         const rockBounds = {

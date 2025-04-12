@@ -72,10 +72,9 @@ export class Chestnut {
         this.graphics.endFill();
     }
 
-    public update(): void {
+    public update(currentTime: number): void {
         if (!this.isActive) return;
 
-        const currentTime = Date.now();
         const elapsedTime = currentTime - this.spawnTime;
 
         // 出現から0.3秒間は空中で揺れる

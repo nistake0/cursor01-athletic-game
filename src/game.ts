@@ -19,6 +19,9 @@ export class Game {
     private obstacles: PIXI.Graphics;
     private currentScreen: number = 1;
     private isGameOver: boolean = false;
+    private isNextScreen: boolean = false;
+    private isGameStarted: boolean = false;
+    private isGamePaused: boolean = false;
     private rock: Rock;
     private pool: Pool;
     private rollingRock: RollingRock;
@@ -170,51 +173,46 @@ export class Game {
     }
 
     private checkCollision(): boolean {
+        const player = this.playerManager.getPlayer();
+        
         switch (this.currentScreen) {
             case 2:
                 // 画面2の岩との衝突判定
-                return this.rock.checkCollision();
+                return this.rock.checkCollision(player);
             case 3:
                 // 画面3の池との衝突判定
-                return this.pool.checkCollision();
+                return this.pool.checkCollision(player);
             case 4:
                 // 画面4の切り株との衝突判定
-                return this.stump.checkCollision();
+                return this.stump.checkCollision(player);
             case 5:
                 // 画面5の転がる岩との衝突判定
-                return this.rollingRock.checkCollision();
+                return this.rollingRock.checkCollision(player);
             case 6:
                 // 画面6の大きな池と蓮の葉との衝突判定
                 // 蓮の葉の衝突判定を先に行う
-                this.lotusLeaf.checkCollision();
+                this.lotusLeaf.checkCollision(player);
                 // 蓮の葉に乗っている場合は池の判定をスキップ
                 if (this.lotusLeaf.isPlayerOnLotus()) {
                     return false;
                 }
                 // 蓮の葉に乗っていない場合のみ池の判定を行う
-                return this.largePool.checkCollision();
+                return this.largePool.checkCollision(player);
             case 7:
                 // 画面7の岩と転がる岩との衝突判定
-                return this.rock.checkCollision() || this.rollingRock.checkCollision();
+                return this.rock.checkCollision(player) || this.rollingRock.checkCollision(player);
             case 8:
                 // 画面8のいがぐりとの衝突判定
-                if (this.chestnutManager.checkCollision(this.playerManager.getPlayer())) {
-                    return true;
-                }
-                return false;
+                return this.chestnutManager.checkCollision(player);
             case 9:
                 // 画面9の小さい池と転がる岩との衝突判定
-                return this.pool.checkCollision() || this.rollingRock.checkCollision();
+                return this.pool.checkCollision(player) || this.rollingRock.checkCollision(player);
             case 10:
                 // 画面10の蜂との衝突判定
-                return this.beeManager.checkCollision();
+                return this.beeManager.checkCollision(player);
             case 11:
                 // 画面11の切り株といがぐりとの衝突判定
-                if (this.stump.checkCollision()) return true;
-                if (this.chestnutManager.checkCollision(this.playerManager.getPlayer())) {
-                    return true;
-                }
-                return false;
+                return this.stump.checkCollision(player) || this.chestnutManager.checkCollision(player);
             default:
                 return false;
         }
@@ -306,58 +304,58 @@ export class Game {
         // プレイヤーの更新
         this.playerManager.update();
 
+        // 現在の時間を取得
+        const currentTime = Date.now();
+
         // 画面4の切り株の更新と衝突判定
         if (this.currentScreen === 4) {
-            this.stump.update();
-            this.stump.checkCollision();
+            this.stump.update(currentTime);
+            this.stump.checkCollision(this.playerManager.getPlayer());
         }
 
         // 画面2の岩の更新
         if (this.currentScreen === 2) {
-            this.rock.update();
+            this.rock.update(currentTime);
         }
 
         // 画面3の池の更新
         if (this.currentScreen === 3) {
-            this.pool.update();
+            this.pool.update(currentTime);
         }
 
         // 画面5の転がる岩の更新
         if (this.currentScreen === 5) {
-            this.rollingRock.update();
+            this.rollingRock.update(currentTime);
         }
 
         // 画面6の蓮の葉の更新
         if (this.currentScreen === 6) {
-            this.lotusLeaf.update();
+            this.lotusLeaf.update(currentTime);
         }
 
         // 画面7の岩と転がる岩の更新
         if (this.currentScreen === 7) {
-            this.rock.update();
-            this.rollingRock.update();
+            this.rock.update(currentTime);
+            this.rollingRock.update(currentTime);
         }
 
         // 画面8のいがぐりの更新
         if (this.currentScreen === 8) {
-            const currentTime = Date.now();
             this.chestnutManager.update(currentTime);
         }
 
         // 画面9の転がる岩の更新
         if (this.currentScreen === 9) {
-            this.rollingRock.update();
+            this.rollingRock.update(currentTime);
         }
 
         // 画面10の蜂の更新
         if (this.currentScreen === 10) {
-            const currentTime = Date.now();
             this.beeManager.update(currentTime);
         }
 
         // 画面11の切り株といがぐりの更新
         if (this.currentScreen === 11) {
-            const currentTime = Date.now();
             this.chestnutManager.update(currentTime);
         }
 

@@ -9,8 +9,13 @@ export class PlayerManager {
     private app: PIXI.Application;
     private game: Game;
     private playerRenderer: PlayerRenderer;
+    private player: PIXI.Graphics = new PIXI.Graphics();
     private velocityY: number = 0;
+    private isJumping: boolean = false;
     private isGrounded: boolean = false;
+    private isNextScreen: boolean = false;
+    private isGameStarted: boolean = false;
+    private isGamePaused: boolean = false;
     private direction: number = 1; // 1: 右向き, -1: 左向き
     private animationTime: number = 0;
     private isMoving: boolean = false;

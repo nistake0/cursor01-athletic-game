@@ -32,12 +32,12 @@ export class Rock {
     }
 
     // 岩との衝突判定
-    public checkCollision(): boolean {
+    public checkCollision(player: PIXI.Graphics): boolean {
         const playerBounds = {
-            left: this.player.x - 15,
-            right: this.player.x + 15,
-            top: this.player.y - 35,
-            bottom: this.player.y
+            left: player.x - 15,
+            right: player.x + 15,
+            top: player.y - 35,
+            bottom: player.y
         };
 
         // 岩の位置を取得（updateメソッドで動かした場合の位置を考慮）
@@ -58,11 +58,10 @@ export class Rock {
     }
 
     // 岩の更新処理
-    public update(): void {
+    public update(currentTime: number): void {
         // 画面7では岩が動くようにする
         // 岩の位置を少し上下に揺らす
-        const time = Date.now() / 1000;
-        const rockY = this.app.screen.height - 100 + Math.sin(time) * 5;
+        const rockY = this.app.screen.height - 100 + Math.sin(currentTime) * 5;
         
         // 岩を再描画
         this.obstacles.clear();

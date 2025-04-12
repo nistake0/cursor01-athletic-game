@@ -45,8 +45,8 @@ export class Pool {
     }
 
     // 池との衝突判定
-    public checkCollision(): boolean {
-        const playerBottom = this.player.y;
+    public checkCollision(player: PIXI.Graphics): boolean {
+        const playerBottom = player.y;
         const poolY = this.app.screen.height - 98;
         const poolWidth = 64;
         const poolSpacing = 150; // 間隔を広げて4つの池をバランスよく配置
@@ -57,7 +57,7 @@ export class Pool {
             // 各池との判定
             for (let i = 0; i < 4; i++) {
                 const poolX = startX + i * poolSpacing;
-                const distanceFromPool = Math.abs(this.player.x - poolX);
+                const distanceFromPool = Math.abs(player.x - poolX);
                 
                 // プレイヤーが池の範囲内にいるか判定
                 if (distanceFromPool < poolWidth / 2) {
@@ -69,8 +69,8 @@ export class Pool {
         return false;
     }
 
-    // 池の更新処理（必要に応じて）
-    public update(): void {
-        // 池は動かないので、現時点では何もしない
+    // 池の更新処理
+    public update(currentTime: number): void {
+        // 現在は更新処理なし
     }
 } 
