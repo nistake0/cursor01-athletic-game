@@ -170,7 +170,7 @@ export class Game {
                 break;
             case 8:
                 // 画面8では背景のみを描画（いがぐりは別途描画）
-                this.chestnutManager.render();
+                this.chestnutManager.draw();
                 break;
             case 9:
                 // 画面9では小さい池と転がる岩を描画
@@ -184,7 +184,7 @@ export class Game {
             case 11:
                 // 画面11では切り株といがぐりを描画
                 this.stump.draw();
-                this.chestnutManager.render();
+                this.chestnutManager.draw();
                 break;
             default:
                 break;

@@ -47,7 +47,7 @@ export class ChestnutManager {
     }
 
     // 描画処理
-    render(): void {
+    draw(): void {
         // Chestnutクラスは自身で描画を行うため、ここでは何もしない
     }
 
