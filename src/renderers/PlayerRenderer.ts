@@ -1,12 +1,14 @@
 import * as PIXI from 'pixi.js';
-import { Game } from '../game';
-import { Renderer } from './Renderer';
+import { PlayerManager } from '../managers/PlayerManager';
 
-export class PlayerRenderer extends Renderer {
+export class PlayerRenderer {
+    private app: PIXI.Application;
+    private playerManager: PlayerManager;
     private player: PIXI.Graphics;
 
-    constructor(app: PIXI.Application, game: Game) {
-        super(app, game);
+    constructor(app: PIXI.Application, playerManager: PlayerManager) {
+        this.app = app;
+        this.playerManager = playerManager;
         this.player = new PIXI.Graphics();
         this.app.stage.addChild(this.player);
     }
@@ -16,30 +18,31 @@ export class PlayerRenderer extends Renderer {
         this.drawStickMan();
     }
 
-    protected clear(): void {
+    private clear(): void {
         this.player.clear();
     }
 
     public drawStickMan(): void {
-        // Gameクラスからプレイヤーの状態を取得
-        const direction = this.game.getPlayerDirection();
-        const isMoving = this.game.isPlayerMoving();
-        const animationTime = this.game.getPlayerAnimationTime();
+        // PlayerManagerからプレイヤーの状態を取得
+        const direction = this.playerManager.getDirection();
+        const isMoving = this.playerManager.isMovingState();
+        const animationTime = this.playerManager.getAnimationTime();
+        const isGrounded = this.playerManager.isGroundedState();
         
         // より太い線と明るい色で描画
         const bodyColor = 0xFF4444; // 明るい赤色
         this.player.lineStyle(4, bodyColor); // 線を4ピクセルに
-        
+
         // 頭（輪郭と塗りつぶし）
         this.player.beginFill(bodyColor);
         this.player.drawCircle(0, -20, 12);
         this.player.endFill();
-        
+
         // 体
         this.player.moveTo(0, -8);
         this.player.lineTo(0, 12);
-        
-        if (!this.game.isGrounded()) {
+
+        if (!isGrounded) {
             // ジャンプ中の姿勢
             // 腕を上げる
             this.player.moveTo(0, 0);

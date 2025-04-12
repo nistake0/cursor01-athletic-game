@@ -5,27 +5,18 @@ import { RollingRock } from './RollingRock';
 import { Stump } from './Stump';
 import { LargePool } from './LargePool';
 import { LotusLeaf } from './LotusLeaf';
-import { Bee } from './Bee';
 import { PLAYER, SCREEN, OBSTACLES, BACKGROUND } from './utils/constants';
 import { BackgroundRenderer } from './renderers/BackgroundRenderer';
-import { PlayerRenderer } from './renderers/PlayerRenderer';
 import { UIManager } from './managers/UIManager';
 import { ChestnutManager } from './managers/ChestnutManager';
 import { BeeManager } from './managers/BeeManager';
 import { EventEmitter, GameEvent } from './utils/EventEmitter';
-import { InputManager, ActionType } from './managers/InputManager';
+import { PlayerManager } from './managers/PlayerManager';
 
 export class Game {
     private app: PIXI.Application;
-    private playerRenderer: PlayerRenderer;
-    private uiManager: UIManager;
     private background: PIXI.Graphics;
     private obstacles: PIXI.Graphics;
-    private velocityY: number = 0;
-    private _isGrounded: boolean = false;
-    private direction: number = 1; // 1: 右向き, -1: 左向き
-    private animationTime: number = 0;
-    private isMoving: boolean = false;
     private currentScreen: number = 1;
     private isGameOver: boolean = false;
     private rock: Rock;
@@ -38,7 +29,8 @@ export class Game {
     private chestnutManager: ChestnutManager;
     private beeManager: BeeManager;
     private eventEmitter: EventEmitter;
-    private inputManager: InputManager;
+    private playerManager: PlayerManager;
+    private uiManager: UIManager;
 
     constructor() {
         // PIXIアプリケーションを初期化
@@ -54,6 +46,12 @@ export class Game {
         // キャンバスをDOMに追加
         document.body.appendChild(this.app.view as HTMLCanvasElement);
 
+        // イベントエミッターを初期化
+        this.eventEmitter = new EventEmitter();
+
+        // プレイヤーマネージャーを初期化
+        this.playerManager = new PlayerManager(this.app, this, this.eventEmitter);
+
         // 背景を作成
         this.background = new PIXI.Graphics();
         this.app.stage.addChild(this.background);
@@ -66,23 +64,13 @@ export class Game {
         this.obstacles = new PIXI.Graphics();
         this.app.stage.addChild(this.obstacles);
 
-        // プレイヤーレンダラーを初期化
-        this.playerRenderer = new PlayerRenderer(this.app, this);
-        this.playerRenderer.render();
-        const player = this.playerRenderer.getPlayer();
-        player.x = PLAYER.INITIAL_X;
-        player.y = PLAYER.INITIAL_Y;
-
         // UIマネージャーの初期化
         this.uiManager = new UIManager(this.app);
 
-        // レイヤー順に追加（プレイヤーは最後に追加して最前面に表示）
-        this.app.stage.addChild(player);
-
         // 障害物のインスタンスを初期化
-        this.rock = new Rock(this.app, this.obstacles, player);
-        this.pool = new Pool(this.app, this.obstacles, player);
-        this.rollingRock = new RollingRock(this.app, this.obstacles, player);
+        this.rock = new Rock(this.app, this.obstacles, this.playerManager.getPlayer());
+        this.pool = new Pool(this.app, this.obstacles, this.playerManager.getPlayer());
+        this.rollingRock = new RollingRock(this.app, this.obstacles, this.playerManager.getPlayer());
 
         // 画面5の切り株の初期化
         this.stump = new Stump(this.app, this.obstacles, this);
@@ -96,27 +84,17 @@ export class Game {
         // 蜂マネージャーの初期化
         this.beeManager = new BeeManager(this.app, this.obstacles, this);
 
-        // イベントエミッターとInputManagerの初期化
-        this.eventEmitter = new EventEmitter();
-        this.inputManager = new InputManager(this.eventEmitter);
-        
+        // いがぐりマネージャーの初期化
+        this.chestnutManager = new ChestnutManager(this.app, this.obstacles, this);
+
         // イベントリスナーの設定
         this.setupEventListeners();
-
-        this.chestnutManager = new ChestnutManager(this.app, this.obstacles, this);
 
         // ゲームループを開始
         this.app.ticker.add(() => this.gameLoop());
     }
 
     private setupEventListeners(): void {
-        this.eventEmitter.on(GameEvent.JUMP, () => {
-            if (this._isGrounded && !this.isGameOver) {
-                this.velocityY = PLAYER.JUMP_FORCE;
-                this._isGrounded = false;
-            }
-        });
-
         this.eventEmitter.on(GameEvent.RESTART, () => {
             if (this.isGameOver) {
                 this.reset();
@@ -220,7 +198,7 @@ export class Game {
                 return this.rock.checkCollision() || this.rollingRock.checkCollision();
             case 8:
                 // 画面8のいがぐりとの衝突判定
-                if (this.chestnutManager.checkCollision(this.playerRenderer.getPlayer())) {
+                if (this.chestnutManager.checkCollision(this.playerManager.getPlayer())) {
                     return true;
                 }
                 return false;
@@ -233,7 +211,7 @@ export class Game {
             case 11:
                 // 画面11の切り株といがぐりとの衝突判定
                 if (this.stump.checkCollision()) return true;
-                if (this.chestnutManager.checkCollision(this.playerRenderer.getPlayer())) {
+                if (this.chestnutManager.checkCollision(this.playerManager.getPlayer())) {
                     return true;
                 }
                 return false;
@@ -249,7 +227,7 @@ export class Game {
 
     private moveToNextScreen(): void {
         this.currentScreen++;
-        this.playerRenderer.getPlayer().x = PLAYER.INITIAL_X;
+        this.playerManager.getPlayer().x = PLAYER.INITIAL_X;
         this.uiManager.updateScreenNumber(this.currentScreen);
         this.backgroundRenderer.render();
         
@@ -309,9 +287,7 @@ export class Game {
     private reset(): void {
         this.isGameOver = false;
         this.currentScreen = 1;
-        this.playerRenderer.getPlayer().x = PLAYER.INITIAL_X;
-        this.playerRenderer.getPlayer().y = PLAYER.INITIAL_Y;
-        this.velocityY = 0;
+        this.playerManager.reset();
         this.uiManager.updateScreenNumber(this.currentScreen);
         this.backgroundRenderer.render();
         
@@ -327,33 +303,8 @@ export class Game {
     private gameLoop(): void {
         if (this.isGameOver) return;
 
-        // InputManagerの状態を更新
-        this.inputManager.update();
-
-        // 移動状態の更新
-        this.isMoving = this.inputManager.isActionActive(ActionType.MOVE_LEFT) || 
-                        this.inputManager.isActionActive(ActionType.MOVE_RIGHT);
-        
-        // アニメーション時間の更新
-        if (this.isMoving) {
-            this.animationTime += 1;
-        }
-
-        // 左右の移動処理
-        if (this.inputManager.isActionActive(ActionType.MOVE_LEFT)) {
-            this.playerRenderer.getPlayer().x -= PLAYER.MOVE_SPEED;
-            this.direction = -1;
-        }
-        if (this.inputManager.isActionActive(ActionType.MOVE_RIGHT)) {
-            this.playerRenderer.getPlayer().x += PLAYER.MOVE_SPEED;
-            this.direction = 1;
-        }
-
-        // 重力とジャンプの処理
-        if (!this._isGrounded) {
-            this.velocityY += PLAYER.GRAVITY;
-            this.playerRenderer.getPlayer().y += this.velocityY;
-        }
+        // プレイヤーの更新
+        this.playerManager.update();
 
         // 画面4の切り株の更新と衝突判定
         if (this.currentScreen === 4) {
@@ -410,82 +361,53 @@ export class Game {
             this.chestnutManager.update(currentTime);
         }
 
-        // 画面端での処理
-        if (this.playerRenderer.getPlayer().x <= 30) {
-            this.playerRenderer.getPlayer().x = 30;
-        } else if (this.playerRenderer.getPlayer().x >= this.app.screen.width - 30) {
-            this.moveToNextScreen();
-        }
-
         // 障害物との衝突判定
         if (this.checkCollision()) {
             this.gameOver();
         }
 
-        // 地面との衝突判定
-        if (this.playerRenderer.getPlayer().y >= PLAYER.GROUND_Y) {
-            this.playerRenderer.getPlayer().y = PLAYER.GROUND_Y;
-            this.velocityY = 0;
-            this._isGrounded = true;
-        } else if (this.velocityY > 0) { // 落下中の場合のみ_isGroundedをfalseに設定
-            this._isGrounded = false;
-        }
-
         // 障害物の再描画（一度だけ）
         this.drawObstacles();
-
-        // スティックマンの再描画（常に最後に行う）
-        this.playerRenderer.render();
-        // プレイヤーを最前面に表示
-        const player = this.playerRenderer.getPlayer();
-        if (player.parent) {
-            player.parent.removeChild(player);
-        }
-        this.app.stage.addChild(player);
     }
 
     public getPlayer(): PIXI.Graphics {
-        return this.playerRenderer.getPlayer();
+        return this.playerManager.getPlayer();
     }
 
-    // プレイヤーの速度を取得
     public getVelocityY(): number {
-        return this.velocityY;
+        return this.playerManager.getVelocityY();
     }
 
-    // プレイヤーの速度を設定
     public setVelocityY(value: number): void {
-        this.velocityY = value;
+        this.playerManager.setVelocityY(value);
     }
 
-    // プレイヤーの接地状態を設定
     public setGrounded(value: boolean): void {
-        this._isGrounded = value;
-    }
-
-    public setPlayerPosition(x: number, y: number): void {
-        const player = this.playerRenderer.getPlayer();
-        player.x = x;
-        player.y = y;
+        this.playerManager.setGrounded(value);
     }
 
     public isGrounded(): boolean {
-        return this._isGrounded;
+        return this.playerManager.isGroundedState();
     }
 
-    // プレイヤーの向きを取得する関数
     public getPlayerDirection(): number {
-        return this.direction;
+        return this.playerManager.getDirection();
     }
 
-    // プレイヤーが移動中かどうかを取得する関数
     public isPlayerMoving(): boolean {
-        return this.isMoving;
+        return this.playerManager.isMovingState();
     }
 
-    // プレイヤーのアニメーション時間を取得する関数
     public getPlayerAnimationTime(): number {
-        return this.animationTime;
+        return this.playerManager.getAnimationTime();
+    }
+
+    public getGameOverState(): boolean {
+        return this.isGameOver;
+    }
+
+    public setPlayerPosition(x: number, y: number): void {
+        this.playerManager.setPlayerPosition(x, y);
     }
 }
 
