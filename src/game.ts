@@ -19,9 +19,6 @@ export class Game {
     private obstacles: PIXI.Graphics;
     private currentScreen: number = 1;
     private isGameOver: boolean = false;
-    private isNextScreen: boolean = false;
-    private isGameStarted: boolean = false;
-    private isGamePaused: boolean = false;
     private rock: Rock;
     private pool: Pool;
     private rollingRock: RollingRock;
