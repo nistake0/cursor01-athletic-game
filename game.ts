@@ -15,7 +15,6 @@ export class Game {
     private obstacles: PIXI.Graphics;
     private screenText: PIXI.Text;
     private gameOverText: PIXI.Text;
-    private speed: number = 4.5;
     private keys: { [key: string]: boolean } = {};
     private velocityY: number = 0;
     private gravity: number = 0.5;
@@ -26,11 +25,6 @@ export class Game {
     private isMoving: boolean = false;
     private currentScreen: number = 1;
     private isGameOver: boolean = false;
-    private lotusX: number = 0;
-    private lotusDirection: number = 1; // 1: 右向き, -1: 左向き
-    private lotusSpeed: number = 2;
-    private isOnLotus: boolean = false;
-    private poolBounds: any;
     // 障害物のインスタンスを追加
     private rock: Rock;
     private pool: Pool;
@@ -455,8 +449,6 @@ export class Game {
         this.player.x = 50;
         this.player.y = this.app.screen.height - 120;
         this.velocityY = 0;
-        this.lotusX = 0; // 蓮の葉の位置をリセット
-        this.isOnLotus = false;
         this.screenText.text = `Screen: ${this.currentScreen}`;
         this.drawBackground();
         
@@ -577,11 +569,11 @@ export class Game {
 
         // 左右の移動処理
         if (this.keys['ArrowLeft']) {
-            this.player.x -= this.speed;
+            this.player.x -= this.MOVE_SPEED;
             this.direction = -1;
         }
         if (this.keys['ArrowRight']) {
-            this.player.x += this.speed;
+            this.player.x += this.MOVE_SPEED;
             this.direction = 1;
         }
 
