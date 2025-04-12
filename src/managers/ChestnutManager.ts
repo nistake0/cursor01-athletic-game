@@ -41,6 +41,9 @@ export class ChestnutManager {
         this.chestnuts.forEach(chestnut => {
             chestnut.update();
         });
+
+        // 非アクティブになったいがぐりを配列から削除
+        this.chestnuts = this.chestnuts.filter(chestnut => chestnut.isActiveState());
     }
 
     // 描画処理

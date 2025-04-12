@@ -34,8 +34,6 @@ export class Game {
     private stump: Stump;
     private largePool: LargePool;
     private lotusLeaf: LotusLeaf;
-    private chestnuts: Chestnut[] = [];
-    private lastChestnutSpawnTime: number = 0;
     private bee: Bee;
     private lastBeeSpawnTime: number = 0;
     private backgroundRenderer: BackgroundRenderer;
@@ -94,9 +92,6 @@ export class Game {
         // 蓮の葉の初期化
         this.lotusLeaf = new LotusLeaf(this.app, this.obstacles, this);
 
-        // いがぐりの初期化
-        this.chestnuts = Array(OBSTACLES.CHESTNUT.MAX_COUNT).fill(null).map(() => new Chestnut(this.app, this.obstacles, this));
-
         // 蜂の初期化
         this.bee = new Bee(this.app, this.obstacles, this);
 
@@ -112,7 +107,7 @@ export class Game {
     private drawObstacles(): void {
         // 画面遷移時にいがぐりをリセット
         if (this.currentScreen !== 8 && this.currentScreen !== 11) {
-            this.chestnuts.forEach(chestnut => chestnut.reset());
+            this.chestnutManager.reset();
         }
 
         this.obstacles.clear();
@@ -247,6 +242,9 @@ export class Game {
         this.largePool.reset();
         this.lotusLeaf.reset();
         
+        // いがぐりのリセット（画面遷移時は常にリセット）
+        this.chestnutManager.reset();
+        
         // 画面固有の初期化処理
         switch (screenNumber) {
             case 6:
@@ -258,9 +256,7 @@ export class Game {
                 this.rollingRock.reset();
                 break;
             case 8:
-                // 画面8に移行したら最後のいがぐり生成時間をリセット
-                this.lastChestnutSpawnTime = Date.now();
-                this.chestnutManager.reset();
+                // 画面8に移行
                 break;
             case 9:
                 // 画面9に移行したら転がる岩をリセット
@@ -272,18 +268,11 @@ export class Game {
                 this.lastBeeSpawnTime = Date.now();
                 break;
             case 11:
-                // 画面11に移行したら最後のいがぐり生成時間をリセット
-                this.lastChestnutSpawnTime = Date.now();
-                this.chestnutManager.reset();
+                // 画面11に移行
                 break;
             default:
                 // 画面1-5の場合は特別な処理なし
                 break;
-        }
-
-        // 画面8と11以外に移行したら必ずいがぐりをリセット
-        if (screenNumber !== 8 && screenNumber !== 11) {
-            this.chestnuts.forEach(chestnut => chestnut.reset());
         }
 
         // 画面10以外に移行した場合も蜂をリセット

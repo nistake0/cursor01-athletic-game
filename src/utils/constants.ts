@@ -24,6 +24,8 @@ export const OBSTACLES = {
   CHESTNUT: {
     SPAWN_INTERVAL: 1000, // 1秒
     MAX_COUNT: 3,
+    SPAWN_X: 800,
+    SPAWN_Y: 300
   },
   BEE: {
     SPAWN_INTERVAL: 2000, // 2秒
