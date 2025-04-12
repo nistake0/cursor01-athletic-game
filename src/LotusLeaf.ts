@@ -2,7 +2,6 @@ import * as PIXI from 'pixi.js';
 import { Game } from './game';
 
 export class LotusLeaf {
-    private app: PIXI.Application;
     private obstacles: PIXI.Graphics;
     private game: Game;
     private lotusX: number = 0;
@@ -12,7 +11,6 @@ export class LotusLeaf {
     private poolBounds: { left: number; right: number; top: number; width: number };
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game, poolBounds: { left: number; right: number; top: number; width: number }) {
-        this.app = app;
         this.obstacles = obstacles;
         this.game = game;
         this.poolBounds = poolBounds;
