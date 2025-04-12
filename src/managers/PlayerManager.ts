@@ -148,4 +148,8 @@ export class PlayerManager {
         player.x = x;
         player.y = y;
     }
+
+    public getGame(): Game {
+        return this.game;
+    }
 } 

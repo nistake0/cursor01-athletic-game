@@ -1,13 +1,13 @@
 import * as PIXI from 'pixi.js';
 import { PlayerManager } from '../managers/PlayerManager';
+import { Renderer } from './Renderer';
 
-export class PlayerRenderer {
-    private app: PIXI.Application;
+export class PlayerRenderer extends Renderer {
     private playerManager: PlayerManager;
     private player: PIXI.Graphics;
 
     constructor(app: PIXI.Application, playerManager: PlayerManager) {
-        this.app = app;
+        super(app, playerManager.getGame());
         this.playerManager = playerManager;
         this.player = new PIXI.Graphics();
         this.app.stage.addChild(this.player);
@@ -18,7 +18,7 @@ export class PlayerRenderer {
         this.drawStickMan();
     }
 
-    private clear(): void {
+    protected clear(): void {
         this.player.clear();
     }
 
