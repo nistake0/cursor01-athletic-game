@@ -10,14 +10,14 @@ import { Bee } from './Bee';
 import { PLAYER, SCREEN, OBSTACLES, TEXT, BACKGROUND } from './utils/constants';
 import { BackgroundRenderer } from './renderers/BackgroundRenderer';
 import { PlayerRenderer } from './renderers/PlayerRenderer';
+import { UIManager } from './managers/UIManager';
 
 export class Game {
     private app: PIXI.Application;
     private playerRenderer: PlayerRenderer;
+    private uiManager: UIManager;
     private background: PIXI.Graphics;
     private obstacles: PIXI.Graphics;
-    private screenText: PIXI.Text;
-    private gameOverText: PIXI.Text;
     private keys: { [key: string]: boolean } = {};
     private velocityY: number = 0;
     private gravity: number = 0.5;
@@ -37,16 +37,12 @@ export class Game {
     private lotusLeaf: LotusLeaf;
     private chestnuts: Chestnut[] = [];
     private lastChestnutSpawnTime: number = 0;
-    private readonly CHESTNUT_SPAWN_INTERVAL: number = 1000; // 1秒
-    private readonly MAX_CHESTNUTS: number = 3; // 最大3つまで
-    private readonly GRAVITY: number = 0.5;
-    private readonly JUMP_FORCE: number = -12;
-    private readonly MOVE_SPEED: number = 3.5; // 4.05から3.5に変更
-    private readonly SCREEN_WIDTH: number = 800;
     private bee: Bee;
     private lastBeeSpawnTime: number = 0;
     private readonly BEE_SPAWN_INTERVAL: number = 2000; // 2秒ごとに蜂を生成
     private backgroundRenderer: BackgroundRenderer;
+    private chestnutSpawnTimer: number = 0;
+    private beeSpawnTimer: number = 0;
 
     constructor() {
         // PIXIアプリケーションを初期化
@@ -81,35 +77,10 @@ export class Game {
         player.x = PLAYER.INITIAL_X;
         player.y = PLAYER.INITIAL_Y;
 
-        // 画面番号テキストを作成
-        this.screenText = new PIXI.Text(`Screen: ${this.currentScreen}`, {
-            fontFamily: TEXT.SCREEN.FONT_FAMILY,
-            fontSize: TEXT.SCREEN.FONT_SIZE,
-            fill: TEXT.SCREEN.FILL,
-            stroke: TEXT.SCREEN.STROKE,
-            strokeThickness: TEXT.SCREEN.STROKE_THICKNESS,
-            align: 'center'
-        });
-        this.screenText.x = 20;
-        this.screenText.y = 20;
-
-        // ゲームオーバーテキストを作成（初期状態は非表示）
-        this.gameOverText = new PIXI.Text('GAME OVER\nPress SPACE to restart', {
-            fontFamily: TEXT.GAME_OVER.FONT_FAMILY,
-            fontSize: TEXT.GAME_OVER.FONT_SIZE,
-            fill: TEXT.GAME_OVER.FILL,
-            stroke: TEXT.GAME_OVER.STROKE,
-            strokeThickness: TEXT.GAME_OVER.STROKE_THICKNESS,
-            align: 'center'
-        });
-        this.gameOverText.anchor.set(0.5);
-        this.gameOverText.x = this.app.screen.width / 2;
-        this.gameOverText.y = this.app.screen.height / 2;
-        this.gameOverText.visible = false;
+        // UIマネージャーの初期化
+        this.uiManager = new UIManager(this.app);
 
         // レイヤー順に追加（プレイヤーは最後に追加して最前面に表示）
-        this.app.stage.addChild(this.screenText);
-        this.app.stage.addChild(this.gameOverText);
         this.app.stage.addChild(player);
 
         // 障害物のインスタンスを初期化
@@ -256,17 +227,16 @@ export class Game {
 
     private gameOver(): void {
         this.isGameOver = true;
-        this.gameOverText.visible = true;
+        this.uiManager.showGameOver();
     }
 
-    private restart(): void {
+    private reset(): void {
         this.isGameOver = false;
-        this.gameOverText.visible = false;
         this.currentScreen = 1;
         this.playerRenderer.getPlayer().x = PLAYER.INITIAL_X;
         this.playerRenderer.getPlayer().y = PLAYER.INITIAL_Y;
         this.velocityY = 0;
-        this.screenText.text = `Screen: ${this.currentScreen}`;
+        this.uiManager.updateScreenNumber(this.currentScreen);
         this.backgroundRenderer.render();
         
         // 障害物をクリアしてから再描画
@@ -286,12 +256,15 @@ export class Game {
         // 蜂をリセット
         this.bee.reset();
         this.lastBeeSpawnTime = 0;
+
+        // UIマネージャーのゲームオーバー表示を非表示にする
+        this.uiManager.hideGameOver();
     }
 
     private moveToNextScreen(): void {
         this.currentScreen++;
         this.playerRenderer.getPlayer().x = PLAYER.INITIAL_X;
-        this.screenText.text = `Screen: ${this.currentScreen}`;
+        this.uiManager.updateScreenNumber(this.currentScreen);
         this.backgroundRenderer.render();
         
         // 障害物をクリアしてから再描画
@@ -359,7 +332,7 @@ export class Game {
 
             // ゲームオーバー時にスペースキーでリスタート
             if (e.key === ' ' && this.isGameOver) {
-                this.restart();
+                this.reset();
             }
 
             // ESCキーで次の画面へ
