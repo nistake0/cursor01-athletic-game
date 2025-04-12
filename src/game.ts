@@ -363,8 +363,6 @@ export class Game {
         if (this.currentScreen === 4) {
             this.stump.update();
             this.stump.checkCollision();
-            // 障害物の再描画
-            this.drawObstacles();
         }
 
         // 画面2の岩の更新
@@ -380,23 +378,17 @@ export class Game {
         // 画面5の転がる岩の更新
         if (this.currentScreen === 5) {
             this.rollingRock.update();
-            // 障害物の再描画（画面5の場合も毎フレーム更新）
-            this.drawObstacles();
         }
 
         // 画面6の蓮の葉の更新
         if (this.currentScreen === 6) {
             this.lotusLeaf.update(this.largePool.getPoolBounds());
-            // 障害物の再描画（画面6の場合も毎フレーム更新）
-            this.drawObstacles();
         }
 
         // 画面7の岩と転がる岩の更新
         if (this.currentScreen === 7) {
             this.rock.update();
             this.rollingRock.update();
-            // 障害物の再描画（画面7の場合も毎フレーム更新）
-            this.drawObstacles();
         }
 
         // 画面8のいがぐりの更新
@@ -422,8 +414,6 @@ export class Game {
         // 画面9の転がる岩の更新
         if (this.currentScreen === 9) {
             this.rollingRock.update();
-            // 障害物の再描画（画面9の場合も毎フレーム更新）
-            this.drawObstacles();
         }
 
         // 画面10の蜂の更新
@@ -440,8 +430,6 @@ export class Game {
 
             // 蜂の更新
             this.bee.update();
-            // 障害物の再描画
-            this.drawObstacles();
         }
 
         // 画面11の切り株といがぐりの更新
@@ -462,9 +450,6 @@ export class Game {
             for (const chestnut of this.chestnuts) {
                 chestnut.update();
             }
-
-            // 障害物の再描画
-            this.drawObstacles();
         }
 
         // 画面端での処理
@@ -487,6 +472,9 @@ export class Game {
         } else if (this.velocityY > 0) { // 落下中の場合のみ_isGroundedをfalseに設定
             this._isGrounded = false;
         }
+
+        // 障害物の再描画（一度だけ）
+        this.drawObstacles();
 
         // スティックマンの再描画（常に最後に行う）
         this.playerRenderer.render();
