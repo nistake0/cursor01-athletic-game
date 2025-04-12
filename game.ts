@@ -20,7 +20,7 @@ export class Game {
     private velocityY: number = 0;
     private gravity: number = 0.5;
     private jumpForce: number = -12;
-    private isGrounded: boolean = false;
+    private _isGrounded: boolean = false;
     private direction: number = 1; // 1: 右向き, -1: 左向き
     private animationTime: number = 0;
     private isMoving: boolean = false;
@@ -285,7 +285,7 @@ export class Game {
         this.player.moveTo(0, -8);
         this.player.lineTo(0, 12);
         
-        if (!this.isGrounded) {
+        if (!this._isGrounded) {
             // ジャンプ中の姿勢
             // 腕を上げる
             this.player.moveTo(0, 0);
@@ -543,9 +543,9 @@ export class Game {
             this.keys[e.key] = true;
             
             // スペースキーまたは上キーでジャンプ
-            if ((e.key === ' ' || e.key === 'ArrowUp') && this.isGrounded) {
+            if ((e.key === ' ' || e.key === 'ArrowUp') && this._isGrounded) {
                 this.velocityY = -12;
-                this.isGrounded = false;
+                this._isGrounded = false;
             }
 
             // ゲームオーバー時にスペースキーでリスタート
@@ -586,8 +586,18 @@ export class Game {
         }
 
         // 重力とジャンプの処理
-        this.velocityY += this.gravity;
-        this.player.y += this.velocityY;
+        if (!this._isGrounded) {
+            this.velocityY += this.gravity;
+            this.player.y += this.velocityY;
+        }
+
+        // 画面4の切り株の更新と衝突判定
+        if (this.currentScreen === 4) {
+            this.stump.update();
+            this.stump.checkCollision();
+            // 障害物の再描画
+            this.drawObstacles();
+        }
 
         // 画面2の岩の更新
         if (this.currentScreen === 2) {
@@ -597,13 +607,6 @@ export class Game {
         // 画面3の池の更新
         if (this.currentScreen === 3) {
             this.pool.update();
-        }
-
-        // 画面4の切り株の更新
-        if (this.currentScreen === 4) {
-            this.stump.update();
-            // 障害物の再描画（画面4の場合も毎フレーム更新）
-            this.drawObstacles();
         }
 
         // 画面5の転がる岩の更新
@@ -713,9 +716,9 @@ export class Game {
         if (this.player.y >= groundY) {
             this.player.y = groundY;
             this.velocityY = 0;
-            this.isGrounded = true;
-        } else {
-            this.isGrounded = false;
+            this._isGrounded = true;
+        } else if (this.velocityY > 0) { // 落下中の場合のみ_isGroundedをfalseに設定
+            this._isGrounded = false;
         }
 
         // スティックマンの再描画（常に最後に行う）
@@ -743,7 +746,16 @@ export class Game {
 
     // プレイヤーの接地状態を設定
     public setGrounded(value: boolean): void {
-        this.isGrounded = value;
+        this._isGrounded = value;
+    }
+
+    public setPlayerPosition(x: number, y: number): void {
+        this.player.x = x;
+        this.player.y = y;
+    }
+
+    public isGrounded(): boolean {
+        return this._isGrounded;
     }
 }
 
