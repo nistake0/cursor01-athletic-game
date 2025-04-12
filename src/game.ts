@@ -235,8 +235,8 @@ export class Game {
         // 画面固有の初期化処理
         switch (screenNumber) {
             case 6:
-                // 画面6に移行したら切り株を完全にクリア
-                this.stump = new Stump(this.app, this.obstacles, this);
+                // 画面6に移行したら切り株をリセット
+                this.stump.reset();
                 break;
             case 7:
         // 画面7に移行したら転がる岩をリセット

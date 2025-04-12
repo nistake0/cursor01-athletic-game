@@ -183,6 +183,10 @@ export class Stump {
             this.obstacles.removeChild(stump);
         });
         this.stumps = [];
+        
+        // 内部状態を初期化
+        this.wasOnStump = false;
+        this.initializeStumpData();
     }
 
     public getStumpData(): { x: number; height: number }[] {
