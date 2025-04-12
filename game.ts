@@ -400,10 +400,17 @@ export class Game {
                 // 画面4の切り株との衝突判定
                 return this.stump.checkCollision();
             case 5:
-                // 画面5の転がる岩の衝突判定
+                // 画面5の転がる岩との衝突判定
                 return this.rollingRock.checkCollision();
             case 6:
-                // 画面6の大きな池との衝突判定
+                // 画面6の大きな池と蓮の葉との衝突判定
+                // 蓮の葉の衝突判定を先に行う
+                this.lotusLeaf.checkCollision(this.largePool.getPoolBounds());
+                // 蓮の葉に乗っている場合は池の判定をスキップ
+                if (this.lotusLeaf.isPlayerOnLotus()) {
+                    return false;
+                }
+                // 蓮の葉に乗っていない場合のみ池の判定を行う
                 return this.largePool.checkCollision();
             case 7:
                 // 画面7の岩と転がる岩との衝突判定
@@ -592,25 +599,24 @@ export class Game {
             this.pool.update();
         }
 
-        // 画面4の転がる石の更新
-        if (this.currentScreen === 5) {
-            this.rollingRock.update();
-            // 障害物の再描画（画面4の場合のみ毎フレーム更新）
+        // 画面4の切り株の更新
+        if (this.currentScreen === 4) {
+            this.stump.update();
+            // 障害物の再描画（画面4の場合も毎フレーム更新）
             this.drawObstacles();
         }
 
-        // 画面5の切り株の更新
-        if (this.currentScreen === 4) {
-            this.stump.update();
+        // 画面5の転がる岩の更新
+        if (this.currentScreen === 5) {
+            this.rollingRock.update();
             // 障害物の再描画（画面5の場合も毎フレーム更新）
             this.drawObstacles();
         }
 
         // 画面6の蓮の葉の更新
         if (this.currentScreen === 6) {
-            // 蓮の葉の更新
             this.lotusLeaf.update(this.largePool.getPoolBounds());
-            // 蓮の葉の位置が更新されたら障害物を再描画
+            // 障害物の再描画（画面6の場合も毎フレーム更新）
             this.drawObstacles();
         }
 
