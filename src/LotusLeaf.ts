@@ -47,7 +47,7 @@ export class LotusLeaf {
         }
     }
 
-    public update(): void {
+    public update(currentTime: number): void {
         const lotusWidth = this.poolBounds.width / 5;
         
         // 蓮の葉の移動

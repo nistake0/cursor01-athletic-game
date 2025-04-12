@@ -39,7 +39,7 @@ export class ChestnutManager {
 
         // 更新処理
         this.chestnuts.forEach(chestnut => {
-            chestnut.update();
+            chestnut.update(currentTime);
         });
 
         // 非アクティブになったいがぐりを配列から削除

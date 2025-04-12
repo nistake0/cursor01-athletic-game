@@ -93,7 +93,7 @@ export class RollingRock {
     }
 
     // 転がる岩の更新処理
-    public update(): void {
+    public update(currentTime: number): void {
         this.x -= this.speed;
         this.rotation -= 0.1;
         
