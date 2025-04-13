@@ -10,8 +10,8 @@ import { Chestnut } from "./obstacles/Chestnut";
 import { PLAYER, SCREEN, OBSTACLES, BACKGROUND } from './utils/constants';
 import { BackgroundRenderer } from './renderers/BackgroundRenderer';
 import { UIManager } from './managers/UIManager';
-import { ChestnutManager } from './obstacles/ChestnutManager';
-import { BeeManager } from './obstacles/BeeManager';
+import { ChestnutSpawner } from './obstacles/ChestnutSpawner';
+import { BeeSpawner } from './obstacles/BeeSpawner';
 import { EventEmitter, GameEvent } from './utils/EventEmitter';
 import { PlayerManager } from './managers/PlayerManager';
 
@@ -28,8 +28,8 @@ export class Game {
     private largePool: LargePool;
     private lotusLeaf: LotusLeaf;
     private backgroundRenderer: BackgroundRenderer;
-    private chestnutManager: ChestnutManager;
-    private beeManager: BeeManager;
+    private chestnutSpawner: ChestnutSpawner;
+    private beeSpawner: BeeSpawner;
     private eventEmitter: EventEmitter;
     private playerManager: PlayerManager;
     private uiManager: UIManager;
@@ -84,10 +84,10 @@ export class Game {
         this.lotusLeaf = new LotusLeaf(this.obstacles, this, this.largePool.getPoolBounds());
 
         // 蜂マネージャーの初期化
-        this.beeManager = new BeeManager(this.app, this.obstacles, this);
+        this.beeSpawner = new BeeSpawner(this.app, this.obstacles, this);
 
         // いがぐりマネージャーの初期化
-        this.chestnutManager = new ChestnutManager(this.app, this.obstacles, this);
+        this.chestnutSpawner = new ChestnutSpawner(this.app, this.obstacles, this);
 
         // イベントリスナーの設定
         this.setupEventListeners();
@@ -113,7 +113,7 @@ export class Game {
     private drawObstacles(): void {
         // 画面遷移時にいがぐりをリセット
         if (this.currentScreen !== 8 && this.currentScreen !== 11) {
-            this.chestnutManager.reset();
+            this.chestnutSpawner.reset();
         }
 
         this.obstacles.clear();
@@ -150,7 +150,7 @@ export class Game {
                 break;
             case 8:
                 // 画面8では背景のみを描画（いがぐりは別途描画）
-                this.chestnutManager.draw();
+                this.chestnutSpawner.draw();
                 break;
             case 9:
                 // 画面9では小さい池と転がる岩を描画
@@ -159,12 +159,12 @@ export class Game {
                 break;
             case 10:
                 // 画面10では蜂を描画
-                this.beeManager.draw();
+                this.beeSpawner.draw();
                 break;
             case 11:
                 // 画面11では切り株といがぐりを描画
                 this.stump.draw();
-                this.chestnutManager.draw();
+                this.chestnutSpawner.draw();
                 break;
             default:
                 break;
@@ -191,15 +191,15 @@ export class Game {
                 return this.rock.checkCollision(player) || 
                        this.rollingRock.checkCollision(player);
             case 8:
-                return this.chestnutManager.checkCollision(player);
+                return this.chestnutSpawner.checkCollision(player);
             case 9:
                 return this.pool.checkCollision(player) || 
                        this.rollingRock.checkCollision(player);
             case 10:
-                return this.beeManager.checkCollision(player);
+                return this.beeSpawner.checkCollision(player);
             case 11:
                 return this.stump.checkCollision(player) || 
-                       this.chestnutManager.checkCollision(player);
+                       this.chestnutSpawner.checkCollision(player);
             default:
                 return false;
         }
@@ -232,8 +232,8 @@ export class Game {
         this.lotusLeaf.reset();
         
         // いがぐりと蜂のリセット（画面遷移時は常にリセット）
-        this.chestnutManager.reset();
-        this.beeManager.reset();
+        this.chestnutSpawner.reset();
+        this.beeSpawner.reset();
         
         // 将来的に画面固有の初期化処理が必要になった場合は、
         // ここにswitch文を追加する
@@ -252,7 +252,7 @@ export class Game {
         // UIマネージャーのゲームオーバー表示を非表示にする
         this.uiManager.hideGameOver();
 
-        this.chestnutManager.reset();
+        this.chestnutSpawner.reset();
     }
 
     private gameLoop(): void {
@@ -298,7 +298,7 @@ export class Game {
 
         // 画面8のいがぐりの更新
         if (this.currentScreen === 8) {
-            this.chestnutManager.update(currentTime);
+            this.chestnutSpawner.update(currentTime);
         }
 
         // 画面9の転がる岩の更新
@@ -308,12 +308,12 @@ export class Game {
 
         // 画面10の蜂の更新
         if (this.currentScreen === 10) {
-            this.beeManager.update(currentTime);
+            this.beeSpawner.update(currentTime);
         }
 
         // 画面11の切り株といがぐりの更新
         if (this.currentScreen === 11) {
-            this.chestnutManager.update(currentTime);
+            this.chestnutSpawner.update(currentTime);
         }
 
         // 障害物との衝突判定

@@ -3,7 +3,7 @@ import { Game } from '../game';
 import { OBSTACLES } from '../utils/constants';
 import { Bee } from './Bee';
 
-export class BeeManager {
+export class BeeSpawner {
     private app: PIXI.Application;
     private obstacles: PIXI.Graphics;
     private game: Game;

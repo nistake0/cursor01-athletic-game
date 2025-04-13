@@ -3,7 +3,7 @@ import { OBSTACLES } from '../utils/constants';
 import * as PIXI from 'pixi.js';
 import { Game } from '../game';
 
-export class ChestnutManager {
+export class ChestnutSpawner {
     private chestnuts: Chestnut[] = [];
     private readonly maxCount: number;
     private readonly spawnInterval: number;
