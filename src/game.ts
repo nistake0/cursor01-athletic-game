@@ -41,7 +41,8 @@ export class Game {
         9: ['Pool', 'RollingRock'],
         10: ['BeeSpawner'],
         11: ['Stump', 'ChestnutSpawner'],
-        12: ['Pool', 'FishSpawner']
+        12: ['Pool', 'FishSpawner'],
+        13: ['SpringSpawner']
     };
 
     constructor() {

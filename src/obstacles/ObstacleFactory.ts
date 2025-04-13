@@ -11,6 +11,8 @@ import { BeeSpawner } from './BeeSpawner';
 import { ChestnutSpawner } from './ChestnutSpawner';
 import { Signboard } from './Signboard';
 import { FishSpawner } from './FishSpawner';
+import { Spring } from './Spring';
+import { SpringSpawner } from './SpringSpawner';
 
 export class ObstacleFactory {
     private app: PIXI.Application;
@@ -45,6 +47,10 @@ export class ObstacleFactory {
                 return new Signboard(this.app, this.obstacles, this.game);
             case 'FishSpawner':
                 return new FishSpawner(this.app, this.obstacles, this.game);
+            case 'Spring':
+                return new Spring(this.app, this.obstacles, this.game, this.game.getPlayerManager());
+            case 'SpringSpawner':
+                return new SpringSpawner(this.app, this.obstacles, this.game, this.game.getPlayerManager());
             default:
                 throw new Error(`Unknown obstacle type: ${type}`);
         }
