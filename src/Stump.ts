@@ -1,18 +1,14 @@
 import * as PIXI from 'pixi.js';
 import { Game } from './game';
+import { Obstacle } from './Obstacle';
 
-export class Stump {
-    private app: PIXI.Application;
-    private obstacles: PIXI.Graphics;
-    private game: Game;
+export class Stump extends Obstacle {
     private stumps: PIXI.Graphics[] = [];
     private stumpData: { x: number; height: number }[] = [];
     private wasOnStump: boolean = false;
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
-        this.app = app;
-        this.obstacles = obstacles;
-        this.game = game;
+        super(app, obstacles, game);
         this.initializeStumpData();
     }
 
@@ -165,14 +161,6 @@ export class Stump {
         return false;
     }
 
-    private getStumpBoundsForStump(stump: { x: number; height: number }): { left: number; right: number; bottom: number; top: number } {
-        const stumpLeft = stump.x - 40/2;
-        const stumpRight = stump.x + 40/2;
-        const stumpTop = this.app.screen.height - 80 - stump.height;
-        const stumpBottom = this.app.screen.height - 80;
-        return { left: stumpLeft, right: stumpRight, bottom: stumpBottom, top: stumpTop };
-    }
-
     public update(currentTime: number): void {
         // 切り株は動かないので、現時点では何もしない
     }
@@ -191,6 +179,14 @@ export class Stump {
 
     public getStumpData(): { x: number; height: number }[] {
         return this.stumpData;
+    }
+
+    private getStumpBoundsForStump(stump: { x: number; height: number }): { left: number; right: number; bottom: number; top: number } {
+        const stumpLeft = stump.x - 40/2;
+        const stumpRight = stump.x + 40/2;
+        const stumpTop = this.app.screen.height - 80 - stump.height;
+        const stumpBottom = this.app.screen.height - 80;
+        return { left: stumpLeft, right: stumpRight, bottom: stumpBottom, top: stumpTop };
     }
 
     private getPlayerBoundsFromPlayer(player: PIXI.Graphics): { left: number; right: number; bottom: number; top: number } {
