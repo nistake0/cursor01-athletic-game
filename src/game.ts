@@ -68,7 +68,7 @@ export class Game {
         this.uiManager = new UIManager(this.app);
 
         // 障害物のインスタンスを初期化
-        this.rock = new Rock(this.app, this.obstacles, this.playerManager.getPlayer());
+        this.rock = new Rock(this.app, this.obstacles, this);
         this.pool = new Pool(this.app, this.obstacles, this.playerManager.getPlayer());
         this.rollingRock = new RollingRock(this.app, this.obstacles, this.playerManager.getPlayer());
 

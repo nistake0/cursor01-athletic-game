@@ -1,18 +1,17 @@
 import * as PIXI from 'pixi.js';
+import { Game } from './game';
+import { Obstacle } from './Obstacle';
 
-export class Rock {
-    private app: PIXI.Application;
-    private obstacles: PIXI.Graphics;
+export class Rock extends Obstacle {
     private player: PIXI.Graphics;
 
-    constructor(app: PIXI.Application, obstacles: PIXI.Graphics, player: PIXI.Graphics) {
-        this.app = app;
-        this.obstacles = obstacles;
-        this.player = player;
+    constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
+        super(app, obstacles, game);
+        this.player = game.getPlayer();
     }
 
     // 岩の描画処理
-    public draw(): PIXI.Graphics {
+    public draw(): void {
         this.obstacles.beginFill(0x808080);
         this.obstacles.lineStyle(2, 0x000000);
         
@@ -27,8 +26,6 @@ export class Rock {
         this.obstacles.lineTo(rockX + 10, rockY - rockHeight);
         this.obstacles.lineTo(rockX, rockY);
         this.obstacles.endFill();
-        
-        return this.obstacles;
     }
 
     // 岩との衝突判定
@@ -78,5 +75,11 @@ export class Rock {
         this.obstacles.lineTo(rockX + 10, rockY - rockHeight);
         this.obstacles.lineTo(rockX, rockY);
         this.obstacles.endFill();
+    }
+
+    // 岩のリセット処理
+    public reset(): void {
+        // 岩を再描画
+        this.draw();
     }
 } 
