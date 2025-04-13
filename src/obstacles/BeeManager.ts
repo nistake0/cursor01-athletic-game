@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { Game } from '../game';
 import { OBSTACLES } from '../utils/constants';
-import { Bee } from '../obstacles/Bee';
+import { Bee } from './Bee';
 
 export class BeeManager {
     private app: PIXI.Application;

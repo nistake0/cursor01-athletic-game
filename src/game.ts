@@ -10,8 +10,8 @@ import { Chestnut } from "./obstacles/Chestnut";
 import { PLAYER, SCREEN, OBSTACLES, BACKGROUND } from './utils/constants';
 import { BackgroundRenderer } from './renderers/BackgroundRenderer';
 import { UIManager } from './managers/UIManager';
-import { ChestnutManager } from './managers/ChestnutManager';
-import { BeeManager } from './managers/BeeManager';
+import { ChestnutManager } from './obstacles/ChestnutManager';
+import { BeeManager } from './obstacles/BeeManager';
 import { EventEmitter, GameEvent } from './utils/EventEmitter';
 import { PlayerManager } from './managers/PlayerManager';
 
