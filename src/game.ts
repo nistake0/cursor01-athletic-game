@@ -16,6 +16,7 @@ import { Bee } from "./obstacles/Bee";
 import { Chestnut } from "./obstacles/Chestnut";
 import { ChestnutSpawner } from './obstacles/ChestnutSpawner';
 import { BeeSpawner } from './obstacles/BeeSpawner';
+import { WipeEffect } from './effects/WipeEffect';
 
 export class Game {
     private app: PIXI.Application;
@@ -28,6 +29,8 @@ export class Game {
     private eventEmitter: EventEmitter;
     private playerManager: PlayerManager;
     private uiManager: UIManager;
+    private wipeEffect: WipeEffect;
+    private isTransitioning: boolean = false;
     
     // 新しい障害物管理用の変数
     public obstacleList: Obstacle[] = [];
@@ -89,6 +92,9 @@ export class Game {
         // 障害物ファクトリを初期化
         this.obstacleFactory = new ObstacleFactory(this.app, this.obstacles, this);
         
+        // ワイプ効果を初期化
+        this.wipeEffect = new WipeEffect(this.app, () => this.completeTransition());
+        
         // 初期画面の障害物を設定
         this.initializeScreen(1);
 
@@ -107,10 +113,28 @@ export class Game {
         });
 
         this.eventEmitter.on(GameEvent.NEXT_SCREEN, () => {
-            if (!this.isGameOver) {
-                this.moveToNextScreen();
+            if (!this.isGameOver && !this.isTransitioning) {
+                this.startTransition();
             }
         });
+    }
+
+    private startTransition(): void {
+        this.isTransitioning = true;
+        this.playerManager.getPlayer().visible = false;
+        this.wipeEffect.start();
+    }
+
+    private completeTransition(): void {
+        this.currentScreen++;
+        this.playerManager.getPlayer().x = PLAYER.INITIAL_X;
+        this.uiManager.updateScreenNumber(this.currentScreen);
+        this.backgroundRenderer.render();
+        
+        // 新しい画面の初期化
+        this.initializeScreen(this.currentScreen);
+        
+        // ワイプ効果は自動的にフェードインします
     }
 
     private drawObstacles(): void {
@@ -135,13 +159,7 @@ export class Game {
     }
 
     private moveToNextScreen(): void {
-        this.currentScreen++;
-        this.playerManager.getPlayer().x = PLAYER.INITIAL_X;
-        this.uiManager.updateScreenNumber(this.currentScreen);
-        this.backgroundRenderer.render();
-        
-        // 新しい画面の初期化
-        this.initializeScreen(this.currentScreen);
+        // このメソッドは使用しなくなりました
     }
 
     private initializeScreen(screenNumber: number): void {
@@ -158,6 +176,9 @@ export class Game {
         
         // 背景を再描画
         this.backgroundRenderer.render();
+        
+        // 障害物を描画
+        this.drawObstacles();
     }
 
     private reset(): void {
@@ -177,7 +198,21 @@ export class Game {
     private gameLoop(): void {
         if (this.isGameOver) return;
 
-        // プレイヤーの更新
+        // トランジション中は更新をスキップ
+        if (this.isTransitioning) {
+            // ワイプエフェクトの更新
+            this.wipeEffect.update();
+            
+            // トランジション完了チェック
+            if (!this.wipeEffect.isActive()) {
+                this.isTransitioning = false;
+                // トランジション完了後にプレーヤーを表示
+                this.playerManager.getPlayer().visible = true;
+            }
+            return;
+        }
+
+        // プレーヤーの更新
         this.playerManager.update();
 
         // 現在の時間を取得
