@@ -93,11 +93,11 @@ export interface ScreenBackground {
 }
 
 export const screenBackgrounds: { [key: number]: ScreenBackground } = {
-  1: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: false },
-  2: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: false },
-  3: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: false },
-  4: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: false },
-  5: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: false },
+  1: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: false, isInForest: false },
+  2: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: false, isInForest: false },
+  3: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: false, isInForest: false },
+  4: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: false, isInForest: false },
+  5: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: false, isInForest: false },
   6: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: true },
   7: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: false },
   8: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: true },
@@ -105,7 +105,7 @@ export const screenBackgrounds: { [key: number]: ScreenBackground } = {
   10: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: false },
   11: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: true },
   12: { drawSky: SkyType.SUNSET, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: false },
-  13: { drawSky: SkyType.SUNSET, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: false }
+  13: { drawSky: SkyType.SUNSET, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: true }
 };
 
 export const SPRING = {
