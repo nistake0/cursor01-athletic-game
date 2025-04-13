@@ -1,4 +1,4 @@
-import { Chestnut } from '../Chestnut';
+import { Chestnut } from '../obstacles/Chestnut';
 import { OBSTACLES } from '../utils/constants';
 import * as PIXI from 'pixi.js';
 import { Game } from '../game';

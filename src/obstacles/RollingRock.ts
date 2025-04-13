@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
-import { Game } from './game';
-import { Obstacle } from './Obstacle';
+import { Game } from '../game';
+import { Obstacle } from '../obstacles/Obstacle';
 
 export class RollingRock extends Obstacle {
     private player: PIXI.Graphics;

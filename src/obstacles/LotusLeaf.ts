@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { Game } from './game';
+import { Game } from '../game';
 import { Obstacle } from './Obstacle';
 
 export class LotusLeaf extends Obstacle {
