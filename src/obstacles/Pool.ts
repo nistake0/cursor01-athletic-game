@@ -1,13 +1,32 @@
 import * as PIXI from 'pixi.js';
-import { Game } from './game';
+import { Game } from '../game';
 import { Obstacle } from './Obstacle';
 
 export class Pool extends Obstacle {
     private player: PIXI.Graphics;
+    private poolPositions: { x: number, y: number, width: number, height: number }[] = [];
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
         super(app, obstacles, game);
         this.player = game.getPlayer();
+        this.initializePoolPositions();
+    }
+
+    private initializePoolPositions(): void {
+        const poolWidth = 64;
+        const poolSpacing = 150;
+        const startX = 170;
+        const poolY = this.app.screen.height - 98;
+
+        for (let i = 0; i < 4; i++) {
+            const poolX = startX + i * poolSpacing;
+            this.poolPositions.push({
+                x: poolX - poolWidth / 2,
+                y: poolY - 10,
+                width: poolWidth,
+                height: 20
+            });
+        }
     }
 
     // 池の描画処理
@@ -75,5 +94,9 @@ export class Pool extends Obstacle {
     public reset(): void {
         // 池を再描画
         this.draw();
+    }
+
+    public getPoolBounds(): { x: number, y: number, width: number, height: number }[] {
+        return this.poolPositions;
     }
 } 

@@ -38,7 +38,8 @@ export class Game {
         8: ['ChestnutSpawner'],
         9: ['Pool', 'RollingRock'],
         10: ['BeeSpawner'],
-        11: ['Stump', 'ChestnutSpawner']
+        11: ['Stump', 'ChestnutSpawner'],
+        12: ['Pool', 'FishSpawner']
     };
 
     constructor() {
@@ -87,6 +88,7 @@ export class Game {
 
         // イベントリスナーの設定
         this.setupEventListeners();
+        this.setupKeyboardEvents();
 
         // ゲームループを開始
         this.app.ticker.add(() => this.gameLoop());
@@ -104,6 +106,26 @@ export class Game {
                 this.startTransition();
             }
         });
+    }
+
+    private setupKeyboardEvents(): void {
+        window.addEventListener('keydown', (event: KeyboardEvent) => {
+            if (this.isGameOver || this.isTransitioning) return;
+
+            switch (event.key) {
+                case 'Escape':
+                    this.startTransition();
+                    break;
+                case '1':
+                    this.jumpToScreen(10);
+                    break;
+            }
+        });
+    }
+
+    private jumpToScreen(screenNumber: number): void {
+        this.currentScreen = screenNumber - 1; // 次の画面に進むので-1する
+        this.startTransition();
     }
 
     private startTransition(): void {
@@ -137,7 +159,9 @@ export class Game {
         const player = this.playerManager.getPlayer();
         
         // すべての障害物との衝突をチェック
-        return this.obstacleList.some(obstacle => obstacle.checkCollision(player));
+        const result = this.obstacleList.some(obstacle => obstacle.checkCollision(player));
+
+        return result;
     }
 
     private gameOver(): void {
@@ -203,8 +227,8 @@ export class Game {
         this.playerManager.update();
 
         // 現在の時間を取得
-            const currentTime = Date.now();
-            
+        const currentTime = Date.now();
+        
         // すべての障害物を更新
         this.obstacleList.forEach(obstacle => obstacle.update(currentTime));
 
