@@ -35,7 +35,7 @@ export class Game {
     
     // 画面ごとの障害物設定
     private screenObstacles: { [key: number]: string[] } = {
-        1: [], // 画面1は障害物なし
+        1: ['Signboard'], // 画面1は看板のみ
         2: ['Rock'],
         3: ['Pool'],
         4: ['Stump'],

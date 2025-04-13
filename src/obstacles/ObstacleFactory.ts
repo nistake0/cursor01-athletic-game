@@ -9,13 +9,18 @@ import { LargePool } from './LargePool';
 import { LotusLeaf } from './LotusLeaf';
 import { BeeSpawner } from './BeeSpawner';
 import { ChestnutSpawner } from './ChestnutSpawner';
+import { Signboard } from './Signboard';
 
 export class ObstacleFactory {
-    constructor(
-        private app: PIXI.Application,
-        private obstacles: PIXI.Graphics,
-        private game: Game
-    ) {}
+    private app: PIXI.Application;
+    private obstacles: PIXI.Graphics;
+    private game: Game;
+
+    constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
+        this.app = app;
+        this.obstacles = obstacles;
+        this.game = game;
+    }
 
     public createObstacle(type: string): Obstacle {
         switch (type) {
@@ -35,6 +40,8 @@ export class ObstacleFactory {
                 return new BeeSpawner(this.app, this.obstacles, this.game);
             case 'ChestnutSpawner':
                 return new ChestnutSpawner(this.app, this.obstacles, this.game);
+            case 'Signboard':
+                return new Signboard(this.app, this.obstacles, this.game);
             default:
                 throw new Error(`Unknown obstacle type: ${type}`);
         }
