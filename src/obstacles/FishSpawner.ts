@@ -35,6 +35,11 @@ export class FishSpawner extends Obstacle {
     }
 
     public update(currentTime: number): void {
+        // Poolが見つからない場合は再検索
+        if (!this.pool) {
+            this.findPool();
+        }
+        
         // 魚の更新
         this.fish.update(currentTime);
         
