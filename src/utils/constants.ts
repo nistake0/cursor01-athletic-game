@@ -60,4 +60,30 @@ export const BACKGROUND = {
   TREE_MIN_WIDTH: 40,
   TREE_MAX_WIDTH: 70,
   TREE_OVERLAP: 0.7,
+  SUNSET_START_COLOR: 0xFF7F50,  // 夕焼けの開始色
+  SUNSET_END_COLOR: 0x1a1a2e,    // 夕焼けの終了色
+  FOREST_COLOR: 0x2d2d44,        // 森の中の背景色
+  FOREST_ALPHA: 0.8
+};
+
+export type SkyType = 'normal' | 'sunset' | 'dark';
+
+export interface ScreenBackground {
+    sky: SkyType;
+    forest: boolean;
+}
+
+export const SCREEN_BACKGROUNDS: { [key: number]: ScreenBackground } = {
+    1: { sky: 'normal', forest: false },
+    2: { sky: 'normal', forest: false },
+    3: { sky: 'normal', forest: false },
+    4: { sky: 'normal', forest: true },
+    5: { sky: 'sunset', forest: false },
+    6: { sky: 'normal', forest: true },
+    7: { sky: 'sunset', forest: false },
+    8: { sky: 'normal', forest: true },
+    9: { sky: 'normal', forest: false },
+    10: { sky: 'dark', forest: false },
+    11: { sky: 'normal', forest: true },
+    12: { sky: 'normal', forest: false }
 }; 
