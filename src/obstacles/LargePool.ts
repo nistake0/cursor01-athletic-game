@@ -53,12 +53,14 @@ export class LargePool extends Obstacle {
     }
 
     public draw(): void {
+        this.obstacles.clear();
+
         // 池を楕円形で描画
         this.obstacles.beginFill(0x4169E1);
         this.obstacles.lineStyle(2, 0x000000);
         this.obstacles.drawEllipse(
             this.poolBounds.centerX,
-            this.poolBounds.centerY,
+            this.poolBounds.centerY + 20,  // 20ピクセル下に移動
             this.poolBounds.radiusX,
             this.poolBounds.radiusY
         );
@@ -69,7 +71,7 @@ export class LargePool extends Obstacle {
         for (let i = 0; i < reflectionCount; i++) {
             const angle = (i / reflectionCount) * Math.PI;
             const x = this.poolBounds.centerX + Math.cos(angle) * (this.poolBounds.radiusX - 10);
-            const y = this.poolBounds.centerY + Math.sin(angle) * (this.poolBounds.radiusY - 5);
+            const y = (this.poolBounds.centerY + 20) + Math.sin(angle) * (this.poolBounds.radiusY - 5);  // 20ピクセル下に移動
             this.obstacles.moveTo(x, y);
             this.obstacles.lineTo(x + 5, y);
         }

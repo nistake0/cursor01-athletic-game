@@ -29,7 +29,7 @@ export class LotusLeaf extends Obstacle {
         this.obstacles.lineStyle(2, 0x006400);
         this.obstacles.drawEllipse(
             this.lotusX + lotusWidth/2,
-            this.poolBounds.y + 5, // 水面の上に配置
+            this.poolBounds.y + 20, // 水面の上に配置（15ピクセル下に移動）
             lotusWidth/2,
             lotusHeight
         );
@@ -39,7 +39,7 @@ export class LotusLeaf extends Obstacle {
         for (let i = 0; i < 3; i++) {
             this.obstacles.drawEllipse(
                 this.lotusX + lotusWidth/2,
-                this.poolBounds.y + 5,
+                this.poolBounds.y + 20, // 15ピクセル下に移動
                 lotusWidth/2 - 10 - i*8,
                 lotusHeight - 2 - i*2
             );

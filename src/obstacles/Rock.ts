@@ -1,31 +1,88 @@
 import * as PIXI from 'pixi.js';
-import { Game } from './game';
+import { Game } from '../game';
 import { Obstacle } from './Obstacle';
 
 export class Rock extends Obstacle {
     private player: PIXI.Graphics;
+    private rock: PIXI.Graphics;
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
         super(app, obstacles, game);
         this.player = game.getPlayer();
+        
+        // 岩のGraphicsオブジェクトを作成
+        this.rock = new PIXI.Graphics();
+        this.obstacles.addChild(this.rock);
     }
 
     // 岩の描画処理
     public draw(): void {
-        this.obstacles.beginFill(0x808080);
-        this.obstacles.lineStyle(2, 0x000000);
+        this.rock.clear();
         
-        const rockX = 400;
-        const rockY = this.app.screen.height - 100; // 位置を下げる
-        const rockWidth = 60;
-        const rockHeight = 40;
+        // 岩の基本位置
+        const baseX = 400;
+        const baseY = this.app.screen.height - 80; // 20ピクセル下に移動
+        const width = 60; // 岩の幅
+        const height = 40; // 岩の高さ
         
-        this.obstacles.moveTo(rockX, rockY);
-        this.obstacles.lineTo(rockX + rockWidth, rockY);
-        this.obstacles.lineTo(rockX + rockWidth - 10, rockY - rockHeight);
-        this.obstacles.lineTo(rockX + 10, rockY - rockHeight);
-        this.obstacles.lineTo(rockX, rockY);
-        this.obstacles.endFill();
+        // 岩の本体（多角形で地面に接地している感じ）
+        this.rock.beginFill(0x808080);
+        this.rock.lineStyle(2, 0x000000);
+        
+        // 多角形の岩を描画（下側は水平な辺）
+        this.rock.moveTo(baseX, baseY); // 左下
+        this.rock.lineTo(baseX + width, baseY); // 右下
+        
+        // 右側の凹凸のある辺
+        this.rock.lineTo(baseX + width - 5, baseY - 10);
+        this.rock.lineTo(baseX + width - 10, baseY - 20);
+        this.rock.lineTo(baseX + width - 5, baseY - 30);
+        this.rock.lineTo(baseX + width - 15, baseY - 35);
+        
+        // 上部の凹凸のある辺
+        this.rock.lineTo(baseX + width - 25, baseY - 40);
+        this.rock.lineTo(baseX + width - 35, baseY - 35);
+        this.rock.lineTo(baseX + width - 40, baseY - 40);
+        this.rock.lineTo(baseX + width - 45, baseY - 35);
+        
+        // 左側の凹凸のある辺
+        this.rock.lineTo(baseX + 15, baseY - 30);
+        this.rock.lineTo(baseX + 10, baseY - 20);
+        this.rock.lineTo(baseX + 15, baseY - 10);
+        this.rock.lineTo(baseX, baseY); // 左下に戻る
+        
+        this.rock.endFill();
+        
+        // 岩の質感を表現する線と影
+        // 暗い部分（影）
+        this.rock.lineStyle(1, 0x404040);
+        this.rock.moveTo(baseX + 10, baseY - 10);
+        this.rock.lineTo(baseX + 50, baseY - 10);
+        
+        // 明るい部分（ハイライト）
+        this.rock.lineStyle(1, 0xA0A0A0);
+        this.rock.moveTo(baseX + 15, baseY - 15);
+        this.rock.lineTo(baseX + 45, baseY - 15);
+        
+        // 表面の凹凸を表現する線
+        this.rock.lineStyle(1, 0x606060);
+        
+        // 水平方向の線
+        this.rock.moveTo(baseX + 20, baseY - 5);
+        this.rock.lineTo(baseX + 40, baseY - 5);
+        
+        // 斜めの線
+        this.rock.moveTo(baseX + 25, baseY - 20);
+        this.rock.lineTo(baseX + 35, baseY - 10);
+        
+        // 小さな凹凸
+        this.rock.beginFill(0x707070);
+        this.rock.drawCircle(baseX + 30, baseY - 15, 2);
+        this.rock.drawCircle(baseX + 35, baseY - 20, 1.5);
+        this.rock.drawCircle(baseX + 25, baseY - 10, 1.5);
+        this.rock.drawCircle(baseX + 40, baseY - 25, 2);
+        this.rock.drawCircle(baseX + 15, baseY - 20, 1.5);
+        this.rock.endFill();
     }
 
     // 岩との衝突判定
@@ -39,8 +96,9 @@ export class Rock extends Obstacle {
 
         // 岩の位置を取得（updateメソッドで動かした場合の位置を考慮）
         const time = Date.now() / 1000;
-        const rockY = this.app.screen.height - 100 + Math.sin(time) * 5;
+        const rockY = this.app.screen.height - 80 + Math.sin(time) * 5; // 20ピクセル下に移動
         
+        // 多角形の岩の衝突判定（簡易的な矩形判定）
         const rockBounds = {
             left: 400,
             right: 460,
@@ -58,28 +116,24 @@ export class Rock extends Obstacle {
     public update(currentTime: number): void {
         // 画面7では岩が動くようにする
         // 岩の位置を少し上下に揺らす
-        const rockY = this.app.screen.height - 100 + Math.sin(currentTime) * 5;
+        const rockY = this.app.screen.height - 80 + Math.sin(currentTime) * 5; // 20ピクセル下に移動
         
         // 岩を再描画
-        this.obstacles.clear();
-        this.obstacles.beginFill(0x808080);
-        this.obstacles.lineStyle(2, 0x000000);
-        
-        const rockX = 400;
-        const rockWidth = 60;
-        const rockHeight = 40;
-        
-        this.obstacles.moveTo(rockX, rockY);
-        this.obstacles.lineTo(rockX + rockWidth, rockY);
-        this.obstacles.lineTo(rockX + rockWidth - 10, rockY - rockHeight);
-        this.obstacles.lineTo(rockX + 10, rockY - rockHeight);
-        this.obstacles.lineTo(rockX, rockY);
-        this.obstacles.endFill();
+        this.draw();
     }
 
     // 岩のリセット処理
     public reset(): void {
-        // 岩を再描画
-        this.draw();
+        // 岩のGraphicsオブジェクトをクリア
+        this.rock.clear();
+        
+        // 親オブジェクトから削除
+        if (this.rock.parent) {
+            this.rock.parent.removeChild(this.rock);
+        }
+        
+        // 新しいGraphicsオブジェクトを作成
+        this.rock = new PIXI.Graphics();
+        this.obstacles.addChild(this.rock);
     }
 } 
