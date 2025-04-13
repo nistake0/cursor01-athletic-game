@@ -159,7 +159,10 @@ export class Spring extends Obstacle {
     public reset(): void {
         this.isCompressed = false;
         this.compressionTime = 0;
-        this.draw();
+        // ばねをステージから削除
+        if (this.spring.parent) {
+            this.spring.parent.removeChild(this.spring);
+        }
     }
 
     public getSpringBounds(): PIXI.Rectangle {

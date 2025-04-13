@@ -48,16 +48,27 @@ export class Signboard extends Obstacle {
             this.isInitialized = true;
         }
 
-        // 看板の背景（茶色の木）
-        this.obstacles.beginFill(0x8B4513);
-        this.obstacles.lineStyle(2, 0x654321);
+        // 看板の背景（金属的な色）
+        this.obstacles.beginFill(0x708090); // スレートグレー
+        this.obstacles.lineStyle(2, 0x4F4F4F); // より暗いグレー
         
         // 看板の本体
         this.obstacles.drawRect(200, 200, 400, 200);
         
-        // 看板の支柱
+        // 看板の支柱（金属的な色）
+        this.obstacles.beginFill(0x708090); // スレートグレー
+        this.obstacles.lineStyle(2, 0x4F4F4F); // より暗いグレー
         this.obstacles.drawRect(200, 400, 20, 100);
         this.obstacles.drawRect(580, 400, 20, 100);
+        
+        // 金属的な光沢を追加
+        this.obstacles.lineStyle(1, 0xC0C0C0); // シルバー
+        this.obstacles.moveTo(200, 200);
+        this.obstacles.lineTo(600, 200);
+        this.obstacles.moveTo(200, 400);
+        this.obstacles.lineTo(220, 400);
+        this.obstacles.moveTo(580, 400);
+        this.obstacles.lineTo(600, 400);
         
         // 看板の文字（白色）
         this.obstacles.beginFill(0xFFFFFF);
