@@ -2,19 +2,15 @@ import * as PIXI from 'pixi.js';
 import { Game } from '../game';
 import { OBSTACLES } from '../utils/constants';
 import { Bee } from './Bee';
+import { Obstacle } from './Obstacle';
 
-export class BeeSpawner {
-    private app: PIXI.Application;
-    private obstacles: PIXI.Graphics;
-    private game: Game;
+export class BeeSpawner extends Obstacle {
     private bee: Bee;
     private lastSpawnTime: number = 0;
     private isActive: boolean = false;
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
-        this.app = app;
-        this.obstacles = obstacles;
-        this.game = game;
+        super(app, obstacles, game);
         this.bee = new Bee(this.app, this.obstacles, this.game);
     }
 

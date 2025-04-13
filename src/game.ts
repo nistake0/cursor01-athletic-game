@@ -14,11 +14,14 @@ import { ChestnutSpawner } from './obstacles/ChestnutSpawner';
 import { BeeSpawner } from './obstacles/BeeSpawner';
 import { EventEmitter, GameEvent } from './utils/EventEmitter';
 import { PlayerManager } from './managers/PlayerManager';
+import { ObstacleFactory } from './obstacles/ObstacleFactory';
+import { Obstacle } from './obstacles/Obstacle';
 
 export class Game {
     private app: PIXI.Application;
     private background: PIXI.Graphics;
     private obstacles: PIXI.Graphics;
+    private player!: PIXI.Graphics;
     private currentScreen: number = 1;
     private isGameOver: boolean = false;
     private rock: Rock;
@@ -33,6 +36,25 @@ export class Game {
     private eventEmitter: EventEmitter;
     private playerManager: PlayerManager;
     private uiManager: UIManager;
+    
+    // 新しい障害物管理用の変数
+    private obstacleList: Obstacle[] = [];
+    private obstacleFactory: ObstacleFactory;
+    
+    // 画面ごとの障害物設定
+    private screenObstacles: { [key: number]: string[] } = {
+        1: [], // 画面1は障害物なし
+        2: ['Rock'],
+        3: ['Pool'],
+        4: ['Stump'],
+        5: ['RollingRock'],
+        6: ['LargePool', 'LotusLeaf'],
+        7: ['Rock', 'RollingRock'],
+        8: ['ChestnutSpawner'],
+        9: ['Pool', 'RollingRock'],
+        10: ['BeeSpawner'],
+        11: ['Stump', 'ChestnutSpawner']
+    };
 
     constructor() {
         // PIXIアプリケーションを初期化
@@ -81,13 +103,19 @@ export class Game {
         this.largePool = new LargePool(this.app, this.obstacles, this);
 
         // 蓮の葉の初期化
-        this.lotusLeaf = new LotusLeaf(this.obstacles, this, this.largePool.getPoolBounds());
+        this.lotusLeaf = new LotusLeaf(this.app, this.obstacles, this);
 
         // 蜂マネージャーの初期化
         this.beeSpawner = new BeeSpawner(this.app, this.obstacles, this);
 
         // いがぐりマネージャーの初期化
         this.chestnutSpawner = new ChestnutSpawner(this.app, this.obstacles, this);
+
+        // 障害物ファクトリを初期化
+        this.obstacleFactory = new ObstacleFactory(this.app, this.obstacles, this);
+        
+        // 初期画面の障害物を設定
+        this.initializeScreen(1);
 
         // イベントリスナーの設定
         this.setupEventListeners();
@@ -111,98 +139,19 @@ export class Game {
     }
 
     private drawObstacles(): void {
-        // 画面遷移時にいがぐりをリセット
-        if (this.currentScreen !== 8 && this.currentScreen !== 11) {
-            this.chestnutSpawner.reset();
-        }
-
         this.obstacles.clear();
         
-        switch (this.currentScreen) {
-            case 1:
-                // 画面1では障害物なし
-                break;
-            case 2:
-                // 画面2では岩を描画
-                this.rock.draw();
-                break;
-            case 3:
-                // 画面3では小さい池を描画
-                this.pool.draw();
-                break;
-            case 4:
-                // 画面4では切り株を描画
-                this.stump.draw();
-                break;
-            case 5:
-                // 画面5では転がる岩を描画
-                this.rollingRock.draw();
-                break;
-            case 6:
-                // 画面6では大きな池と蓮の葉を描画
-                this.largePool.draw();
-                this.lotusLeaf.draw();
-                break;
-            case 7:
-                // 画面7では岩と転がる岩を描画
-                this.rock.draw();
-                this.rollingRock.draw();
-                break;
-            case 8:
-                // 画面8では背景のみを描画（いがぐりは別途描画）
-                this.chestnutSpawner.draw();
-                break;
-            case 9:
-                // 画面9では小さい池と転がる岩を描画
-                this.pool.draw();
-                this.rollingRock.draw();
-                break;
-            case 10:
-                // 画面10では蜂を描画
-                this.beeSpawner.draw();
-                break;
-            case 11:
-                // 画面11では切り株といがぐりを描画
-                this.stump.draw();
-                this.chestnutSpawner.draw();
-                break;
-            default:
-                break;
-        }
+        // 描画優先度でソートして描画（数値が大きい順＝後ろから描画）
+        this.obstacleList
+            .sort((a, b) => b.getDrawPriority() - a.getDrawPriority())
+            .forEach(obstacle => obstacle.draw());
     }
 
     private checkCollision(): boolean {
         const player = this.playerManager.getPlayer();
         
-        switch (this.currentScreen) {
-            case 2:
-                return this.rock.checkCollision(player);
-            case 3:
-                return this.pool.checkCollision(player);
-            case 4:
-                return this.stump.checkCollision(player);
-            case 5:
-                return this.rollingRock.checkCollision(player);
-            case 6:
-                // 画面7や画面9と同じように、単純にcheckCollisionを順番に呼び出す
-                return this.lotusLeaf.checkCollision(player) || 
-                       this.largePool.checkCollision(player);
-            case 7:
-                return this.rock.checkCollision(player) || 
-                       this.rollingRock.checkCollision(player);
-            case 8:
-                return this.chestnutSpawner.checkCollision(player);
-            case 9:
-                return this.pool.checkCollision(player) || 
-                       this.rollingRock.checkCollision(player);
-            case 10:
-                return this.beeSpawner.checkCollision(player);
-            case 11:
-                return this.stump.checkCollision(player) || 
-                       this.chestnutSpawner.checkCollision(player);
-            default:
-                return false;
-        }
+        // すべての障害物との衝突をチェック
+        return this.obstacleList.some(obstacle => obstacle.checkCollision(player));
     }
 
     private gameOver(): void {
@@ -221,22 +170,19 @@ export class Game {
     }
 
     private initializeScreen(screenNumber: number): void {
-        // 障害物をクリアしてから再描画
-        this.obstacles.clear();
-        this.drawObstacles();
+        // 既存の障害物をクリア
+        this.obstacleList.forEach(obstacle => obstacle.reset());
+        this.obstacleList = [];
         
-        // 転がる岩と切り株をリセット
-        this.rollingRock.reset();
-        this.stump.reset();
-        this.largePool.reset();
-        this.lotusLeaf.reset();
+        // 新しい画面の障害物を生成
+        const obstacleTypes = this.screenObstacles[screenNumber] || [];
+        obstacleTypes.forEach(type => {
+            const obstacle = this.obstacleFactory.createObstacle(type);
+            this.obstacleList.push(obstacle);
+        });
         
-        // いがぐりと蜂のリセット（画面遷移時は常にリセット）
-        this.chestnutSpawner.reset();
-        this.beeSpawner.reset();
-        
-        // 将来的に画面固有の初期化処理が必要になった場合は、
-        // ここにswitch文を追加する
+        // 背景を再描画
+        this.backgroundRenderer.render();
     }
 
     private reset(): void {
@@ -264,64 +210,15 @@ export class Game {
         // 現在の時間を取得
         const currentTime = Date.now();
 
-        // 画面4の切り株の更新と衝突判定
-        if (this.currentScreen === 4) {
-            this.stump.update(currentTime);
-            this.stump.checkCollision(this.playerManager.getPlayer());
-        }
-
-        // 画面2の岩の更新
-        if (this.currentScreen === 2) {
-            this.rock.update(currentTime);
-        }
-
-        // 画面3の池の更新
-        if (this.currentScreen === 3) {
-            this.pool.update(currentTime);
-        }
-
-        // 画面5の転がる岩の更新
-        if (this.currentScreen === 5) {
-            this.rollingRock.update(currentTime);
-        }
-
-        // 画面6の蓮の葉の更新
-        if (this.currentScreen === 6) {
-            this.lotusLeaf.update(currentTime);
-        }
-
-        // 画面7の岩と転がる岩の更新
-        if (this.currentScreen === 7) {
-            this.rock.update(currentTime);
-            this.rollingRock.update(currentTime);
-        }
-
-        // 画面8のいがぐりの更新
-        if (this.currentScreen === 8) {
-            this.chestnutSpawner.update(currentTime);
-        }
-
-        // 画面9の転がる岩の更新
-        if (this.currentScreen === 9) {
-            this.rollingRock.update(currentTime);
-        }
-
-        // 画面10の蜂の更新
-        if (this.currentScreen === 10) {
-            this.beeSpawner.update(currentTime);
-        }
-
-        // 画面11の切り株といがぐりの更新
-        if (this.currentScreen === 11) {
-            this.chestnutSpawner.update(currentTime);
-        }
+        // すべての障害物を更新
+        this.obstacleList.forEach(obstacle => obstacle.update(currentTime));
 
         // 障害物との衝突判定
         if (this.checkCollision()) {
             this.gameOver();
         }
 
-        // 障害物の再描画（一度だけ）
+        // 障害物の再描画
         this.drawObstacles();
     }
 
@@ -371,6 +268,10 @@ export class Game {
 
     public getApp(): PIXI.Application {
         return this.app;
+    }
+
+    public getLargePoolBounds(): { x: number; y: number; width: number; height: number } {
+        return this.largePool.getPoolBounds();
     }
 }
 

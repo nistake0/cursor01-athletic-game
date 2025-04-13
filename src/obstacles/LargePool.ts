@@ -28,6 +28,7 @@ export class LargePool extends Obstacle {
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
         super(app, obstacles, game);
         this.initializePoolBounds();
+        this.drawPriority = 10;  // 池は後ろに描画
     }
 
     private initializePoolBounds(): void {
@@ -115,7 +116,12 @@ export class LargePool extends Obstacle {
         this.initializePoolBounds();
     }
 
-    public getPoolBounds(): typeof this.poolBounds {
-        return this.poolBounds;
+    public getPoolBounds(): { x: number; y: number; width: number; height: number } {
+        return {
+            x: this.poolBounds.left,
+            y: this.poolBounds.top,
+            width: this.poolBounds.width,
+            height: this.poolBounds.bottom - this.poolBounds.top
+        };
     }
 } 

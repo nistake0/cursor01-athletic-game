@@ -2,20 +2,16 @@ import { Chestnut } from './Chestnut';
 import { OBSTACLES } from '../utils/constants';
 import * as PIXI from 'pixi.js';
 import { Game } from '../game';
+import { Obstacle } from './Obstacle';
 
-export class ChestnutSpawner {
+export class ChestnutSpawner extends Obstacle {
     private chestnuts: Chestnut[] = [];
     private readonly maxCount: number;
     private readonly spawnInterval: number;
     private lastSpawnTime: number = 0;
-    private app: PIXI.Application;
-    private obstacles: PIXI.Graphics;
-    private game: Game;
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game, maxCount: number = OBSTACLES.CHESTNUT.MAX_COUNT, spawnInterval: number = OBSTACLES.CHESTNUT.SPAWN_INTERVAL) {
-        this.app = app;
-        this.obstacles = obstacles;
-        this.game = game;
+        super(app, obstacles, game);
         this.maxCount = maxCount;
         this.spawnInterval = spawnInterval;
     }
