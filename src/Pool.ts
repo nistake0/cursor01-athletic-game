@@ -1,18 +1,17 @@
 import * as PIXI from 'pixi.js';
+import { Game } from './game';
+import { Obstacle } from './Obstacle';
 
-export class Pool {
-    private app: PIXI.Application;
-    private obstacles: PIXI.Graphics;
+export class Pool extends Obstacle {
     private player: PIXI.Graphics;
 
-    constructor(app: PIXI.Application, obstacles: PIXI.Graphics, player: PIXI.Graphics) {
-        this.app = app;
-        this.obstacles = obstacles;
-        this.player = player;
+    constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
+        super(app, obstacles, game);
+        this.player = game.getPlayer();
     }
 
     // 池の描画処理
-    public draw(): PIXI.Graphics {
+    public draw(): void {
         this.obstacles.lineStyle(2, 0x000000);
         
         // 4つの池を配置
@@ -40,8 +39,6 @@ export class Pool {
             this.obstacles.moveTo(poolX - poolWidth / 3, poolY - 3);
             this.obstacles.lineTo(poolX + poolWidth / 3, poolY - 3);
         }
-        
-        return this.obstacles;
     }
 
     // 池との衝突判定
@@ -72,5 +69,11 @@ export class Pool {
     // 池の更新処理
     public update(currentTime: number): void {
         // 現在は更新処理なし
+    }
+
+    // 池のリセット処理
+    public reset(): void {
+        // 池を再描画
+        this.draw();
     }
 } 

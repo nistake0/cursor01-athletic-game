@@ -1,18 +1,17 @@
 import * as PIXI from 'pixi.js';
+import { Game } from './game';
+import { Obstacle } from './Obstacle';
 
-export class RollingRock {
-    private app: PIXI.Application;
-    private obstacles: PIXI.Graphics;
+export class RollingRock extends Obstacle {
     private player: PIXI.Graphics;
     private x: number;
     private speed: number;
     private rotation: number;
     private rock: PIXI.Graphics;
 
-    constructor(app: PIXI.Application, obstacles: PIXI.Graphics, player: PIXI.Graphics) {
-        this.app = app;
-        this.obstacles = obstacles;
-        this.player = player;
+    constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
+        super(app, obstacles, game);
+        this.player = game.getPlayer();
         this.x = app.screen.width + 50;
         this.speed = 4;
         this.rotation = 0;
@@ -23,7 +22,7 @@ export class RollingRock {
     }
 
     // 転がる岩の描画処理
-    public draw(): PIXI.Graphics {
+    public draw(): void {
         const rockCenterX = this.x;
         const rockCenterY = this.app.screen.height - 115;
         
@@ -66,8 +65,6 @@ export class RollingRock {
         // 回転と位置を設定
         this.rock.position.set(rockCenterX, rockCenterY);
         this.rock.rotation = this.rotation;
-        
-        return this.obstacles;
     }
 
     // 転がる岩との衝突判定

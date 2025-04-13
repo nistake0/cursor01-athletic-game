@@ -69,8 +69,8 @@ export class Game {
 
         // 障害物のインスタンスを初期化
         this.rock = new Rock(this.app, this.obstacles, this);
-        this.pool = new Pool(this.app, this.obstacles, this.playerManager.getPlayer());
-        this.rollingRock = new RollingRock(this.app, this.obstacles, this.playerManager.getPlayer());
+        this.pool = new Pool(this.app, this.obstacles, this);
+        this.rollingRock = new RollingRock(this.app, this.obstacles, this);
 
         // 画面5の切り株の初期化
         this.stump = new Stump(this.app, this.obstacles, this);
