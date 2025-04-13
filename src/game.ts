@@ -170,10 +170,7 @@ export class Game {
         // 新しい画面の障害物を生成
         const screenConfig = screenConfigs[screenNumber];
         if (screenConfig) {
-            screenConfig.obstacles.forEach(type => {
-                const obstacle = this.obstacleFactory.createObstacle(type);
-                this.obstacleList.push(obstacle);
-            });
+            this.obstacleList = this.obstacleFactory.createObstacles(screenConfig.obstacles);
         }
         
         // 背景を設定

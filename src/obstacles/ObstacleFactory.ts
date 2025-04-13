@@ -55,4 +55,8 @@ export class ObstacleFactory {
                 throw new Error(`Unknown obstacle type: ${type}`);
         }
     }
+
+    public createObstacles(types: string[]): Obstacle[] {
+        return types.map(type => this.createObstacle(type));
+    }
 } 
