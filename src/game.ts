@@ -229,42 +229,12 @@ export class Game {
         this.largePool.reset();
         this.lotusLeaf.reset();
         
-        // いがぐりのリセット（画面遷移時は常にリセット）
+        // いがぐりと蜂のリセット（画面遷移時は常にリセット）
         this.chestnutManager.reset();
+        this.beeManager.reset();
         
-        // 画面固有の初期化処理
-        switch (screenNumber) {
-            case 6:
-                // 画面6に移行したら切り株をリセット
-                this.stump.reset();
-                break;
-            case 7:
-        // 画面7に移行したら転がる岩をリセット
-            this.rollingRock.reset();
-                break;
-            case 8:
-                // 画面8に移行
-                break;
-            case 9:
-        // 画面9に移行したら転がる岩をリセット
-            this.rollingRock.reset();
-                break;
-            case 10:
-        // 画面10に移行したら蜂をリセット
-                this.beeManager.reset();
-                break;
-            case 11:
-                // 画面11に移行
-                break;
-            default:
-                // 画面1-5の場合は特別な処理なし
-                break;
-        }
-
-        // 画面10以外に移行した場合も蜂をリセット
-        if (screenNumber !== 10) {
-            this.beeManager.reset();
-        }
+        // 将来的に画面固有の初期化処理が必要になった場合は、
+        // ここにswitch文を追加する
     }
 
     private reset(): void {
