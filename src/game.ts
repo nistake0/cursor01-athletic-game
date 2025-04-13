@@ -63,7 +63,7 @@ export class Game {
 
         // プレイヤーマネージャーを初期化
         this.playerManager = new PlayerManager(this.app, this, this.eventEmitter);
-        
+
         // 背景を作成
         this.background = new PIXI.Graphics();
         this.app.stage.addChild(this.background);
@@ -143,7 +143,7 @@ export class Game {
         this.currentScreen++;
         this.playerManager.getPlayer().x = PLAYER.INITIAL_X;
         this.uiManager.updateScreenNumber(this.currentScreen);
-        this.backgroundRenderer.render();
+        this.backgroundRenderer.setScreen(this.currentScreen);
         
         // 新しい画面の初期化
         this.initializeScreen(this.currentScreen);
@@ -190,8 +190,8 @@ export class Game {
             this.obstacleList.push(obstacle);
         });
         
-        // 背景を再描画
-        this.backgroundRenderer.render();
+        // 背景を設定
+        this.backgroundRenderer.setScreen(screenNumber);
         
         // 障害物を描画
         this.drawObstacles();
@@ -202,7 +202,7 @@ export class Game {
         this.currentScreen = 1;
         this.playerManager.reset();
         this.uiManager.updateScreenNumber(this.currentScreen);
-        this.backgroundRenderer.render();
+        this.backgroundRenderer.setScreen(1);
         
         // 画面1の初期化
         this.initializeScreen(1);
@@ -232,8 +232,8 @@ export class Game {
         this.playerManager.update();
 
         // 現在の時間を取得
-        const currentTime = Date.now();
-        
+            const currentTime = Date.now();
+            
         // すべての障害物を更新
         this.obstacleList.forEach(obstacle => obstacle.update(currentTime));
 
