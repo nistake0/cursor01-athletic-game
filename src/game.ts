@@ -1,10 +1,10 @@
 import * as PIXI from 'pixi.js';
-import { Rock } from './Rock';
-import { Pool } from './Pool';
-import { RollingRock } from './RollingRock';
-import { Stump } from './Stump';
-import { LargePool } from './LargePool';
-import { LotusLeaf } from './LotusLeaf';
+import { Rock } from "./obstacles/Rock";
+import { Pool } from "./obstacles/Pool";
+import { RollingRock } from "./obstacles/RollingRock";
+import { Stump } from "./Stump";
+import { LargePool } from "./LargePool";
+import { LotusLeaf } from "./LotusLeaf";
 import { PLAYER, SCREEN, OBSTACLES, BACKGROUND } from './utils/constants';
 import { BackgroundRenderer } from './renderers/BackgroundRenderer';
 import { UIManager } from './managers/UIManager';
