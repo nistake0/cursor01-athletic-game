@@ -7,22 +7,12 @@ import { PlayerManager } from './managers/PlayerManager';
 import { ObstacleFactory } from './obstacles/ObstacleFactory';
 import { Obstacle } from './obstacles/Obstacle';
 import { LargePool } from './obstacles/LargePool';
-import { Rock } from "./obstacles/Rock";
-import { Pool } from "./obstacles/Pool";
-import { RollingRock } from "./obstacles/RollingRock";
-import { Stump } from "./obstacles/Stump";
-import { LotusLeaf } from "./obstacles/LotusLeaf";
-import { Bee } from "./obstacles/Bee";
-import { Chestnut } from "./obstacles/Chestnut";
-import { ChestnutSpawner } from './obstacles/ChestnutSpawner';
-import { BeeSpawner } from './obstacles/BeeSpawner';
 import { WipeEffect } from './effects/WipeEffect';
 
 export class Game {
     private app: PIXI.Application;
     private background: PIXI.Graphics;
     private obstacles: PIXI.Graphics;
-    private player!: PIXI.Graphics;
     private currentScreen: number = 1;
     private isGameOver: boolean = false;
     private backgroundRenderer: BackgroundRenderer;
@@ -71,9 +61,6 @@ export class Game {
         // プレイヤーマネージャーを初期化
         this.playerManager = new PlayerManager(this.app, this, this.eventEmitter);
         
-        // プレイヤーを初期化
-        this.player = this.playerManager.getPlayer();
-
         // 背景を作成
         this.background = new PIXI.Graphics();
         this.app.stage.addChild(this.background);
@@ -216,8 +203,8 @@ export class Game {
         this.playerManager.update();
 
         // 現在の時間を取得
-        const currentTime = Date.now();
-
+            const currentTime = Date.now();
+            
         // すべての障害物を更新
         this.obstacleList.forEach(obstacle => obstacle.update(currentTime));
 
