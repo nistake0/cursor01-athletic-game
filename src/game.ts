@@ -1,21 +1,21 @@
 import * as PIXI from 'pixi.js';
-import { Rock } from "./obstacles/Rock";
-import { Pool } from "./obstacles/Pool";
-import { RollingRock } from "./obstacles/RollingRock";
-import { Stump } from "./obstacles/Stump";
-import { LargePool } from "./obstacles/LargePool";
-import { LotusLeaf } from "./obstacles/LotusLeaf";
-import { Bee } from "./obstacles/Bee";
-import { Chestnut } from "./obstacles/Chestnut";
-import { PLAYER, SCREEN, OBSTACLES, BACKGROUND } from './utils/constants';
+import { PLAYER, SCREEN } from './utils/constants';
 import { BackgroundRenderer } from './renderers/BackgroundRenderer';
 import { UIManager } from './managers/UIManager';
-import { ChestnutSpawner } from './obstacles/ChestnutSpawner';
-import { BeeSpawner } from './obstacles/BeeSpawner';
 import { EventEmitter, GameEvent } from './utils/EventEmitter';
 import { PlayerManager } from './managers/PlayerManager';
 import { ObstacleFactory } from './obstacles/ObstacleFactory';
 import { Obstacle } from './obstacles/Obstacle';
+import { LargePool } from './obstacles/LargePool';
+import { Rock } from "./obstacles/Rock";
+import { Pool } from "./obstacles/Pool";
+import { RollingRock } from "./obstacles/RollingRock";
+import { Stump } from "./obstacles/Stump";
+import { LotusLeaf } from "./obstacles/LotusLeaf";
+import { Bee } from "./obstacles/Bee";
+import { Chestnut } from "./obstacles/Chestnut";
+import { ChestnutSpawner } from './obstacles/ChestnutSpawner';
+import { BeeSpawner } from './obstacles/BeeSpawner';
 
 export class Game {
     private app: PIXI.Application;
@@ -67,6 +67,9 @@ export class Game {
 
         // プレイヤーマネージャーを初期化
         this.playerManager = new PlayerManager(this.app, this, this.eventEmitter);
+        
+        // プレイヤーを初期化
+        this.player = this.playerManager.getPlayer();
 
         // 背景を作成
         this.background = new PIXI.Graphics();
