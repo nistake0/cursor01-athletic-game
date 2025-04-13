@@ -251,5 +251,16 @@ export const screenConfigs: { [key: number]: ScreenConfig } = {
       isInForest: true
     },
     obstacles: ['SpringSpawner']
+  },
+  14: {
+    background: {
+      drawSky: SkyType.SUNSET,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: false,
+      drawForestCanopy: false,
+      isInForest: false
+    },
+    obstacles: ['Signboard']
   }
 }; 
