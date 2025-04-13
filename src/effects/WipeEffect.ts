@@ -32,10 +32,15 @@ export class WipeEffect {
         this.wipeProgress = 0;
         this.wipeGraphics.alpha = 1;
         
-        // 画面全体を黒くする
+        // 最初のワイプ位置を描画
         this.wipeGraphics.clear();
         this.wipeGraphics.beginFill(0x000000);
-        this.wipeGraphics.drawRect(0, 0, this.app.screen.width, this.app.screen.height);
+        this.wipeGraphics.drawRect(
+            this.app.screen.width,
+            0,
+            0,
+            this.app.screen.height
+        );
         this.wipeGraphics.endFill();
     }
 
