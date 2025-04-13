@@ -1,11 +1,12 @@
 import * as PIXI from 'pixi.js';
 import { Renderer } from './Renderer';
 import { Game } from '../game';
-import { SCREEN, BACKGROUND } from '../utils/constants';
+import { BACKGROUND, screenBackgrounds, SkyType } from '../constants';
 
 export class BackgroundRenderer extends Renderer {
     private background: PIXI.Graphics;
     private trees: PIXI.Graphics[] = [];
+    private currentScreen: number = 1;
 
     constructor(app: PIXI.Application, game: Game) {
         super(app, game);
@@ -21,6 +22,12 @@ export class BackgroundRenderer extends Renderer {
         this.trees = [];
     }
 
+    public setScreen(screenNumber: number): void {
+        this.currentScreen = screenNumber;
+        this.clear();
+        this.drawBackground();
+    }
+
     public render(): void {
         this.clear();
         this.drawBackground();
@@ -28,14 +35,40 @@ export class BackgroundRenderer extends Renderer {
 
     private drawBackground(): void {
         this.background.clear();
-        this.drawSky();
-        this.drawForestSilhouette();
-        this.drawGround();
-        this.drawGrass();
-        this.drawForegroundTrees();
+        const settings = screenBackgrounds[this.currentScreen];
+
+        if (settings.drawSky !== SkyType.NONE) {
+            this.drawSky(settings.drawSky);
+        }
+        if (settings.drawForestCanopy) {
+            this.drawForestSilhouette();
+        }
+        if (settings.drawGround) {
+            this.drawGround();
+        }
+        if (settings.drawGrass) {
+            this.drawGrass();
+        }
+        if (settings.drawTrees) {
+            this.drawForegroundTrees();
+        }
     }
 
-    private drawSky(): void {
+    private drawSky(skyType: SkyType): void {
+        switch (skyType) {
+            case SkyType.NORMAL:
+                this.drawNormalSky();
+                break;
+            case SkyType.DARK:
+                this.drawDarkSky();
+                break;
+            case SkyType.SUNSET:
+                this.drawSunsetSky();
+                break;
+        }
+    }
+
+    private drawNormalSky(): void {
         const height = this.app.screen.height;
         const steps = BACKGROUND.GRADIENT_STEPS;
         for (let i = 0; i < steps; i++) {
@@ -55,17 +88,60 @@ export class BackgroundRenderer extends Renderer {
         }
     }
 
-    private drawGround(): void {
-        this.background.beginFill(SCREEN.GROUND_COLOR);
-        this.background.drawRect(0, this.app.screen.height - 100, this.app.screen.width, 50);
+    private drawDarkSky(): void {
+        this.background.beginFill(0x000000);
+        this.background.drawRect(0, 0, this.app.screen.width, this.app.screen.height);
         this.background.endFill();
     }
 
+    private drawSunsetSky(): void {
+        const height = this.app.screen.height;
+        const steps = BACKGROUND.GRADIENT_STEPS;
+        for (let i = 0; i < steps; i++) {
+            const ratio = i / steps;
+            const startColor = BACKGROUND.SUNSET_START_COLOR;
+            const endColor = BACKGROUND.SUNSET_END_COLOR;
+            const color = this.lerpColor(startColor, endColor, ratio);
+            
+            this.background.beginFill(color);
+            this.background.drawRect(
+                0,
+                (height * i) / steps,
+                this.app.screen.width,
+                height / steps + 1
+            );
+            this.background.endFill();
+        }
+    }
+
+    private drawGround(): void {
+        const groundStartY = this.app.screen.height - 100;
+        const groundHeight = 100;
+        const steps = 10;
+
+        // グラデーションで地面を描画
+        for (let i = 0; i < steps; i++) {
+            const ratio = i / steps;
+            const startColor = BACKGROUND.GROUND_COLOR;
+            const endColor = this.darkenColor(BACKGROUND.GROUND_COLOR, 0.3); // 30%暗く
+            const color = this.lerpColor(startColor, endColor, ratio);
+            
+            this.background.beginFill(color);
+            this.background.drawRect(
+                0,
+                groundStartY + (groundHeight * i) / steps,
+                this.app.screen.width,
+                groundHeight / steps + 1
+            );
+            this.background.endFill();
+        }
+    }
+
     private drawGrass(): void {
-        this.background.beginFill(SCREEN.GRASS_COLOR);
+        this.background.beginFill(BACKGROUND.GRASS_COLOR);
         this.background.drawRect(0, this.app.screen.height - 110, this.app.screen.width, 10);
         for (let x = 0; x < this.app.screen.width; x += 15) {
-            this.background.beginFill(SCREEN.GRASS_COLOR);
+            this.background.beginFill(BACKGROUND.GRASS_COLOR);
             const height = 5 + Math.random() * 15;
             this.background.drawRect(x, this.app.screen.height - 110 - height, 8, height);
             this.background.endFill();
@@ -73,12 +149,28 @@ export class BackgroundRenderer extends Renderer {
     }
 
     private drawForegroundTrees(): void {
-        this.drawTree(100);
-        this.drawTree(this.app.screen.width - 100);
+        const settings = screenBackgrounds[this.currentScreen];
+        
+        if (settings.isInForest) {
+            // 森の中の場合、木を密集して描画
+            const treeCount = 15; // 木の本数を増やす
+            const spacing = this.app.screen.width / (treeCount + 1);
+            
+            for (let i = 1; i <= treeCount; i++) {
+                const x = spacing * i;
+                // 木の位置を少しランダムにずらして自然な感じに
+                const offsetX = (Math.random() - 0.5) * 30;
+                this.drawTree(x + offsetX);
+            }
+        } else {
+            // 通常の描画（左右に1本ずつ）
+            this.drawTree(100);
+            this.drawTree(this.app.screen.width - 100);
+        }
     }
 
     private drawForestSilhouette(): void {
-        this.background.beginFill(SCREEN.FOREST_COLOR, SCREEN.FOREST_ALPHA);
+        this.background.beginFill(BACKGROUND.FOREST_COLOR, BACKGROUND.FOREST_ALPHA);
         
         // 不規則な森のシルエットを作成
         let x = 0;
@@ -92,7 +184,7 @@ export class BackgroundRenderer extends Renderer {
             this.background.lineTo(x + treeWidth, this.app.screen.height - 110);
             this.background.lineTo(x, this.app.screen.height - 110);
             
-            x += treeWidth * BACKGROUND.TREE_OVERLAP; // 木々を少し重ねる
+            x += treeWidth * BACKGROUND.TREE_OVERLAP;
         }
         
         this.background.endFill();
@@ -105,13 +197,31 @@ export class BackgroundRenderer extends Renderer {
     }
 
     private drawTreeTrunk(x: number): void {
-        this.background.beginFill(0x8B4513);
-        this.background.drawRect(x - 20, this.app.screen.height - 250, 40, 140);
-        this.background.endFill();
+        const trunkWidth = 40;
+        const trunkHeight = 140;
+        const trunkY = this.app.screen.height - 250;
+        const steps = 5;
+
+        // 幹のグラデーションを描画
+        for (let i = 0; i < steps; i++) {
+            const ratio = i / steps;
+            const startColor = BACKGROUND.TREE_TRUNK_COLOR;
+            const endColor = this.darkenColor(BACKGROUND.TREE_TRUNK_COLOR, 0.2); // 20%暗く
+            const color = this.lerpColor(startColor, endColor, ratio);
+            
+            this.background.beginFill(color);
+            this.background.drawRect(
+                x - trunkWidth/2 + (trunkWidth * i) / steps,
+                trunkY,
+                trunkWidth / steps + 1,
+                trunkHeight
+            );
+            this.background.endFill();
+        }
     }
 
     private drawTreeBranches(x: number): void {
-        this.background.lineStyle(20, 0x8B4513);
+        this.background.lineStyle(20, BACKGROUND.TREE_TRUNK_COLOR);
         this.background.moveTo(x, this.app.screen.height - 200);
         this.background.lineTo(x - 50, this.app.screen.height - 250);
         this.background.moveTo(x, this.app.screen.height - 180);
@@ -120,7 +230,7 @@ export class BackgroundRenderer extends Renderer {
     }
 
     private drawTreeLeaves(x: number): void {
-        const leafColors = [0x228B22, 0x32CD32, 0x006400]; // 異なる緑色
+        const leafColors = [BACKGROUND.TREE_COLOR, 0x32CD32, BACKGROUND.FOREST_COLOR];
 
         // メインの葉っぱの塊
         for (let i = 0; i < 3; i++) {
@@ -168,6 +278,13 @@ export class BackgroundRenderer extends Renderer {
         const g = Math.round(g1 + (g2 - g1) * ratio);
         const b = Math.round(b1 + (b2 - b1) * ratio);
 
+        return (r << 16) | (g << 8) | b;
+    }
+
+    private darkenColor(color: number, factor: number): number {
+        const r = Math.floor(((color >> 16) & 0xFF) * (1 - factor));
+        const g = Math.floor(((color >> 8) & 0xFF) * (1 - factor));
+        const b = Math.floor((color & 0xFF) * (1 - factor));
         return (r << 16) | (g << 8) | b;
     }
 } 
