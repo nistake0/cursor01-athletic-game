@@ -9,10 +9,13 @@ export class FishSpawner extends Obstacle {
     private lastSpawnTime: number = 0;
     private spawnInterval: number = 2000; // 2秒ごとに出現
     private pool: Pool | null = null;
+    protected graphics: PIXI.Graphics;
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
         super(app, obstacles, game);
         this.fish = new Fish(this.app, this.obstacles, this.game);
+        this.graphics = new PIXI.Graphics();
+        this.obstacles.addChild(this.graphics);
         this.findPool();
     }
 
@@ -32,8 +35,9 @@ export class FishSpawner extends Obstacle {
     }
 
     public update(currentTime: number): void {
+        // 魚の更新
         this.fish.update(currentTime);
-
+        
         // 一定時間ごとに魚を生成
         if (currentTime - this.lastSpawnTime > this.spawnInterval) {
             this.spawnFish();
@@ -59,11 +63,11 @@ export class FishSpawner extends Obstacle {
         const randomIndex = Math.floor(Math.random() * poolBoundsList.length);
         const selectedPool = poolBoundsList[randomIndex];
         console.log('Selected pool:', selectedPool);
-
+        
         // 選択した池の底に魚を出現させる
         const spawnPoint = {
             x: selectedPool.x + selectedPool.width / 2,
-            y: selectedPool.y + selectedPool.height
+            y: selectedPool.y + selectedPool.height - 5 // 池の底から少し上に出現
         };
 
         console.log('Spawning fish at:', spawnPoint);
@@ -72,6 +76,7 @@ export class FishSpawner extends Obstacle {
     }
 
     public reset(): void {
+        this.graphics.clear();
         this.fish.reset();
         this.lastSpawnTime = 0;
         this.findPool(); // 画面遷移後にPoolを再検索

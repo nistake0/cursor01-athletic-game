@@ -1,17 +1,18 @@
 import * as PIXI from 'pixi.js';
+import { Game } from '../game';
 import { Obstacle } from './Obstacle';
+import { FISH_INITIAL_VELOCITY, FISH_GRAVITY } from '../constants';
 
 export class Fish extends Obstacle {
     private fish: PIXI.Graphics;
     private isActive: boolean = false;
     private spawnTime: number = 0;
-    private initialX: number = 0;
     private initialY: number = 0;
-    private velocityY: number = -600; // 画面の1/2まで到達するように調整
-    private gravity: number = 0.8; // 重力加速度
-    private hasReachedPeak: boolean = false; // 最高点に到達したかどうか
+    private velocityY: number = FISH_INITIAL_VELOCITY;
+    private gravity: number = FISH_GRAVITY;
+    private hasReachedPeak: boolean = false;
 
-    constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: any) {
+    constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
         super(app, obstacles, game);
         this.fish = new PIXI.Graphics();
         this.obstacles.addChild(this.fish);
@@ -20,7 +21,6 @@ export class Fish extends Obstacle {
     public spawn(x: number, y: number): void {
         this.isActive = true;
         this.spawnTime = Date.now();
-        this.initialX = x;
         this.initialY = y;
         this.fish.x = x;
         this.fish.y = y;
@@ -37,12 +37,12 @@ export class Fish extends Obstacle {
         
         // 魚の位置を更新
         this.fish.y = y;
-        
+
         // 最高点に到達したかチェック
         if (!this.hasReachedPeak && this.velocityY * (elapsed / 1000) + this.gravity * (elapsed / 1000) * (elapsed / 1000) * 1000 >= 0) {
             this.hasReachedPeak = true;
         }
-        
+
         // 最初の位置に戻ってきたら消える
         if (this.hasReachedPeak && y >= this.initialY) {
             this.reset();
@@ -112,7 +112,6 @@ export class Fish extends Obstacle {
     }
 
     public setPosition(x: number, y: number): void {
-        this.initialX = x;
         this.initialY = y;
         this.fish.x = x;
         this.fish.y = y;

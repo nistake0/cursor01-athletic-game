@@ -5,6 +5,7 @@ import { Obstacle } from './Obstacle';
 export class Pool extends Obstacle {
     private player: PIXI.Graphics;
     private poolPositions: { x: number, y: number, width: number, height: number }[] = [];
+    private visualOffset: number = 20; // 描画位置のオフセット
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
         super(app, obstacles, game);
@@ -37,8 +38,8 @@ export class Pool extends Obstacle {
         const poolWidth = 64;
         const poolSpacing = 150; // 間隔を広げて4つの池をバランスよく配置
         const startX = 170; // 開始位置を調整
-        const poolY = this.app.screen.height - 98;
-        
+        const poolY = this.app.screen.height - 98 + this.visualOffset; // Y座標を20ピクセル下に調整
+
         for (let i = 0; i < 4; i++) {
             const poolX = startX + i * poolSpacing;
             
@@ -63,7 +64,7 @@ export class Pool extends Obstacle {
     // 池との衝突判定
     public checkCollision(player: PIXI.Graphics): boolean {
         const playerBottom = player.y;
-        const poolY = this.app.screen.height - 98;
+        const poolY = this.app.screen.height - 98; // 衝突判定は元の位置のまま
         const poolWidth = 64;
         const poolSpacing = 150; // 間隔を広げて4つの池をバランスよく配置
         const startX = 170; // 開始位置を調整
