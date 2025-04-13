@@ -75,5 +75,13 @@ export class Signboard extends Obstacle {
 
     public reset(): void {
         this.isInitialized = false;
+        
+        // テキストを削除
+        if (this.cursorText && this.cursorText.parent) {
+            this.cursorText.parent.removeChild(this.cursorText);
+        }
+        if (this.parkText && this.parkText.parent) {
+            this.parkText.parent.removeChild(this.parkText);
+        }
     }
 } 
