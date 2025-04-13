@@ -63,7 +63,6 @@ export class PlayerManager {
     }
 
     public update(): void {
-        console.log("player ", this.isDying);
         // 死亡中は通常の更新をスキップ
         if (this.isDying) {
             this.updateDeathAnimation();
@@ -234,6 +233,10 @@ export class PlayerManager {
     private updateDeathAnimation(): void {
         const currentTime = Date.now();
         const elapsedTime = currentTime - this.deathStartTime;
+        
+        // アニメーション時間の更新
+        this.animationTime += 1;
+        
         // 死亡演出が終了したらゲームオーバー
         if (elapsedTime >= PlayerManager.DEATH_ANIMATION_DURATION) {
             this.game.gameOver();

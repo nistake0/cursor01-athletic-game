@@ -48,20 +48,21 @@ export class PlayerRenderer extends Renderer {
             this.graphics.moveTo(0, -8);
             this.graphics.lineTo(20, 12);
 
-            // 腕（横に伸ばす）
+            // 腕（横に伸ばしてピクピク）
+            const armSwing = Math.sin(animationTime * 0.2) * 5;
             this.graphics.moveTo(0, 0);
-            this.graphics.lineTo(-15, 0);
+            this.graphics.lineTo(-20 - armSwing, 0);
             this.graphics.moveTo(0, 0);
-            this.graphics.lineTo(15, 0);
+            this.graphics.lineTo(20 + armSwing, 0);
 
-            // 脚（横に伸ばす）
+            // 脚（横に伸ばしてピクピク）
+            const legSwing = Math.sin(animationTime * 0.2) * 5;
             this.graphics.moveTo(0, 12);
-            this.graphics.lineTo(-15, 12);
+            this.graphics.lineTo(-20 - legSwing, 12);
             this.graphics.moveTo(0, 12);
-            this.graphics.lineTo(15, 12);
+            this.graphics.lineTo(20 + legSwing, 12);
 
             // 目（バッテン目）
-            // 白目は描画しない
             this.graphics.lineStyle(3, 0x000000);
             // 左目
             this.graphics.moveTo(-10, -24);
