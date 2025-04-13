@@ -92,33 +92,164 @@ export interface ScreenBackground {
   isInForest: boolean;
 }
 
-export const screenBackgrounds: { [key: number]: ScreenBackground } = {
-  1: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: false, isInForest: false },
-  2: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: false, isInForest: false },
-  3: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: false, isInForest: false },
-  4: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: false, isInForest: false },
-  5: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: false, isInForest: false },
-  6: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: true },
-  7: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: false },
-  8: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: true },
-  9: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: false },
-  10: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: false },
-  11: { drawSky: SkyType.NORMAL, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: true },
-  12: { drawSky: SkyType.SUNSET, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: false },
-  13: { drawSky: SkyType.SUNSET, drawGround: true, drawGrass: true, drawTrees: true, drawForestCanopy: true, isInForest: true }
-};
+// 画面設定のインターフェース
+export interface ScreenConfig {
+  // 背景設定
+  background: {
+    drawSky: SkyType;
+    drawGround: boolean;
+    drawGrass: boolean;
+    drawTrees: boolean;
+    drawForestCanopy: boolean;
+    isInForest: boolean;
+  };
+  // 障害物設定
+  obstacles: string[];
+}
 
-export const SPRING = {
-  WIDTH: 40,
-  HEIGHT: 30,  // 切り株のような高さに調整
-  BOUNCE_VELOCITY: -15,  // ばねの跳ね返り力（更新）
-  BOUNCE_WINDOW: 100,  // ミリ秒単位でのジャンプ入力受付時間
-};
-
-export const screenObjects = {
+// 統合された画面設定テーブル
+export const screenConfigs: { [key: number]: ScreenConfig } = {
+  1: {
+    background: {
+      drawSky: SkyType.NORMAL,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: false,
+      isInForest: false
+    },
+    obstacles: ['Signboard']
+  },
+  2: {
+    background: {
+      drawSky: SkyType.NORMAL,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: false,
+      isInForest: false
+    },
+    obstacles: ['Rock']
+  },
+  3: {
+    background: {
+      drawSky: SkyType.NORMAL,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: false,
+      isInForest: false
+    },
+    obstacles: ['Pool']
+  },
+  4: {
+    background: {
+      drawSky: SkyType.NORMAL,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: false,
+      isInForest: false
+    },
+    obstacles: ['Stump']
+  },
+  5: {
+    background: {
+      drawSky: SkyType.NORMAL,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: false,
+      isInForest: false
+    },
+    obstacles: ['RollingRock']
+  },
+  6: {
+    background: {
+      drawSky: SkyType.NORMAL,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: true,
+      isInForest: true
+    },
+    obstacles: ['LotusLeaf', 'LargePool']
+  },
+  7: {
+    background: {
+      drawSky: SkyType.NORMAL,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: true,
+      isInForest: false
+    },
+    obstacles: ['Rock', 'RollingRock']
+  },
+  8: {
+    background: {
+      drawSky: SkyType.NORMAL,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: true,
+      isInForest: true
+    },
+    obstacles: ['ChestnutSpawner']
+  },
+  9: {
+    background: {
+      drawSky: SkyType.NORMAL,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: true,
+      isInForest: false
+    },
+    obstacles: ['Pool', 'RollingRock']
+  },
+  10: {
+    background: {
+      drawSky: SkyType.NORMAL,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: true,
+      isInForest: false
+    },
+    obstacles: ['BeeSpawner']
+  },
+  11: {
+    background: {
+      drawSky: SkyType.NORMAL,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: true,
+      isInForest: true
+    },
+    obstacles: ['Stump', 'ChestnutSpawner']
+  },
+  12: {
+    background: {
+      drawSky: SkyType.SUNSET,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: true,
+      isInForest: false
+    },
+    obstacles: ['Pool', 'FishSpawner']
+  },
   13: {
-    springs: [
-      { x: 400 }  // 画面中央に1つだけ配置
-    ]
+    background: {
+      drawSky: SkyType.SUNSET,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: true,
+      isInForest: true
+    },
+    obstacles: ['SpringSpawner']
   }
 }; 

@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { Renderer } from './Renderer';
 import { Game } from '../game';
-import { BACKGROUND, screenBackgrounds, SkyType } from '../utils/constants';
+import { BACKGROUND, screenConfigs, SkyType } from '../utils/constants';
 
 export class BackgroundRenderer extends Renderer {
     private background: PIXI.Graphics;
@@ -35,7 +35,10 @@ export class BackgroundRenderer extends Renderer {
 
     private drawBackground(): void {
         this.background.clear();
-        const settings = screenBackgrounds[this.currentScreen];
+        const screenConfig = screenConfigs[this.currentScreen];
+        if (!screenConfig) return;
+
+        const settings = screenConfig.background;
 
         if (settings.drawSky !== SkyType.NONE) {
             this.drawSky(settings.drawSky);
@@ -149,7 +152,10 @@ export class BackgroundRenderer extends Renderer {
     }
 
     private drawForegroundTrees(): void {
-        const settings = screenBackgrounds[this.currentScreen];
+        const screenConfig = screenConfigs[this.currentScreen];
+        if (!screenConfig) return;
+
+        const settings = screenConfig.background;
         
         if (settings.isInForest) {
             // 森の中の場合、木を密集して描画

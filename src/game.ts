@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { PLAYER, SCREEN } from './utils/constants';
+import { PLAYER, SCREEN, screenConfigs } from './utils/constants';
 import { BackgroundRenderer } from './renderers/BackgroundRenderer';
 import { UIManager } from './managers/UIManager';
 import { EventEmitter, GameEvent } from './utils/EventEmitter';
@@ -27,23 +27,6 @@ export class Game {
     // 新しい障害物管理用の変数
     public obstacleList: Obstacle[] = [];
     private obstacleFactory: ObstacleFactory;
-    
-    // 画面ごとの障害物設定
-    private screenObstacles: { [key: number]: string[] } = {
-        1: ['Signboard'], // 画面1は看板のみ
-        2: ['Rock'],
-        3: ['Pool'],
-        4: ['Stump'],
-        5: ['RollingRock'],
-        6: ['LotusLeaf', 'LargePool'],
-        7: ['Rock', 'RollingRock'],
-        8: ['ChestnutSpawner'],
-        9: ['Pool', 'RollingRock'],
-        10: ['BeeSpawner'],
-        11: ['Stump', 'ChestnutSpawner'],
-        12: ['Pool', 'FishSpawner'],
-        13: ['SpringSpawner']
-    };
 
     constructor() {
         // PIXIアプリケーションを初期化
@@ -185,11 +168,13 @@ export class Game {
         this.obstacleList = [];
         
         // 新しい画面の障害物を生成
-        const obstacleTypes = this.screenObstacles[screenNumber] || [];
-        obstacleTypes.forEach(type => {
-            const obstacle = this.obstacleFactory.createObstacle(type);
-            this.obstacleList.push(obstacle);
-        });
+        const screenConfig = screenConfigs[screenNumber];
+        if (screenConfig) {
+            screenConfig.obstacles.forEach(type => {
+                const obstacle = this.obstacleFactory.createObstacle(type);
+                this.obstacleList.push(obstacle);
+            });
+        }
         
         // 背景を設定
         this.backgroundRenderer.setScreen(screenNumber);
