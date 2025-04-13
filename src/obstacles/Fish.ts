@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { Game } from '../game';
 import { Obstacle } from './Obstacle';
-import { FISH_INITIAL_VELOCITY, FISH_GRAVITY } from '../constants';
+import { FISH_INITIAL_VELOCITY, FISH_GRAVITY } from '../utils/constants';
 
 export class Fish extends Obstacle {
     private fish: PIXI.Graphics;
@@ -12,7 +12,7 @@ export class Fish extends Obstacle {
     private gravity: number = FISH_GRAVITY;
     private hasReachedPeak: boolean = false;
     private hasCreatedSplash: boolean = false;
-    private game: Game;
+    protected game: Game;
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
         super(app, obstacles, game);

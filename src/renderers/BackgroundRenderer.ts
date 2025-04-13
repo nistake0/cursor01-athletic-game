@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { Renderer } from './Renderer';
 import { Game } from '../game';
-import { BACKGROUND, screenBackgrounds, SkyType } from '../constants';
+import { BACKGROUND, screenBackgrounds, SkyType } from '../utils/constants';
 
 export class BackgroundRenderer extends Renderer {
     private background: PIXI.Graphics;
