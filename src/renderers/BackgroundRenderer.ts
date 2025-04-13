@@ -28,8 +28,14 @@ export class BackgroundRenderer extends Renderer {
 
     private drawBackground(): void {
         this.background.clear();
+        this.drawSky();
+        this.drawForestSilhouette();
+        this.drawGround();
+        this.drawGrass();
+        this.drawForegroundTrees();
+    }
 
-        // 空のグラデーション
+    private drawSky(): void {
         const height = this.app.screen.height;
         const steps = BACKGROUND.GRADIENT_STEPS;
         for (let i = 0; i < steps; i++) {
@@ -47,16 +53,15 @@ export class BackgroundRenderer extends Renderer {
             );
             this.background.endFill();
         }
+    }
 
-        // 奥の木々のシルエット
-        this.drawForestSilhouette();
-
-        // 地面（グレー）
+    private drawGround(): void {
         this.background.beginFill(SCREEN.GROUND_COLOR);
         this.background.drawRect(0, this.app.screen.height - 100, this.app.screen.width, 50);
         this.background.endFill();
+    }
 
-        // 草
+    private drawGrass(): void {
         this.background.beginFill(SCREEN.GRASS_COLOR);
         this.background.drawRect(0, this.app.screen.height - 110, this.app.screen.width, 10);
         for (let x = 0; x < this.app.screen.width; x += 15) {
@@ -65,8 +70,9 @@ export class BackgroundRenderer extends Renderer {
             this.background.drawRect(x, this.app.screen.height - 110 - height, 8, height);
             this.background.endFill();
         }
+    }
 
-        // 手前の木を描画
+    private drawForegroundTrees(): void {
         this.drawTree(100);
         this.drawTree(this.app.screen.width - 100);
     }
@@ -93,20 +99,27 @@ export class BackgroundRenderer extends Renderer {
     }
 
     private drawTree(x: number): void {
-        // 幹
+        this.drawTreeTrunk(x);
+        this.drawTreeBranches(x);
+        this.drawTreeLeaves(x);
+    }
+
+    private drawTreeTrunk(x: number): void {
         this.background.beginFill(0x8B4513);
         this.background.drawRect(x - 20, this.app.screen.height - 250, 40, 140);
         this.background.endFill();
+    }
 
-        // 枝
+    private drawTreeBranches(x: number): void {
         this.background.lineStyle(20, 0x8B4513);
         this.background.moveTo(x, this.app.screen.height - 200);
         this.background.lineTo(x - 50, this.app.screen.height - 250);
         this.background.moveTo(x, this.app.screen.height - 180);
         this.background.lineTo(x + 50, this.app.screen.height - 230);
         this.background.lineStyle(0);
+    }
 
-        // 葉っぱの色を設定
+    private drawTreeLeaves(x: number): void {
         const leafColors = [0x228B22, 0x32CD32, 0x006400]; // 異なる緑色
 
         // メインの葉っぱの塊
