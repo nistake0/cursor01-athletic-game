@@ -147,13 +147,23 @@ export class Game {
     private checkCollision(): boolean {
         const player = this.playerManager.getPlayer();
         
+        // プレーヤーが死亡中なら衝突判定をスキップ
+        if (this.playerManager.isDead()) {
+            return false;
+        }
+
         // すべての障害物との衝突をチェック
         const result = this.obstacleList.some(obstacle => obstacle.checkCollision(player));
+
+        // 衝突した場合はプレーヤーを死亡状態にする
+        if (result) {
+            this.playerManager.die();
+        }
 
         return result;
     }
 
-    private gameOver(): void {
+    public gameOver(): void {
         this.isGameOver = true;
         this.uiManager.showGameOver();
     }
@@ -211,11 +221,11 @@ export class Game {
             return;
         }
 
-        // プレーヤーの更新
+        // プレーヤーの更新（死亡中も含む）
         this.playerManager.update();
 
         // 現在の時間を取得
-            const currentTime = Date.now();
+        const currentTime = Date.now();
             
         // すべての障害物を更新
         this.obstacleList.forEach(obstacle => obstacle.update(currentTime));
@@ -223,8 +233,8 @@ export class Game {
         // エフェクトの更新
         this.effectManager.update();
 
-        // 障害物との衝突判定
-        if (this.checkCollision()) {
+        // 障害物との衝突判定（死亡中はスキップ）
+        if (!this.playerManager.isDead() && this.checkCollision()) {
             this.gameOver();
         }
 
@@ -232,7 +242,7 @@ export class Game {
         this.drawObstacles();
     }
 
-    public getPlayer(): PIXI.Graphics {
+    public getPlayer(): PIXI.Container {
         return this.playerManager.getPlayer();
     }
 
