@@ -29,7 +29,7 @@ export class LotusLeaf extends Obstacle {
         this.obstacles.lineStyle(2, 0x006400);
         this.obstacles.drawEllipse(
             this.lotusX + lotusWidth/2,
-            this.poolBounds.top + 5, // 水面の上に配置
+            this.poolBounds.y + 5, // 水面の上に配置
             lotusWidth/2,
             lotusHeight
         );
@@ -39,7 +39,7 @@ export class LotusLeaf extends Obstacle {
         for (let i = 0; i < 3; i++) {
             this.obstacles.drawEllipse(
                 this.lotusX + lotusWidth/2,
-                this.poolBounds.top + 5,
+                this.poolBounds.y + 5,
                 lotusWidth/2 - 10 - i*8,
                 lotusHeight - 2 - i*2
             );
@@ -57,6 +57,7 @@ export class LotusLeaf extends Obstacle {
 
         // 初回初期化
         if (!this.isInitialized) {
+            console.log('LotusLeaf: updateが呼ばれました', largePoolBounds);
             this.poolBounds = largePoolBounds;
             this.lotusX = this.poolBounds.x + 50; // 左端から少し離して開始
             this.lotusY = this.poolBounds.y + this.poolBounds.height / 2;
@@ -110,16 +111,14 @@ export class LotusLeaf extends Obstacle {
         };
     }
 
-    private getLotusBounds() {
-        if (!this.isInitialized) {
-            return null;
-        }
+    public getLotusBounds(): { left: number; top: number; right: number; bottom: number; width: number } {
         const lotusWidth = this.poolBounds.width / 5;
         return {
             left: this.lotusX,
+            top: this.poolBounds.y,
             right: this.lotusX + lotusWidth,
-            top: this.poolBounds.top + 5,
-            bottom: this.poolBounds.top + 15
+            bottom: this.poolBounds.y + 20,
+            width: lotusWidth
         };
     }
 

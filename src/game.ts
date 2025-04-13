@@ -24,21 +24,13 @@ export class Game {
     private player!: PIXI.Graphics;
     private currentScreen: number = 1;
     private isGameOver: boolean = false;
-    private rock: Rock;
-    private pool: Pool;
-    private rollingRock: RollingRock;
-    private stump: Stump;
-    private largePool: LargePool;
-    private lotusLeaf: LotusLeaf;
     private backgroundRenderer: BackgroundRenderer;
-    private chestnutSpawner: ChestnutSpawner;
-    private beeSpawner: BeeSpawner;
     private eventEmitter: EventEmitter;
     private playerManager: PlayerManager;
     private uiManager: UIManager;
     
     // 新しい障害物管理用の変数
-    private obstacleList: Obstacle[] = [];
+    public obstacleList: Obstacle[] = [];
     private obstacleFactory: ObstacleFactory;
     
     // 画面ごとの障害物設定
@@ -48,7 +40,7 @@ export class Game {
         3: ['Pool'],
         4: ['Stump'],
         5: ['RollingRock'],
-        6: ['LargePool', 'LotusLeaf'],
+        6: ['LotusLeaf', 'LargePool'],
         7: ['Rock', 'RollingRock'],
         8: ['ChestnutSpawner'],
         9: ['Pool', 'RollingRock'],
@@ -90,26 +82,6 @@ export class Game {
 
         // UIマネージャーの初期化
         this.uiManager = new UIManager(this.app);
-
-        // 障害物のインスタンスを初期化
-        this.rock = new Rock(this.app, this.obstacles, this);
-        this.pool = new Pool(this.app, this.obstacles, this);
-        this.rollingRock = new RollingRock(this.app, this.obstacles, this);
-
-        // 画面5の切り株の初期化
-        this.stump = new Stump(this.app, this.obstacles, this);
-
-        // 大きな池の初期化
-        this.largePool = new LargePool(this.app, this.obstacles, this);
-
-        // 蓮の葉の初期化
-        this.lotusLeaf = new LotusLeaf(this.app, this.obstacles, this);
-
-        // 蜂マネージャーの初期化
-        this.beeSpawner = new BeeSpawner(this.app, this.obstacles, this);
-
-        // いがぐりマネージャーの初期化
-        this.chestnutSpawner = new ChestnutSpawner(this.app, this.obstacles, this);
 
         // 障害物ファクトリを初期化
         this.obstacleFactory = new ObstacleFactory(this.app, this.obstacles, this);
@@ -197,8 +169,6 @@ export class Game {
         
         // UIマネージャーのゲームオーバー表示を非表示にする
         this.uiManager.hideGameOver();
-
-        this.chestnutSpawner.reset();
     }
 
     private gameLoop(): void {
@@ -271,7 +241,8 @@ export class Game {
     }
 
     public getLargePoolBounds(): { x: number; y: number; width: number; height: number } {
-        return this.largePool.getPoolBounds();
+        const largePool = this.obstacleList.find(obstacle => obstacle instanceof LargePool) as LargePool;
+        return largePool ? largePool.getPoolBounds() : { x: 0, y: 0, width: 0, height: 0 };
     }
 }
 

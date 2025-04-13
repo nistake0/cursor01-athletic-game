@@ -1,9 +1,10 @@
 import * as PIXI from 'pixi.js';
 import { Game } from '../game';
-import { PLAYER } from '../utils/constants';
+import { PLAYER, SCREEN } from '../utils/constants';
 import { PlayerRenderer } from '../renderers/PlayerRenderer';
 import { EventEmitter, GameEvent } from '../utils/EventEmitter';
 import { InputManager, ActionType } from './InputManager';
+import { LotusLeaf } from '../obstacles/LotusLeaf';
 
 export class PlayerManager {
     private app: PIXI.Application;
@@ -165,5 +166,24 @@ export class PlayerManager {
 
     public isOnLotus(): boolean {
         return this._isOnLotus;
+    }
+
+    public isOnLotusLeaf(): boolean {
+        const lotusLeaf = this.game.obstacleList.find(obstacle => obstacle instanceof LotusLeaf) as LotusLeaf;
+        if (!lotusLeaf) return false;
+
+        const lotusBounds = lotusLeaf.getLotusBounds();
+        if (!lotusBounds) return false;
+
+        const player = this.getPlayer();
+        const playerBounds = player.getBounds();
+
+        // プレイヤーが蓮の葉の上にいるかチェック
+        const isAboveLotus = playerBounds.bottom >= lotusBounds.top - 35 && 
+                            playerBounds.bottom <= lotusBounds.top + 35;
+        const isWithinLotusX = playerBounds.right > lotusBounds.left && 
+                              playerBounds.left < lotusBounds.right;
+
+        return isAboveLotus && isWithinLotusX;
     }
 } 
