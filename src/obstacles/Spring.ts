@@ -79,16 +79,37 @@ export class Spring extends Obstacle {
 
         // 上からの衝突（乗る）か横からの衝突（通り抜け防止）かを判定
         if (isAboveSpring && isWithinSpringX) {
-            return true; // 上からの衝突（乗る）
+            // 上からの衝突（乗る）場合は、プレイヤーが落下中かどうかをチェック
+            const isFalling = this.playerManager.getVelocityY() > 0;
+            
+            // 落下中の場合のみtrueを返す（ゲームオーバーにならない）
+            if (isFalling) {
+                return true;
+            }
+            
+            // 上昇中にばねに乗った場合は、プレイヤーの位置を調整してfalseを返す
+            player.y = springBounds.top - player.getBounds().height;
+            return false;
         } else if (isOverlappingX && isOverlappingY) {
             // 横からの衝突（通り抜け防止）
-            // プレイヤーの位置を調整
-            if (playerBounds.right > springBounds.left && playerBounds.left < springBounds.left) {
-                player.x = springBounds.left - playerBounds.width;
-            } else if (playerBounds.left < springBounds.right && playerBounds.right > springBounds.right) {
-                player.x = springBounds.right;
+            
+            // プレイヤーとばねの中心位置を計算
+            const playerCenterX = (playerBounds.left + playerBounds.right) / 2;
+            const springCenterX = (springBounds.left + springBounds.right) / 2;
+            
+            // プレイヤーがばねの左側にある場合
+            if (playerCenterX < springCenterX) {
+                // 左側に押し出す（必要な距離だけ）
+                const pushDistance = springBounds.left - playerBounds.right;
+                player.x += pushDistance;
+            } else {
+                // 右側に押し出す（必要な距離だけ）
+                const pushDistance = springBounds.right - playerBounds.left;
+                player.x += pushDistance;
             }
-            return true;
+            
+            // 横からの衝突はゲームオーバーにしない
+            return false;
         }
 
         return false;
@@ -113,7 +134,10 @@ export class Spring extends Obstacle {
             const isAboveSpring = playerBounds.bottom >= springBounds.top - 5 && 
                                 playerBounds.bottom <= springBounds.top + 5;
             
-            if (isAboveSpring) {
+            // プレイヤーが落下中かどうかをチェック（Y軸の速度が正の値）
+            const isFalling = this.playerManager.getVelocityY() > 0;
+            
+            if (isAboveSpring && isFalling) {
                 // プレイヤーをばねの上に固定
                 player.y = springBounds.top - player.getBounds().height;
                 this.playerManager.setGrounded(true);
