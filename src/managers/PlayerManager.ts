@@ -10,7 +10,7 @@ export class PlayerManager {
     private app: PIXI.Application;
     private game: Game;
     private playerRenderer: PlayerRenderer;
-    private player: PIXI.Graphics = new PIXI.Graphics();
+    private player: PIXI.Container = new PIXI.Container();
     private velocityY: number = 0;
     private isJumping: boolean = false;
     private isGrounded: boolean = false;
@@ -23,6 +23,15 @@ export class PlayerManager {
     private _isOnLotus: boolean = false;
     private eventEmitter: EventEmitter;
     private inputManager: InputManager;
+
+    // 死亡演出関連のプロパティ
+    private isDying: boolean = false;
+    private deathStartTime: number = 0;
+    private lastBlinkTime: number = 0;
+    private isBlinking: boolean = false;
+    private static readonly DEATH_ANIMATION_DURATION = 2000; // 死亡演出の時間（ミリ秒）
+    private static readonly BLINK_INTERVAL = 200; // まばたきの間隔（ミリ秒）
+    private static readonly BLINK_DURATION = 100; // まばたきの時間（ミリ秒）
 
     constructor(app: PIXI.Application, game: Game, eventEmitter: EventEmitter) {
         this.app = app;
@@ -54,6 +63,13 @@ export class PlayerManager {
     }
 
     public update(): void {
+        console.log("player ", this.isDying);
+        // 死亡中は通常の更新をスキップ
+        if (this.isDying) {
+            this.updateDeathAnimation();
+            return;
+        }
+
         // InputManagerの状態を更新
         this.inputManager.update();
 
@@ -116,9 +132,16 @@ export class PlayerManager {
         this.direction = 1;
         this.animationTime = 0;
         this.isMoving = false;
+
+        // 死亡状態のリセット
+        this.isDying = false;
+        const player = this.playerRenderer.getPlayer();
+        player.rotation = 0;
+        player.alpha = 1;
+        player.pivot.set(0, 0);
     }
 
-    public getPlayer(): PIXI.Graphics {
+    public getPlayer(): PIXI.Container {
         return this.playerRenderer.getPlayer();
     }
 
@@ -185,5 +208,57 @@ export class PlayerManager {
                               playerBounds.left < lotusBounds.right;
 
         return isAboveLotus && isWithinLotusX;
+    }
+
+    public die(): void {
+        if (this.isDying) return;
+        
+        this.isDying = true;
+        this.deathStartTime = Date.now();
+        this.lastBlinkTime = this.deathStartTime;
+        this.isBlinking = false;
+        
+        // 死亡時のアニメーション設定
+        const player = this.playerRenderer.getPlayer();
+        player.rotation = Math.PI / 2; // 90度回転して倒れる
+        player.pivot.set(0, player.height / 2);
+        player.position.set(
+            player.position.x,
+            player.position.y + player.height / 2
+        );
+
+        // プレイヤーを再描画
+        this.playerRenderer.render();
+    }
+
+    private updateDeathAnimation(): void {
+        const currentTime = Date.now();
+        const elapsedTime = currentTime - this.deathStartTime;
+        // 死亡演出が終了したらゲームオーバー
+        if (elapsedTime >= PlayerManager.DEATH_ANIMATION_DURATION) {
+            this.game.gameOver();
+            return;
+        }
+
+        // まばたきアニメーション
+        if (currentTime - this.lastBlinkTime >= PlayerManager.BLINK_INTERVAL) {
+            this.isBlinking = true;
+            this.lastBlinkTime = currentTime;
+        }
+
+        if (this.isBlinking) {
+            if (currentTime - this.lastBlinkTime >= PlayerManager.BLINK_DURATION) {
+                this.isBlinking = false;
+            }
+            const player = this.playerRenderer.getPlayer();
+            player.alpha = this.isBlinking ? 0.3 : 1;
+        }
+
+        // プレイヤーを再描画（毎フレーム呼び出す）
+        this.playerRenderer.render();
+    }
+
+    public isDead(): boolean {
+        return this.isDying;
     }
 } 
