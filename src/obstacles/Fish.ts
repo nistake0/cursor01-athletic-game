@@ -11,11 +11,14 @@ export class Fish extends Obstacle {
     private velocityY: number = FISH_INITIAL_VELOCITY;
     private gravity: number = FISH_GRAVITY;
     private hasReachedPeak: boolean = false;
+    private hasCreatedSplash: boolean = false;
+    private game: Game;
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
         super(app, obstacles, game);
         this.fish = new PIXI.Graphics();
         this.obstacles.addChild(this.fish);
+        this.game = game;
     }
 
     public spawn(x: number, y: number): void {
@@ -25,6 +28,10 @@ export class Fish extends Obstacle {
         this.fish.x = x;
         this.fish.y = y;
         this.hasReachedPeak = false;
+        this.hasCreatedSplash = false;
+        
+        // 出現時の水しぶき
+        this.game.getEffectManager().createSplash(x, y, 15);
     }
 
     public update(currentTime: number): void {
@@ -44,7 +51,10 @@ export class Fish extends Obstacle {
         }
 
         // 最初の位置に戻ってきたら消える
-        if (this.hasReachedPeak && y >= this.initialY) {
+        if (this.hasReachedPeak && y >= this.initialY && !this.hasCreatedSplash) {
+            // 消滅時の水しぶき
+            this.game.getEffectManager().createSplash(this.fish.x, this.fish.y, 20);
+            this.hasCreatedSplash = true;
             this.reset();
         }
     }
@@ -119,6 +129,10 @@ export class Fish extends Obstacle {
         this.isActive = true;
         this.spawnTime = Date.now();
         this.hasReachedPeak = false;
+        this.hasCreatedSplash = false;
+        
+        // 出現時の水しぶき
+        this.game.getEffectManager().createSplash(x, y, 15);
     }
 
     public checkCollision(player: PIXI.Graphics): boolean {

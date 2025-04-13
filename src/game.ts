@@ -8,6 +8,7 @@ import { ObstacleFactory } from './obstacles/ObstacleFactory';
 import { Obstacle } from './obstacles/Obstacle';
 import { LargePool } from './obstacles/LargePool';
 import { WipeEffect } from './effects/WipeEffect';
+import { EffectManager } from './effects/EffectManager';
 
 export class Game {
     private app: PIXI.Application;
@@ -21,6 +22,7 @@ export class Game {
     private uiManager: UIManager;
     private wipeEffect: WipeEffect;
     private isTransitioning: boolean = false;
+    private effectManager: EffectManager;
     
     // 新しい障害物管理用の変数
     public obstacleList: Obstacle[] = [];
@@ -82,6 +84,9 @@ export class Game {
         
         // ワイプ効果を初期化
         this.wipeEffect = new WipeEffect(this.app, () => this.completeTransition());
+        
+        // エフェクトマネージャーを初期化
+        this.effectManager = new EffectManager(this.app);
         
         // 初期画面の障害物を設定
         this.initializeScreen(1);
@@ -209,10 +214,10 @@ export class Game {
     private gameLoop(): void {
         if (this.isGameOver) return;
 
-        // トランジション中は更新をスキップ
         if (this.isTransitioning) {
             // ワイプエフェクトの更新
             this.wipeEffect.update();
+            this.effectManager.update();
             
             // トランジション完了チェック
             if (!this.wipeEffect.isActive()) {
@@ -231,6 +236,9 @@ export class Game {
         
         // すべての障害物を更新
         this.obstacleList.forEach(obstacle => obstacle.update(currentTime));
+
+        // エフェクトの更新
+        this.effectManager.update();
 
         // 障害物との衝突判定
         if (this.checkCollision()) {
@@ -292,6 +300,10 @@ export class Game {
     public getLargePoolBounds(): { x: number; y: number; width: number; height: number } {
         const largePool = this.obstacleList.find(obstacle => obstacle instanceof LargePool) as LargePool;
         return largePool ? largePool.getPoolBounds() : { x: 0, y: 0, width: 0, height: 0 };
+    }
+
+    public getEffectManager(): EffectManager {
+        return this.effectManager;
     }
 }
 
