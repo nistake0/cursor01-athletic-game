@@ -1,10 +1,8 @@
 import * as PIXI from 'pixi.js';
 import { Game } from './game';
+import { Obstacle } from './Obstacle';
 
-export class Chestnut {
-    private app: PIXI.Application;
-    private obstacles: PIXI.Graphics;
-    private game: Game;
+export class Chestnut extends Obstacle {
     private x: number;
     private y: number;
     private speed: number;
@@ -16,9 +14,7 @@ export class Chestnut {
     private shakeAmount: number = 20; // 揺れの大きさ
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
-        this.app = app;
-        this.obstacles = obstacles;
-        this.game = game;
+        super(app, obstacles, game);
         this.x = 0;
         this.y = 0;
         this.speed = 5;
@@ -97,13 +93,13 @@ export class Chestnut {
         this.draw();
     }
 
-    public checkCollision(playerX: number, playerY: number): boolean {
+    public checkCollision(player: PIXI.Graphics): boolean {
         if (!this.isActive) return false;
 
         // プレイヤーといがぐりの衝突判定
         const distance = Math.sqrt(
-            Math.pow(playerX - this.x, 2) + 
-            Math.pow(playerY - this.y, 2)
+            Math.pow(player.x - this.x, 2) + 
+            Math.pow(player.y - this.y, 2)
         );
 
         return distance < 30; // いがぐりの半径 + プレイヤーの当たり判定

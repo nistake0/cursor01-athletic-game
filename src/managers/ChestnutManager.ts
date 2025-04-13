@@ -53,12 +53,8 @@ export class ChestnutManager {
 
     // 衝突判定
     checkCollision(player: PIXI.Graphics): boolean {
-        // プレイヤーの位置を取得
-        const playerX = player.x;
-        const playerY = player.y;
-        
         // 各いがぐりとの衝突判定
-        return this.chestnuts.some(chestnut => chestnut.checkCollision(playerX, playerY));
+        return this.chestnuts.some(chestnut => chestnut.checkCollision(player));
     }
 
     // リセット

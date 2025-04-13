@@ -24,7 +24,7 @@ export class BeeManager {
 
     public update(currentTime: number): void {
         // 蜂の更新
-        this.bee.update();
+        this.bee.update(currentTime);
         
         // 蜂が非アクティブ状態になったらフラグを更新
         if (!this.bee.isActiveState()) {
@@ -52,10 +52,7 @@ export class BeeManager {
     }
 
     public checkCollision(player: PIXI.Graphics): boolean {
-        return this.bee.checkCollision(
-            player.x, 
-            player.y
-        );
+        return this.bee.checkCollision(player);
     }
 
     public isActiveState(): boolean {

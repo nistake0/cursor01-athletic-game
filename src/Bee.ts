@@ -1,10 +1,8 @@
 import * as PIXI from 'pixi.js';
 import { Game } from './game';
+import { Obstacle } from './Obstacle';
 
-export class Bee {
-    private app: PIXI.Application;
-    private obstacles: PIXI.Graphics;
-    private game: Game;
+export class Bee extends Obstacle {
     private x: number;
     private y: number;
     private speed: number;
@@ -17,9 +15,7 @@ export class Bee {
     private readonly GROUND_Y: number = 480; // 地面のY座標（600 - 120）
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
-        this.app = app;
-        this.obstacles = obstacles;
-        this.game = game;
+        super(app, obstacles, game);
         this.x = 0;
         this.y = 0;
         this.speed = 5;
@@ -80,7 +76,7 @@ export class Bee {
         this.graphics.endFill();
     }
 
-    public update(): void {
+    public update(currentTime: number): void {
         if (!this.isActive) return;
 
         // 左に移動
@@ -96,13 +92,13 @@ export class Bee {
         this.draw();
     }
 
-    public checkCollision(playerX: number, playerY: number): boolean {
+    public checkCollision(player: PIXI.Graphics): boolean {
         if (!this.isActive) return false;
 
         // プレイヤーと蜂の衝突判定
         const distance = Math.sqrt(
-            Math.pow(playerX - this.x, 2) + 
-            Math.pow(playerY - this.y, 2)
+            Math.pow(player.x - this.x, 2) + 
+            Math.pow(player.y - this.y, 2)
         );
 
         return distance < 25; // 蜂の半径 + プレイヤーの当たり判定
