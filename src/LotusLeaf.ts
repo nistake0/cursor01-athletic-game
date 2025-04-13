@@ -1,18 +1,15 @@
 import * as PIXI from 'pixi.js';
 import { Game } from './game';
+import { Obstacle } from './Obstacle';
 
-export class LotusLeaf {
-    private obstacles: PIXI.Graphics;
-    private game: Game;
+export class LotusLeaf extends Obstacle {
     private lotusX: number = 0;
     private lotusDirection: number = 1;
     private lotusSpeed: number = 1;
-    private isOnLotus: boolean = false;
     private poolBounds: { left: number; right: number; top: number; width: number };
 
     constructor(obstacles: PIXI.Graphics, game: Game, poolBounds: { left: number; right: number; top: number; width: number }) {
-        this.obstacles = obstacles;
-        this.game = game;
+        super(game.getApp(), obstacles, game);
         this.poolBounds = poolBounds;
     }
 

@@ -1,10 +1,8 @@
 import * as PIXI from 'pixi.js';
 import { Game } from './game';
+import { Obstacle } from './Obstacle';
 
-export class LargePool {
-    private app: PIXI.Application;
-    private obstacles: PIXI.Graphics;
-    private game: Game;
+export class LargePool extends Obstacle {
     private poolBounds: {
         left: number;
         right: number;
@@ -28,9 +26,7 @@ export class LargePool {
     };
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
-        this.app = app;
-        this.obstacles = obstacles;
-        this.game = game;
+        super(app, obstacles, game);
         this.initializePoolBounds();
     }
 
@@ -109,6 +105,10 @@ export class LargePool {
         }
         
         return false;
+    }
+
+    public update(currentTime: number): void {
+        // 大きな池は動かないので、現時点では何もしない
     }
 
     public reset(): void {

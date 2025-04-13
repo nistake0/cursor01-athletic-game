@@ -366,6 +366,10 @@ export class Game {
     public getPlayerManager(): PlayerManager {
         return this.playerManager;
     }
+
+    public getApp(): PIXI.Application {
+        return this.app;
+    }
 }
 
 // ゲームの開始
