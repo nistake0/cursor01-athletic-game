@@ -68,6 +68,9 @@ export class BackgroundRenderer extends Renderer {
             case SkyType.SUNSET:
                 this.drawSunsetSky();
                 break;
+            case SkyType.NIGHT:
+                this.drawNightSky();
+                break;
         }
     }
 
@@ -115,6 +118,39 @@ export class BackgroundRenderer extends Renderer {
             );
             this.background.endFill();
         }
+    }
+
+    private drawNightSky(): void {
+        const height = this.app.screen.height;
+        const steps = BACKGROUND.GRADIENT_STEPS;
+        
+        // 夜空のグラデーションを描画
+        for (let i = 0; i < steps; i++) {
+            const ratio = i / steps;
+            const startColor = BACKGROUND.NIGHT_START_COLOR;
+            const endColor = BACKGROUND.NIGHT_END_COLOR;
+            const color = this.lerpColor(startColor, endColor, ratio);
+            
+            this.background.beginFill(color);
+            this.background.drawRect(
+                0,
+                (height * i) / steps,
+                this.app.screen.width,
+                height / steps + 1
+            );
+            this.background.endFill();
+        }
+        
+        // 星を描画
+        this.background.beginFill(BACKGROUND.STAR_COLOR);
+        for (let i = 0; i < BACKGROUND.STAR_COUNT; i++) {
+            const x = Math.random() * this.app.screen.width;
+            const y = Math.random() * (height * 0.8); // 画面の上部80%に星を配置
+            const size = 1 + Math.random() * 2; // 星の大きさをランダムに
+            
+            this.background.drawCircle(x, y, size);
+        }
+        this.background.endFill();
     }
 
     private drawGround(): void {

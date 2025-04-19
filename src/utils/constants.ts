@@ -72,7 +72,11 @@ export const BACKGROUND = {
   TREE_MAX_WIDTH: 60,
   TREE_OVERLAP: 0.8,
   SUNSET_START_COLOR: 0xFF7F50,
-  SUNSET_END_COLOR: 0x4B0082
+  SUNSET_END_COLOR: 0x4B0082,
+  NIGHT_START_COLOR: 0x000033,  // 濃い青色
+  NIGHT_END_COLOR: 0x191970,    // ミッドナイトブルー
+  STAR_COLOR: 0xFFFFFF,         // 星の色
+  STAR_COUNT: 100               // 星の数
 };
 
 // 空の種類を定義
@@ -80,7 +84,8 @@ export enum SkyType {
   NONE = 'NONE',      // 空を描画しない
   NORMAL = 'NORMAL',  // 通常の空
   DARK = 'DARK',     // 真っ暗
-  SUNSET = 'SUNSET'  // 夕焼け
+  SUNSET = 'SUNSET',  // 夕焼け
+  NIGHT = 'NIGHT'    // 夜景
 }
 
 export interface ScreenBackground {
@@ -258,6 +263,17 @@ export const screenConfigs: { [key: number]: ScreenConfig } = {
       drawGround: true,
       drawGrass: true,
       drawTrees: false,
+      drawForestCanopy: false,
+      isInForest: false
+    },
+    obstacles: ['Signboard']
+  },
+  15: {
+    background: {
+      drawSky: SkyType.NIGHT,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
       drawForestCanopy: false,
       isInForest: false
     },
