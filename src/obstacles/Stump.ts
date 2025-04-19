@@ -116,20 +116,16 @@ export class Stump extends Obstacle {
                     playerBounds.left >= stumpBounds.right - 10 &&
                     playerBounds.right > stumpBounds.right) {
                     this.game.setPlayerPosition(stumpBounds.right + 15, player.y);
+                    break; // 衝突処理後はループを抜ける
                 }
                 // 右側からの衝突
                 if (playerBounds.right >= stumpBounds.left &&
                     playerBounds.right <= stumpBounds.left + 10 &&
                     playerBounds.left < stumpBounds.left) {
                     this.game.setPlayerPosition(stumpBounds.left - 15, player.y);
+                    break; // 衝突処理後はループを抜ける
                 }
-                // 下からの衝突
-                if (playerBounds.top <= stumpBounds.bottom &&
-                    playerBounds.top >= stumpBounds.top - 5 &&
-                    playerBounds.right >= stumpBounds.left &&
-                    playerBounds.left <= stumpBounds.right) {
-                    this.game.setPlayerPosition(player.x, stumpBounds.bottom + 35);
-                }
+                // 下からの衝突判定は削除
                 break;
             }
         }
@@ -137,22 +133,6 @@ export class Stump extends Obstacle {
         // 切り株に乗っていない場合は、地面にいる状態を解除
         if (!isOnAnyStump && this.wasOnStump) {
             this.game.setGrounded(false);
-            console.log('切り株から落下: 状態変化', {
-                wasOnStump: this.wasOnStump,
-                isOnAnyStump: isOnAnyStump,
-                isGrounded: this.game.isGrounded()
-            });
-        }
-
-        // 切り株に乗っている状態が変わった場合にログを出力
-        if (this.wasOnStump !== isOnAnyStump) {
-            if (isOnAnyStump) {
-                console.log('切り株に乗りました: 状態変化', {
-                    wasOnStump: this.wasOnStump,
-                    isOnAnyStump: isOnAnyStump,
-                    isGrounded: this.game.isGrounded()
-                });
-            }
         }
 
         // 切り株に乗っている状態を更新
