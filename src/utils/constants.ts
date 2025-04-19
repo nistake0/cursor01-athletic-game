@@ -16,11 +16,30 @@ export const FISH_GRAVITY = 0.8;            // 重力加速度
 export const SCREEN = {
   WIDTH: 800,
   HEIGHT: 600,
-  BACKGROUND_COLOR: 0x87CEEB, // 空色
+  BACKGROUND_COLOR: 0x000000,
   GROUND_COLOR: 0xCCCCCC,
   GRASS_COLOR: 0x33CC33,
   FOREST_COLOR: 0x000000,
   FOREST_ALPHA: 0.8,
+  SCREEN_CONFIGS: {
+    1: { background: 'forest', obstacles: ['rock', 'rock', 'rock'] },
+    2: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock'] },
+    3: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock'] },
+    4: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
+    5: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
+    6: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
+    7: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
+    8: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
+    9: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
+    10: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
+    11: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
+    12: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
+    13: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
+    14: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
+    15: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
+    16: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
+    17: { background: 'night', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] }
+  }
 };
 
 // 障害物関連
@@ -289,5 +308,16 @@ export const screenConfigs: { [key: number]: ScreenConfig } = {
       isInForest: true
     },
     obstacles: ['LargePool', 'TarzanRope']
+  },
+  17: {
+    background: {
+      drawSky: SkyType.NIGHT,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: true,
+      isInForest: true
+    },
+    obstacles: ['Pool', 'FishSpawner', 'ChestnutSpawner']
   }
 }; 
