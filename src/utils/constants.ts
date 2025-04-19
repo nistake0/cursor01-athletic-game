@@ -277,6 +277,17 @@ export const screenConfigs: { [key: number]: ScreenConfig } = {
       drawForestCanopy: false,
       isInForest: false
     },
-    obstacles: ['Signboard']
+    obstacles: ['LargePool', 'LotusLeaf', 'BeeSpawner']
+  },
+  16: {
+    background: {
+      drawSky: SkyType.NIGHT,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: true,
+      isInForest: true
+    },
+    obstacles: ['LargePool', 'TarzanRope']
   }
 }; 
