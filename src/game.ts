@@ -87,27 +87,24 @@ export class Game {
         this.app.ticker.add(() => this.gameLoop());
     }
 
+    // プレイヤーの死亡処理を処理するメソッド
+    public handlePlayerDeath(): void {
+        this.decreaseLives();
+    }
+
     // 残機を減らすメソッド
     private decreaseLives(): void {
         this.lives--;
+        this.uiManager.updateLives(this.lives);
+        
         if (this.lives <= 0) {
+            // 残機が0になった場合はゲームオーバー
             this.gameOver();
         } else {
-            // 残機がある場合は同じ画面をリスタート
-            this.restartCurrentScreen();
+            // 残機が残っている場合は同じ画面をリスタート
+            this.targetScreen = this.currentScreen;  // 同じ画面に戻るように設定
+            this.startTransition();
         }
-    }
-
-    // 現在の画面をリスタートするメソッド
-    private restartCurrentScreen(): void {
-        // プレイヤーを初期位置に戻す
-        this.playerManager.reset();
-        
-        // 現在の画面を再初期化
-        this.initializeScreen(this.currentScreen);
-        
-        // UIを更新
-        this.uiManager.updateLives(this.lives);
     }
 
     private setupEventListeners(): void {
@@ -159,6 +156,10 @@ export class Game {
         
         // 残機表示を更新
         this.uiManager.updateLives(this.lives);
+
+        // プレーヤーをリセットして表示
+        this.playerManager.reset();
+        this.playerManager.getPlayer().visible = true;
     }
 
     private drawObstacles(): void {
@@ -174,7 +175,7 @@ export class Game {
         const player = this.playerManager.getPlayer();
         
         // プレーヤーが死亡中なら衝突判定をスキップ
-        if (this.playerManager.isDead()) {
+        if (this.playerManager.isDeadState()) {
             return false;
         }
 
@@ -270,8 +271,8 @@ export class Game {
         this.effectManager.update();
 
         // 障害物との衝突判定（死亡中はスキップ）
-        if (!this.playerManager.isDead() && this.checkCollision()) {
-            this.decreaseLives();  // 衝突時に残機を減らす
+        if (!this.playerManager.isDeadState() && this.checkCollision()) {
+            this.playerManager.die();  // 衝突時にプレイヤーを死亡状態にする
         }
 
         // 障害物の再描画

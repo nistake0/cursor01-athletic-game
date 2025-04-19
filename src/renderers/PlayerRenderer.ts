@@ -4,8 +4,8 @@ import { Renderer } from './Renderer';
 
 export class PlayerRenderer extends Renderer {
     private playerManager: PlayerManager;
-    private player: PIXI.Container;
     private graphics: PIXI.Graphics;
+    private player: PIXI.Container;
 
     constructor(app: PIXI.Application, playerManager: PlayerManager) {
         super(app, playerManager.getGame());
@@ -31,77 +31,20 @@ export class PlayerRenderer extends Renderer {
         const isMoving = this.playerManager.isMovingState();
         const animationTime = this.playerManager.getAnimationTime();
         const isGrounded = this.playerManager.isGroundedState();
-        const isDying = this.playerManager.isDead();
+        const isDead = this.playerManager.isDeadState();
         const isOnRope = this.playerManager.isOnRope();
         
         // より太い線と明るい色で描画
         const bodyColor = 0xFF4444; // 明るい赤色
         this.graphics.lineStyle(4, bodyColor); // 線を4ピクセルに
 
-        if (isDying) {
-            this.drawDyingStickMan(animationTime, bodyColor);
+        if (isDead) {
+            this.drawDeadStickMan();
         } else if (isOnRope) {
             this.drawRopeStickMan(animationTime, bodyColor, direction);
         } else {
             this.drawAliveStickMan(animationTime, bodyColor, direction, isMoving, isGrounded);
         }
-    }
-
-    private drawRopeStickMan(animationTime: number, bodyColor: number, direction: number): void {
-        // 頭（輪郭と塗りつぶし）
-        this.graphics.beginFill(bodyColor);
-        this.graphics.drawCircle(0, -20, 12);
-        this.graphics.endFill();
-
-        // 体（ロープにつかまっている姿勢）
-        this.graphics.moveTo(0, -8);
-        this.graphics.lineTo(0, 12);
-
-        // 腕（ロープにつかまっている姿勢）
-        this.drawRopeArms(animationTime, direction);
-
-        // 脚（ロープにつかまっている姿勢）
-        this.drawRopeLegs(animationTime, direction);
-
-        // 目（キャラクターに表情を付ける）
-        const eyeColor = 0xFFFFFF; // 白色
-        this.graphics.lineStyle(0);
-        this.graphics.beginFill(eyeColor);
-        this.graphics.drawCircle(6 * direction, -22, 4);
-        this.graphics.endFill();
-        
-        // 瞳
-        this.graphics.beginFill(0x000000);
-        this.graphics.drawCircle(7 * direction, -22, 2);
-        this.graphics.endFill();
-    }
-
-    private drawRopeArms(animationTime: number, direction: number): void {
-        // 腕のアニメーション（ロープにつかまっている姿勢）
-        const armSwing = Math.sin(animationTime * 0.2) * 0.3; // ロープの揺れに合わせて腕を動かす
-        
-        // 左腕（肘を曲げてロープにつかまっている）
-        this.graphics.moveTo(0, 0);
-        this.graphics.lineTo(-8 * direction - armSwing * 5, -5); // 上腕
-        this.graphics.lineTo(-12 * direction - armSwing * 8, 0); // 前腕
-        
-        // 右腕（肘を曲げてロープにつかまっている）
-        this.graphics.moveTo(0, 0);
-        this.graphics.lineTo(8 * direction + armSwing * 5, -5); // 上腕
-        this.graphics.lineTo(12 * direction + armSwing * 8, 0); // 前腕
-    }
-
-    private drawRopeLegs(animationTime: number, direction: number): void {
-        // 脚のアニメーション（ロープにつかまっている姿勢）
-        const legSwing = Math.sin(animationTime * 0.2) * 0.3; // ロープの揺れに合わせて脚を動かす
-        
-        // 左脚（ブランと下に垂らす）
-        this.graphics.moveTo(0, 12);
-        this.graphics.lineTo(-3 * direction - legSwing * 5, 35); // まっすぐ下に垂らす
-        
-        // 右脚（ブランと下に垂らす）
-        this.graphics.moveTo(0, 12);
-        this.graphics.lineTo(3 * direction + legSwing * 5, 35); // まっすぐ下に垂らす
     }
 
     private drawAliveStickMan(
@@ -177,9 +120,74 @@ export class PlayerRenderer extends Renderer {
         this.graphics.lineTo(10 * direction + legSwing * 15, 35);
     }
 
-    private drawDyingStickMan(animationTime: number, bodyColor: number): void {
-        // 頭
+    private drawRopeStickMan(animationTime: number, bodyColor: number, direction: number): void {
+        // 頭（輪郭と塗りつぶし）
         this.graphics.beginFill(bodyColor);
+        this.graphics.drawCircle(0, -20, 12);
+        this.graphics.endFill();
+
+        // 体（ロープにつかまっている姿勢）
+        this.graphics.moveTo(0, -8);
+        this.graphics.lineTo(0, 12);
+
+        // 腕（ロープにつかまっている姿勢）
+        this.drawRopeArms(animationTime, direction);
+
+        // 脚（ロープにつかまっている姿勢）
+        this.drawRopeLegs(animationTime, direction);
+
+        // 目（キャラクターに表情を付ける）
+        const eyeColor = 0xFFFFFF; // 白色
+        this.graphics.lineStyle(0);
+        this.graphics.beginFill(eyeColor);
+        this.graphics.drawCircle(6 * direction, -22, 4);
+        this.graphics.endFill();
+        
+        // 瞳
+        this.graphics.beginFill(0x000000);
+        this.graphics.drawCircle(7 * direction, -22, 2);
+        this.graphics.endFill();
+    }
+
+    private drawRopeArms(animationTime: number, direction: number): void {
+        // 腕のアニメーション（ロープにつかまっている姿勢）
+        const armSwing = Math.sin(animationTime * 0.2) * 0.3; // ロープの揺れに合わせて腕を動かす
+        
+        // 左腕（肘を曲げてロープにつかまっている）
+        this.graphics.moveTo(0, 0);
+        this.graphics.lineTo(-8 * direction - armSwing * 5, -5); // 上腕
+        this.graphics.lineTo(-12 * direction - armSwing * 8, 0); // 前腕
+        
+        // 右腕（肘を曲げてロープにつかまっている）
+        this.graphics.moveTo(0, 0);
+        this.graphics.lineTo(8 * direction + armSwing * 5, -5); // 上腕
+        this.graphics.lineTo(12 * direction + armSwing * 8, 0); // 前腕
+    }
+
+    private drawRopeLegs(animationTime: number, direction: number): void {
+        // 脚のアニメーション（ロープにつかまっている姿勢）
+        const legSwing = Math.sin(animationTime * 0.2) * 0.3; // ロープの揺れに合わせて脚を動かす
+        
+        // 左脚（ブランと下に垂らす）
+        this.graphics.moveTo(0, 12);
+        this.graphics.lineTo(-3 * direction - legSwing * 5, 35); // まっすぐ下に垂らす
+        
+        // 右脚（ブランと下に垂らす）
+        this.graphics.moveTo(0, 12);
+        this.graphics.lineTo(3 * direction + legSwing * 5, 35); // まっすぐ下に垂らす
+    }
+
+    private drawDeadStickMan(): void {
+        // プレーヤーを90度回転させて倒れた状態にする
+        this.player.rotation = Math.PI / 2;
+        this.player.pivot.set(0, this.player.height / 2);
+        this.player.position.set(
+            this.player.position.x,
+            this.player.position.y + this.player.height / 2
+        );
+
+        // 頭
+        this.graphics.beginFill(0xFF0000);
         this.graphics.drawCircle(0, -20, 12);
         this.graphics.endFill();
 
@@ -188,14 +196,14 @@ export class PlayerRenderer extends Renderer {
         this.graphics.lineTo(20, 12);
 
         // 腕（横に伸ばしてピクピク）
-        const armSwing = Math.sin(animationTime * 0.2) * 5;
+        const armSwing = Math.sin(Date.now() * 0.01) * 5;
         this.graphics.moveTo(0, 0);
         this.graphics.lineTo(-20 - armSwing, 0);
         this.graphics.moveTo(0, 0);
         this.graphics.lineTo(20 + armSwing, 0);
 
         // 脚（横に伸ばしてピクピク）
-        const legSwing = Math.sin(animationTime * 0.2) * 5;
+        const legSwing = Math.sin(Date.now() * 0.01) * 5;
         this.graphics.moveTo(0, 12);
         this.graphics.lineTo(-20 - legSwing, 12);
         this.graphics.moveTo(0, 12);

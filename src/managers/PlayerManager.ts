@@ -32,13 +32,9 @@ export class PlayerManager {
     private static readonly MOMENTUM_DECAY = 0.95; // 移動の勢いの減衰率
 
     // 死亡演出関連のプロパティ
-    private isDying: boolean = false;
-    private deathStartTime: number = 0;
-    private lastBlinkTime: number = 0;
-    private isBlinking: boolean = false;
-    private static readonly DEATH_ANIMATION_DURATION = 2000; // 死亡演出の時間（ミリ秒）
-    private static readonly BLINK_INTERVAL = 200; // まばたきの間隔（ミリ秒）
-    private static readonly BLINK_DURATION = 100; // まばたきの時間（ミリ秒）
+    private isDead: boolean = false;
+    private deathTimer: number = 0;
+    private readonly DEATH_DURATION: number = 2000; // 死亡表示時間（ミリ秒）
 
     constructor(app: PIXI.Application, game: Game, eventEmitter: EventEmitter) {
         this.app = app;
@@ -76,9 +72,15 @@ export class PlayerManager {
     }
 
     public update(): void {
-        // 死亡中は通常の更新をスキップ
-        if (this.isDying) {
-            this.updateDeathAnimation();
+        if (this.isDead) {
+            // 死亡状態の更新
+            const currentTime = Date.now();
+            if (currentTime - this.deathTimer >= this.DEATH_DURATION) {
+                // 死亡表示時間が経過したら、残機を減らすかゲームオーバーにする
+                this.game.handlePlayerDeath();
+                this.isDead = false;
+                this.playerRenderer.getPlayer().alpha = 1.0;  // 透明度を元に戻す
+            }
             return;
         }
 
@@ -186,11 +188,14 @@ export class PlayerManager {
         this.moveMomentum = 0; // 移動の勢いをリセット
 
         // 死亡状態のリセット
-        this.isDying = false;
+        this.isDead = false;
         const player = this.playerRenderer.getPlayer();
         player.rotation = 0;
         player.alpha = 1;
         player.pivot.set(0, 0);
+        
+        // プレーヤーの描画を更新
+        this.playerRenderer.render();
     }
 
     public getPlayer(): PIXI.Container {
@@ -276,58 +281,14 @@ export class PlayerManager {
     }
 
     public die(): void {
-        if (this.isDying) return;
-        
-        this.isDying = true;
-        this.deathStartTime = Date.now();
-        this.lastBlinkTime = this.deathStartTime;
-        this.isBlinking = false;
-        
-        // 死亡時のアニメーション設定
-        const player = this.playerRenderer.getPlayer();
-        player.rotation = Math.PI / 2; // 90度回転して倒れる
-        player.pivot.set(0, player.height / 2);
-        player.position.set(
-            player.position.x,
-            player.position.y + player.height / 2
-        );
-
-        // プレイヤーを再描画
-        this.playerRenderer.render();
+        if (!this.isDead) {
+            this.isDead = true;
+            this.deathTimer = Date.now();
+            this.playerRenderer.getPlayer().alpha = 0.5;  // 半透明にして死亡状態を表現
+        }
     }
 
-    private updateDeathAnimation(): void {
-        const currentTime = Date.now();
-        const elapsedTime = currentTime - this.deathStartTime;
-        
-        // アニメーション時間の更新
-        this.animationTime += 1;
-        
-        // 死亡演出が終了したらゲームオーバー
-        if (elapsedTime >= PlayerManager.DEATH_ANIMATION_DURATION) {
-            this.game.gameOver();
-            return;
-        }
-
-        // まばたきアニメーション
-        if (currentTime - this.lastBlinkTime >= PlayerManager.BLINK_INTERVAL) {
-            this.isBlinking = true;
-            this.lastBlinkTime = currentTime;
-        }
-
-        if (this.isBlinking) {
-            if (currentTime - this.lastBlinkTime >= PlayerManager.BLINK_DURATION) {
-                this.isBlinking = false;
-            }
-            const player = this.playerRenderer.getPlayer();
-            player.alpha = this.isBlinking ? 0.3 : 1;
-        }
-
-        // プレイヤーを再描画（毎フレーム呼び出す）
-        this.playerRenderer.render();
-    }
-
-    public isDead(): boolean {
-        return this.isDying;
+    public isDeadState(): boolean {
+        return this.isDead;
     }
 } 

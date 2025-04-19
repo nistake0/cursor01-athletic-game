@@ -148,7 +148,16 @@ export class UIManager {
     }
 
     public updateLives(lives: number): void {
-        this.livesText.text = `Lives: ${lives}`;
+        // 残機が0の場合は必ず0を表示
+        const displayLives = Math.max(0, lives);
+        this.livesText.text = `Lives: ${displayLives}`;
+        
+        // 残機が0の場合は赤色に変更
+        if (displayLives === 0) {
+            this.livesText.style.fill = 0xFF0000;
+        } else {
+            this.livesText.style.fill = 0xFFFFFF;
+        }
     }
 
     public addScore(points: number): void {
