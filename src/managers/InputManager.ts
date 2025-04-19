@@ -86,7 +86,8 @@ export class InputManager {
         this.actionToKeyMap.set(ActionType.MOVE_RIGHT, [KeyCode.RIGHT, KeyCode.D]);
         this.actionToKeyMap.set(ActionType.JUMP, [KeyCode.UP, KeyCode.W, KeyCode.SPACE]);
         this.actionToKeyMap.set(ActionType.RESTART, [KeyCode.SPACE]);
-        this.actionToKeyMap.set(ActionType.NEXT_SCREEN, [KeyCode.ESC]);
+        // エスケープキーをNEXT_SCREENアクションから除外
+        // this.actionToKeyMap.set(ActionType.NEXT_SCREEN, [KeyCode.ESC]);
     }
 
     private setupKeyboardInput(): void {

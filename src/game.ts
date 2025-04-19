@@ -27,6 +27,7 @@ export class Game {
     // 新しい障害物管理用の変数
     public obstacleList: Obstacle[] = [];
     private obstacleFactory: ObstacleFactory;
+    private targetScreen: number = 1;  // 追加：目標の画面番号
 
     constructor() {
         // PIXIアプリケーションを初期化
@@ -92,6 +93,7 @@ export class Game {
 
         this.eventEmitter.on(GameEvent.NEXT_SCREEN, () => {
             if (!this.isGameOver && !this.isTransitioning) {
+                this.targetScreen = this.currentScreen + 1;  // 次の画面を目標に設定
                 this.startTransition();
             }
         });
@@ -103,10 +105,14 @@ export class Game {
 
             switch (event.key) {
                 case 'Escape':
+                    // 5画面進む
+                    this.targetScreen = this.currentScreen + 5;  // 目標画面を設定
                     this.startTransition();
                     break;
                 case '1':
-                    this.jumpToScreen(10);
+                    // 1画面進む
+                    this.targetScreen = this.currentScreen + 1;  // 目標画面を設定
+                    this.startTransition();
                     break;
             }
         });
@@ -118,13 +124,18 @@ export class Game {
     }
 
     private startTransition(): void {
+        // 既存の遷移をリセット
+        if (this.isTransitioning) {
+            this.wipeEffect.start();  // ワイプエフェクトを再開始
+        }
+        
         this.isTransitioning = true;
         this.playerManager.getPlayer().visible = false;
         this.wipeEffect.start();
     }
 
     private completeTransition(): void {
-        this.currentScreen++;
+        this.currentScreen = this.targetScreen;
         this.playerManager.getPlayer().x = PLAYER.INITIAL_X;
         this.uiManager.updateScreenNumber(this.currentScreen);
         this.backgroundRenderer.setScreen(this.currentScreen);
@@ -214,7 +225,7 @@ export class Game {
             
             // トランジション完了チェック
             if (!this.wipeEffect.isActive()) {
-                this.isTransitioning = false;
+                this.isTransitioning = false;  // ここでトランジション完了フラグをリセット
                 // トランジション完了後にプレーヤーを表示
                 this.playerManager.getPlayer().visible = true;
             }
