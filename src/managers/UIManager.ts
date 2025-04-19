@@ -7,10 +7,13 @@ export class UIManager {
     private scoreText!: PIXI.Text;
     private highScoreText!: PIXI.Text;
     private comboText: PIXI.Text;
+    private livesText: PIXI.Text;  // 残機表示用のテキスト
     private currentScreen: number = 1;
     private currentScore: number = 0;
     private highScore: number = 0;
     private comboCount: number = 0;
+    private readonly COMBO_TIMEOUT: number = 3000; // コンボのタイムアウト時間（ミリ秒）
+    private lastScoreTime: number = 0;
     private app: PIXI.Application;
 
     constructor(app: PIXI.Application) {
@@ -101,6 +104,18 @@ export class UIManager {
         this.comboText.y = 100;
         this.comboText.visible = false;
 
+        // 残機の表示
+        this.livesText = new PIXI.Text('Lives: 3', {
+            fontFamily: TEXT.SCREEN.FONT_FAMILY,
+            fontSize: TEXT.SCREEN.FONT_SIZE,
+            fill: TEXT.SCREEN.FILL,
+            stroke: TEXT.SCREEN.STROKE,
+            strokeThickness: TEXT.SCREEN.STROKE_THICKNESS,
+            align: 'left'
+        });
+        this.livesText.x = 20;
+        this.livesText.y = 110;
+
         // ゲームオーバーテキストを作成（初期状態は非表示）
         this.gameOverText = new PIXI.Text('GAME OVER', {
             fontFamily: TEXT.SCREEN.FONT_FAMILY,
@@ -123,6 +138,7 @@ export class UIManager {
         app.stage.addChild(scoreContainer);
         app.stage.addChild(highScoreContainer);
         app.stage.addChild(this.comboText);
+        app.stage.addChild(this.livesText);
         app.stage.addChild(this.gameOverText);
     }
 
@@ -131,19 +147,24 @@ export class UIManager {
         this.screenText.text = `Screen: ${this.currentScreen}`;
     }
 
-    public addScore(points: number, isCombo: boolean = false): void {
-        // 基本スコアの加算
-        this.currentScore += points;
+    public updateLives(lives: number): void {
+        this.livesText.text = `Lives: ${lives}`;
+    }
+
+    public addScore(points: number): void {
+        const currentTime = Date.now();
         
-        // コンボ処理
-        if (isCombo) {
+        // コンボの更新
+        if (currentTime - this.lastScoreTime < this.COMBO_TIMEOUT) {
             this.comboCount++;
-            // コンボボーナスの計算
-            const comboBonus = Math.floor(points * (this.comboCount * 0.1));
-            this.currentScore += comboBonus;
         } else {
-            this.comboCount = 0;
+            this.comboCount = 1;
         }
+        
+        // スコアの計算と更新
+        const comboBonus = Math.pow(1.5, this.comboCount - 1);
+        const score = Math.floor(points * comboBonus);
+        this.currentScore += score;
         
         // ハイスコアの更新
         if (this.currentScore > this.highScore) {
@@ -153,9 +174,10 @@ export class UIManager {
         
         // スコア表示の更新
         this.updateScoreDisplay();
-        
-        // コンボ表示の更新
         this.updateComboDisplay();
+        
+        // 最終スコア時間を更新
+        this.lastScoreTime = currentTime;
     }
 
     private updateScoreDisplay(): void {
@@ -207,6 +229,7 @@ export class UIManager {
         this.comboCount = 0;
         this.updateScoreDisplay();
         this.updateComboDisplay();
+        this.updateLives(3);  // 残機を3にリセット
         this.hideGameOver();
     }
 } 

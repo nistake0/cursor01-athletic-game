@@ -25,11 +25,13 @@ export class Game {
     private wipeEffect: WipeEffect;
     private isTransitioning: boolean = false;
     private effectManager: EffectManager;
+    private lives: number = 3;  // 残機数
+    private readonly MAX_LIVES: number = 3;  // 最大残機数
     
     // 新しい障害物管理用の変数
     public obstacleList: Obstacle[] = [];
     private obstacleFactory: ObstacleFactory;
-    private targetScreen: number = 1;  // 追加：目標の画面番号
+    private targetScreen: number = 1;
 
     constructor() {
         // PIXIアプリケーションを初期化
@@ -85,6 +87,29 @@ export class Game {
         this.app.ticker.add(() => this.gameLoop());
     }
 
+    // 残機を減らすメソッド
+    private decreaseLives(): void {
+        this.lives--;
+        if (this.lives <= 0) {
+            this.gameOver();
+        } else {
+            // 残機がある場合は同じ画面をリスタート
+            this.restartCurrentScreen();
+        }
+    }
+
+    // 現在の画面をリスタートするメソッド
+    private restartCurrentScreen(): void {
+        // プレイヤーを初期位置に戻す
+        this.playerManager.reset();
+        
+        // 現在の画面を再初期化
+        this.initializeScreen(this.currentScreen);
+        
+        // UIを更新
+        this.uiManager.updateLives(this.lives);
+    }
+
     private setupEventListeners(): void {
         this.eventEmitter.on(GameEvent.RESTART, () => {
             if (this.isGameOver) {
@@ -132,7 +157,8 @@ export class Game {
         // 新しい画面の初期化
         this.initializeScreen(this.currentScreen);
         
-        // ワイプ効果は自動的にフェードインします
+        // 残機表示を更新
+        this.uiManager.updateLives(this.lives);
     }
 
     private drawObstacles(): void {
@@ -201,8 +227,10 @@ export class Game {
     private reset(): void {
         this.isGameOver = false;
         this.currentScreen = 1;
+        this.lives = this.MAX_LIVES;  // 残機を最大値にリセット
         this.playerManager.reset();
         this.uiManager.updateScreenNumber(this.currentScreen);
+        this.uiManager.updateLives(this.lives);
         this.backgroundRenderer.setScreen(1);
         
         // 画面1の初期化
@@ -243,7 +271,7 @@ export class Game {
 
         // 障害物との衝突判定（死亡中はスキップ）
         if (!this.playerManager.isDead() && this.checkCollision()) {
-            this.gameOver();
+            this.decreaseLives();  // 衝突時に残機を減らす
         }
 
         // 障害物の再描画
