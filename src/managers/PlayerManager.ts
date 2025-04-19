@@ -5,6 +5,7 @@ import { PlayerRenderer } from '../renderers/PlayerRenderer';
 import { EventEmitter, GameEvent } from '../utils/EventEmitter';
 import { InputManager, ActionType } from './InputManager';
 import { LotusLeaf } from '../obstacles/LotusLeaf';
+import { TarzanRope } from '../obstacles/TarzanRope';
 
 export class PlayerManager {
     private app: PIXI.Application;
@@ -21,8 +22,14 @@ export class PlayerManager {
     private animationTime: number = 0;
     private isMoving: boolean = false;
     private _isOnLotus: boolean = false;
+    private _isOnRope: boolean = false;
+    private _currentRope: TarzanRope | null = null;
     private eventEmitter: EventEmitter;
     private inputManager: InputManager;
+    private isRising: boolean = false; // 上昇中かどうかを示すフラグ
+    private lastMoveDirection: number = 0; // 最後に移動していた方向（-1: 左, 1: 右, 0: 移動なし）
+    private moveMomentum: number = 0; // 移動の勢い
+    private static readonly MOMENTUM_DECAY = 0.95; // 移動の勢いの減衰率
 
     // 死亡演出関連のプロパティ
     private isDying: boolean = false;
@@ -58,6 +65,12 @@ export class PlayerManager {
             if (this.isGrounded && !this.game.getGameOverState()) {
                 this.velocityY = PLAYER.JUMP_FORCE;
                 this.isGrounded = false;
+            } else if (this._isOnRope && this._currentRope) {
+                // ロープにつかまっている状態でジャンプした場合、ロープから離れる
+                this._currentRope.releasePlayer();
+                this._isOnRope = false;
+                this._currentRope = null;
+                this.velocityY = PLAYER.JUMP_FORCE * 0.8; // ロープからジャンプする場合は少し弱めのジャンプ
             }
         });
     }
@@ -72,6 +85,14 @@ export class PlayerManager {
         // InputManagerの状態を更新
         this.inputManager.update();
 
+        // ロープにつかまっている場合は移動処理をスキップ
+        if (this._isOnRope) {
+            // ロープにつかまっている状態では、ジャンプ以外の操作は受け付けない
+            // ロープの揺れに合わせてプレイヤーの位置が更新される
+            this.playerRenderer.render();
+            return;
+        }
+
         // 移動状態の更新
         this.isMoving = this.inputManager.isActionActive(ActionType.MOVE_LEFT) || 
                         this.inputManager.isActionActive(ActionType.MOVE_RIGHT);
@@ -81,20 +102,47 @@ export class PlayerManager {
             this.animationTime += 1;
         }
 
-        // 左右の移動処理
-        if (this.inputManager.isActionActive(ActionType.MOVE_LEFT)) {
-            this.playerRenderer.getPlayer().x -= PLAYER.MOVE_SPEED;
-            this.direction = -1;
-        }
-        if (this.inputManager.isActionActive(ActionType.MOVE_RIGHT)) {
-            this.playerRenderer.getPlayer().x += PLAYER.MOVE_SPEED;
-            this.direction = 1;
-        }
-
         // 重力とジャンプの処理
         if (!this.isGrounded) {
             this.velocityY += PLAYER.GRAVITY;
             this.playerRenderer.getPlayer().y += this.velocityY;
+            
+            // 上昇中かどうかを判断
+            const wasRising = this.isRising;
+            this.isRising = this.velocityY < 0;
+            
+            // 上昇から落下に変わった瞬間に、移動の勢いをリセット
+            // ただし、移動中は勢いを維持する
+            if (wasRising && !this.isRising && !this.isMoving) {
+                this.moveMomentum = 0;
+            }
+        } else {
+            // 地面に接地している場合は上昇中ではない
+            this.isRising = false;
+            // 地面に接地したら移動の勢いをリセット
+            this.moveMomentum = 0;
+        }
+
+        // 左右の移動処理
+        if (this.isRising || this.isGrounded) {
+            // 上昇中または地面に接地している場合は通常の移動処理
+            if (this.inputManager.isActionActive(ActionType.MOVE_LEFT)) {
+                this.playerRenderer.getPlayer().x -= PLAYER.MOVE_SPEED;
+                this.direction = -1;
+                this.lastMoveDirection = -1;
+                this.moveMomentum = PLAYER.MOVE_SPEED;
+            }
+            if (this.inputManager.isActionActive(ActionType.MOVE_RIGHT)) {
+                this.playerRenderer.getPlayer().x += PLAYER.MOVE_SPEED;
+                this.direction = 1;
+                this.lastMoveDirection = 1;
+                this.moveMomentum = PLAYER.MOVE_SPEED;
+            }
+        } else if (this.moveMomentum > 0.1) {
+            // 落下中で移動の勢いがある場合は、最後に移動していた方向に動き続ける
+            this.playerRenderer.getPlayer().x += this.lastMoveDirection * this.moveMomentum;
+            // 移動の勢いを徐々に減衰させる
+            this.moveMomentum *= PlayerManager.MOMENTUM_DECAY;
         }
 
         // 画面端での処理
@@ -131,6 +179,11 @@ export class PlayerManager {
         this.direction = 1;
         this.animationTime = 0;
         this.isMoving = false;
+        this._isOnRope = false;
+        this._currentRope = null;
+        this.isRising = false; // 上昇中フラグをリセット
+        this.lastMoveDirection = 0; // 最後の移動方向をリセット
+        this.moveMomentum = 0; // 移動の勢いをリセット
 
         // 死亡状態のリセット
         this.isDying = false;
@@ -188,6 +241,19 @@ export class PlayerManager {
 
     public isOnLotus(): boolean {
         return this._isOnLotus;
+    }
+
+    public setOnRope(value: boolean, rope: TarzanRope | null = null): void {
+        this._isOnRope = value;
+        this._currentRope = rope;
+    }
+
+    public isOnRope(): boolean {
+        return this._isOnRope;
+    }
+
+    public getCurrentRope(): TarzanRope | null {
+        return this._currentRope;
     }
 
     public isOnLotusLeaf(): boolean {
