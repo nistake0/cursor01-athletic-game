@@ -9,6 +9,7 @@ import { Obstacle } from './obstacles/Obstacle';
 import { LargePool } from './obstacles/LargePool';
 import { WipeEffect } from './effects/WipeEffect';
 import { EffectManager } from './effects/EffectManager';
+import { TarzanRope } from './obstacles/TarzanRope';
 
 export class Game {
     private app: PIXI.Application;
@@ -151,14 +152,22 @@ export class Game {
         }
 
         // すべての障害物との衝突をチェック
-        const result = this.obstacleList.some(obstacle => obstacle.checkCollision(player));
-
-        // 衝突した場合はプレーヤーを死亡状態にする
-        if (result) {
-            this.playerManager.die();
+        for (const obstacle of this.obstacleList) {
+            // ロープとの衝突判定
+            if (obstacle instanceof TarzanRope) {
+                if (obstacle.checkCollision(player)) {
+                    // ロープにつかまる
+                    this.playerManager.setOnRope(true, obstacle);
+                    return false; // 衝突しない（ゲームオーバーにならない）
+                }
+            } else if (obstacle.checkCollision(player)) {
+                // ロープ以外の障害物との衝突
+                this.playerManager.die();
+                return true;
+            }
         }
 
-        return result;
+        return false;
     }
 
     public gameOver(): void {
