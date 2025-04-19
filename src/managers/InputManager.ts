@@ -16,7 +16,8 @@ export enum KeyCode {
     
     // その他のキー
     SPACE = ' ',
-    ESC = 'Escape'
+    ESC = 'Escape',
+    DIGIT_1 = '1'
 }
 
 // アクションの種類を定義
@@ -86,8 +87,7 @@ export class InputManager {
         this.actionToKeyMap.set(ActionType.MOVE_RIGHT, [KeyCode.RIGHT, KeyCode.D]);
         this.actionToKeyMap.set(ActionType.JUMP, [KeyCode.UP, KeyCode.W, KeyCode.SPACE]);
         this.actionToKeyMap.set(ActionType.RESTART, [KeyCode.SPACE]);
-        // エスケープキーをNEXT_SCREENアクションから除外
-        // this.actionToKeyMap.set(ActionType.NEXT_SCREEN, [KeyCode.ESC]);
+        this.actionToKeyMap.set(ActionType.NEXT_SCREEN, [KeyCode.ESC, KeyCode.DIGIT_1]);
     }
 
     private setupKeyboardInput(): void {
@@ -121,7 +121,9 @@ export class InputManager {
                         this.eventEmitter.emit(GameEvent.RESTART);
                         break;
                     case ActionType.NEXT_SCREEN:
-                        this.eventEmitter.emit(GameEvent.NEXT_SCREEN);
+                        // キーに応じて画面遷移量を設定
+                        const transitionAmount = keyCode === KeyCode.ESC ? 5 : 1;
+                        this.eventEmitter.emit(GameEvent.SCREEN_TRANSITION, transitionAmount);
                         break;
                 }
             }

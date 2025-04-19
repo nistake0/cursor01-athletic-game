@@ -78,7 +78,6 @@ export class Game {
 
         // イベントリスナーの設定
         this.setupEventListeners();
-        this.setupKeyboardEvents();
 
         // ゲームループを開始
         this.app.ticker.add(() => this.gameLoop());
@@ -93,27 +92,15 @@ export class Game {
 
         this.eventEmitter.on(GameEvent.NEXT_SCREEN, () => {
             if (!this.isGameOver && !this.isTransitioning) {
-                this.targetScreen = this.currentScreen + 1;  // 次の画面を目標に設定
+                this.targetScreen = this.currentScreen + 1;
                 this.startTransition();
             }
         });
-    }
 
-    private setupKeyboardEvents(): void {
-        window.addEventListener('keydown', (event: KeyboardEvent) => {
-            if (this.isGameOver || this.isTransitioning) return;
-
-            switch (event.key) {
-                case 'Escape':
-                    // 5画面進む
-                    this.targetScreen = this.currentScreen + 5;  // 目標画面を設定
-                    this.startTransition();
-                    break;
-                case '1':
-                    // 1画面進む
-                    this.targetScreen = this.currentScreen + 1;  // 目標画面を設定
-                    this.startTransition();
-                    break;
+        this.eventEmitter.on(GameEvent.SCREEN_TRANSITION, (amount: number) => {
+            if (!this.isGameOver && !this.isTransitioning) {
+                this.targetScreen = this.currentScreen + amount;
+                this.startTransition();
             }
         });
     }
