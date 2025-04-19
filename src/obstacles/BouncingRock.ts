@@ -20,7 +20,6 @@ export class BouncingRock extends Obstacle {
         this.graphics = new PIXI.Graphics();
         this.graphics.visible = true;
         this.obstacles.addChild(this.graphics);
-        console.log(`BouncingRock created at (${x}, ${this.GROUND_Y})`);
     }
 
     public update(currentTime: number): void {
@@ -45,12 +44,10 @@ export class BouncingRock extends Obstacle {
             this.active = false;
             this.graphics.visible = false;
             this.obstacles.removeChild(this.graphics);
-            console.log('Rock went off screen and was removed');
         }
 
         // グラフィックスの位置を更新
         this.graphics.position.set(this.position.x, this.position.y);
-        console.log(`Rock position: (${this.position.x}, ${this.position.y}), Velocity: (${this.velocity.x}, ${this.velocity.y})`);
     }
 
     public draw(): void {
@@ -89,8 +86,6 @@ export class BouncingRock extends Obstacle {
             this.graphics.drawCircle(x, y, size);
         }
         this.graphics.endFill();
-        
-        console.log(`Drawing rock at (${this.position.x}, ${this.position.y})`);
     }
 
     public checkCollision(player: PIXI.Graphics): boolean {
@@ -108,7 +103,6 @@ export class BouncingRock extends Obstacle {
         this.velocity = { x: -5, y: -20 }; // リセット時も同じ初速を設定
         this.isGrounded = false;
         this.active = true;
-        console.log(`Rock reset to (800, ${this.GROUND_Y})`);
     }
 
     public isActive(): boolean {
@@ -116,7 +110,6 @@ export class BouncingRock extends Obstacle {
     }
     
     public destroy(): void {
-        console.log('Destroying rock');
         this.active = false;
         this.graphics.visible = false;
         this.obstacles.removeChild(this.graphics);
