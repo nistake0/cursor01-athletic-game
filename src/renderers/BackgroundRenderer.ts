@@ -274,7 +274,16 @@ export class BackgroundRenderer extends Renderer {
     private drawTreeLeaves(x: number): void {
         const leafColors = [BACKGROUND.TREE_COLOR, 0x32CD32, BACKGROUND.FOREST_COLOR];
 
-        // メインの葉っぱの塊
+        // メインの葉っぱの塊（上部に追加）
+        for (let i = 0; i < 2; i++) {
+            const offsetX = (Math.random() - 0.5) * 20;
+            const offsetY = (Math.random() - 0.5) * 20;
+            this.background.beginFill(leafColors[i % leafColors.length]);
+            this.background.drawCircle(x + offsetX, this.app.screen.height - 340 + offsetY, 40); // 上部に追加
+            this.background.endFill();
+        }
+
+        // メインの葉っぱの塊（現状の位置）
         for (let i = 0; i < 3; i++) {
             const offsetX = (Math.random() - 0.5) * 20;
             const offsetY = (Math.random() - 0.5) * 20;
@@ -292,7 +301,21 @@ export class BackgroundRenderer extends Renderer {
         this.background.drawCircle(x + 50, this.app.screen.height - 240, 30);
         this.background.endFill();
 
-        // 葉っぱの細部（ハイライト）
+        // 葉っぱの細部（ハイライト）- 上部に追加
+        this.background.beginFill(0x90EE90);
+        for (let i = 0; i < 5; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = Math.random() * 30;
+            const size = 5 + Math.random() * 10;
+            this.background.drawCircle(
+                x + Math.cos(angle) * distance,
+                this.app.screen.height - 340 + Math.sin(angle) * distance,
+                size
+            );
+        }
+        this.background.endFill();
+
+        // 葉っぱの細部（ハイライト）- 現状の位置
         this.background.beginFill(0x90EE90);
         for (let i = 0; i < 10; i++) {
             const angle = Math.random() * Math.PI * 2;
