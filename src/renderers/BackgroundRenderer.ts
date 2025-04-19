@@ -7,6 +7,8 @@ export class BackgroundRenderer extends Renderer {
     private background: PIXI.Graphics;
     private trees: PIXI.Graphics[] = [];
     private currentScreen: number = 1;
+    private skyType: SkyType = SkyType.NORMAL;
+    private isInForest: boolean = false;
 
     constructor(app: PIXI.Application, game: Game) {
         super(app, game);
@@ -38,21 +40,36 @@ export class BackgroundRenderer extends Renderer {
         const screenConfig = screenConfigs[this.currentScreen];
         if (!screenConfig) return;
 
-        const settings = screenConfig.background;
-
-        if (settings.drawSky !== SkyType.NONE) {
-            this.drawSky(settings.drawSky);
+        // 背景タイプを設定
+        if (screenConfig.background.drawSky === SkyType.NIGHT) {
+            this.skyType = SkyType.NIGHT;
+        } else {
+            this.skyType = SkyType.NORMAL;
         }
-        if (settings.drawForestCanopy) {
+        
+        // 森の中かどうかを設定
+        this.isInForest = screenConfig.background.isInForest;
+
+        // 空を描画
+        this.drawSky(screenConfig.background.drawSky);
+        
+        // 森のシルエットを描画
+        if (screenConfig.background.drawForestCanopy) {
             this.drawForestSilhouette();
         }
-        if (settings.drawGround) {
+        
+        // 地面を描画
+        if (screenConfig.background.drawGround) {
             this.drawGround();
         }
-        if (settings.drawGrass) {
+        
+        // 草を描画
+        if (screenConfig.background.drawGrass) {
             this.drawGrass();
         }
-        if (settings.drawTrees) {
+        
+        // 木を描画
+        if (screenConfig.background.drawTrees) {
             this.drawForegroundTrees();
         }
     }
@@ -121,10 +138,9 @@ export class BackgroundRenderer extends Renderer {
     }
 
     private drawNightSky(): void {
+        // 夜空のグラデーション
         const height = this.app.screen.height;
         const steps = BACKGROUND.GRADIENT_STEPS;
-        
-        // 夜空のグラデーションを描画
         for (let i = 0; i < steps; i++) {
             const ratio = i / steps;
             const startColor = BACKGROUND.NIGHT_START_COLOR;
@@ -140,16 +156,37 @@ export class BackgroundRenderer extends Renderer {
             );
             this.background.endFill();
         }
+
+        // 星を描画
+        this.drawStars();
         
+        // 月を描画
+        this.drawMoon();
+    }
+
+    private drawStars(): void {
         // 星を描画
         this.background.beginFill(BACKGROUND.STAR_COLOR);
         for (let i = 0; i < BACKGROUND.STAR_COUNT; i++) {
             const x = Math.random() * this.app.screen.width;
-            const y = Math.random() * (height * 0.8); // 画面の上部80%に星を配置
-            const size = 1 + Math.random() * 2; // 星の大きさをランダムに
-            
+            const y = Math.random() * (this.app.screen.height / 2);
+            const size = Math.random() * 2 + 1;
             this.background.drawCircle(x, y, size);
         }
+        this.background.endFill();
+    }
+
+    private drawMoon(): void {
+        // 月を描画
+        this.background.beginFill(0xFFFFFF); // 白色
+        this.background.drawCircle(650, 100, 30);
+        this.background.endFill();
+        
+        // 月のクレーター
+        this.background.beginFill(0xCCCCCC); // 薄い灰色
+        this.background.drawCircle(640, 90, 5);
+        this.background.drawCircle(660, 110, 7);
+        this.background.drawCircle(670, 95, 4);
         this.background.endFill();
     }
 

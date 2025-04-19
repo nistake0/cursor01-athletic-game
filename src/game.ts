@@ -10,6 +10,7 @@ import { LargePool } from './obstacles/LargePool';
 import { WipeEffect } from './effects/WipeEffect';
 import { EffectManager } from './effects/EffectManager';
 import { TarzanRope } from './obstacles/TarzanRope';
+import { BouncingRock } from './obstacles/BouncingRock';
 
 export class Game {
     private app: PIXI.Application;

@@ -14,6 +14,8 @@ import { FishSpawner } from './FishSpawner';
 import { Spring } from './Spring';
 import { SpringSpawner } from './SpringSpawner';
 import { TarzanRope } from './TarzanRope';
+import { BouncingRock } from './BouncingRock';
+import { BouncingRockSpawner } from './BouncingRockSpawner';
 
 export class ObstacleFactory {
     private app: PIXI.Application;
@@ -26,37 +28,41 @@ export class ObstacleFactory {
         this.game = game;
     }
 
-    public createObstacle(type: string): Obstacle {
+    public createObstacle(type: string, x: number = 0, y: number = 0): Obstacle[] {
         switch (type) {
             case 'Rock':
-                return new Rock(this.app, this.obstacles, this.game);
+                return [new Rock(this.app, this.obstacles, this.game)];
             case 'Pool':
-                return new Pool(this.app, this.obstacles, this.game);
+                return [new Pool(this.app, this.obstacles, this.game)];
             case 'RollingRock':
-                return new RollingRock(this.app, this.obstacles, this.game);
+                return [new RollingRock(this.app, this.obstacles, this.game)];
             case 'Stump':
-                return new Stump(this.app, this.obstacles, this.game);
+                return [new Stump(this.app, this.obstacles, this.game)];
             case 'LargePool':
-                return new LargePool(this.app, this.obstacles, this.game);
+                return [new LargePool(this.app, this.obstacles, this.game)];
             case 'LotusLeaf':
-                return new LotusLeaf(this.app, this.obstacles, this.game);
+                return [new LotusLeaf(this.app, this.obstacles, this.game)];
             case 'BeeSpawner':
-                return new BeeSpawner(this.app, this.obstacles, this.game);
+                return [new BeeSpawner(this.app, this.obstacles, this.game)];
             case 'ChestnutSpawner':
-                return new ChestnutSpawner(this.app, this.obstacles, this.game);
+                return [new ChestnutSpawner(this.app, this.obstacles, this.game)];
             case 'Signboard':
-                return new Signboard(this.app, this.obstacles, this.game);
+                return [new Signboard(this.app, this.obstacles, this.game)];
             case 'FishSpawner':
-                return new FishSpawner(this.app, this.obstacles, this.game);
+                return [new FishSpawner(this.app, this.obstacles, this.game)];
             case 'Spring':
-                return new Spring(this.app, this.obstacles, this.game, this.game.getPlayerManager());
+                return [new Spring(this.app, this.obstacles, this.game, this.game.getPlayerManager())];
             case 'SpringSpawner':
-                return new SpringSpawner(this.app, this.obstacles, this.game, this.game.getPlayerManager());
+                return [new SpringSpawner(this.app, this.obstacles, this.game, this.game.getPlayerManager())];
             case 'TarzanRope':
                 // 画面の左右にロープを配置（少し中央に寄せる）
                 const leftRope = new TarzanRope(this.app, this.obstacles, this.game, 250, 200, true);
                 const rightRope = new TarzanRope(this.app, this.obstacles, this.game, 550, 200, false);
-                return leftRope; // 左側のロープを返す（右側のロープは別途追加される）
+                return [leftRope, rightRope]; // 両方のロープを返す
+            case 'BouncingRock':
+                return [new BouncingRock(this.app, this.obstacles, this.game, 800, 450)];
+            case 'BouncingRockSpawner':
+                return [new BouncingRockSpawner(this.app, this.obstacles, this.game)];
             default:
                 throw new Error(`Unknown obstacle type: ${type}`);
         }
@@ -64,15 +70,13 @@ export class ObstacleFactory {
 
     public createObstacles(types: string[]): Obstacle[] {
         const obstacles: Obstacle[] = [];
+        
         for (const type of types) {
-            const obstacle = this.createObstacle(type);
-            obstacles.push(obstacle);
-            // ターザンロープの場合は右側のロープも追加
-            if (type === 'TarzanRope') {
-                const rightRope = new TarzanRope(this.app, this.obstacles, this.game, 550, 200, false);
-                obstacles.push(rightRope);
-            }
+            // 障害物の生成（配列を返す）
+            const newObstacles = this.createObstacle(type);
+            obstacles.push(...newObstacles);
         }
+        
         return obstacles;
     }
 } 

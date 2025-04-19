@@ -38,7 +38,8 @@ export const SCREEN = {
     14: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
     15: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
     16: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
-    17: { background: 'night', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] }
+    17: { background: 'night', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
+    18: { background: 'night', obstacles: ['BouncingRockSpawner'] }
   }
 };
 
@@ -319,5 +320,16 @@ export const screenConfigs: { [key: number]: ScreenConfig } = {
       isInForest: true
     },
     obstacles: ['Pool', 'FishSpawner', 'ChestnutSpawner']
+  },
+  18: {
+    background: {
+      drawSky: SkyType.NIGHT,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: false,
+      drawForestCanopy: false,
+      isInForest: false
+    },
+    obstacles: ['BouncingRockSpawner']
   }
 }; 
