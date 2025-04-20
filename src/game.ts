@@ -177,7 +177,7 @@ export class Game {
     }
 
     private checkCollision(): boolean {
-        const player = this.playerManager.getPlayer();
+        const player = this.playerManager.getPlayer() as PIXI.Graphics;
         
         // プレーヤーが死亡中なら衝突判定をスキップ
         if (this.playerManager.isDeadState()) {
