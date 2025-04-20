@@ -1,5 +1,6 @@
 import { GameStateManager } from './GameStateManager';
-import { ScreenType } from '../types/GameState';
+import { ScreenType, GameStatus } from '../types/GameState';
+import { TransitionRenderer } from '../renderers/TransitionRenderer';
 
 export enum TransitionType {
     FADE = 'FADE',
@@ -10,16 +11,19 @@ export interface TransitionOptions {
     type: TransitionType;
     duration: number;
     direction?: 'left' | 'right' | 'up' | 'down';
+    onComplete?: () => void;
 }
 
 export class ScreenTransitionManager {
     private gameStateManager: GameStateManager;
+    private transitionRenderer: TransitionRenderer;
     private currentTransition: TransitionOptions | null = null;
     private startTime: number = 0;
     private isTransitioning: boolean = false;
 
-    constructor(gameStateManager: GameStateManager) {
+    constructor(gameStateManager: GameStateManager, transitionRenderer: TransitionRenderer) {
         this.gameStateManager = gameStateManager;
+        this.transitionRenderer = transitionRenderer;
     }
 
     public startTransition(targetScreen: ScreenType, options: TransitionOptions): void {
@@ -30,6 +34,12 @@ export class ScreenTransitionManager {
         this.currentTransition = options;
         this.startTime = Date.now();
         this.isTransitioning = true;
+        
+        // 遷移開始時にゲームの状態を変更
+        const state = this.gameStateManager.getState();
+        state.status = GameStatus.TRANSITIONING;
+        this.gameStateManager.setState(state);
+        
         this.gameStateManager.startScreenTransition(targetScreen);
     }
 
@@ -64,25 +74,40 @@ export class ScreenTransitionManager {
     }
 
     private updateFadeTransition(progress: number): void {
-        // フェードアニメーションの実装
         const opacity = progress < 0.5 ? progress * 2 : (1 - progress) * 2;
-        // TODO: フェード効果の描画処理を実装
+        this.transitionRenderer.renderFade(opacity);
     }
 
     private updateSlideTransition(progress: number): void {
         if (!this.currentTransition?.direction) return;
 
         const offset = progress < 0.5 ? progress * 2 : (1 - progress) * 2;
-        // TODO: スライド効果の描画処理を実装
+        this.transitionRenderer.renderSlide(offset, this.currentTransition.direction);
     }
 
     private completeTransition(): void {
+        // 遷移完了時にゲームの状態を元に戻す
+        const state = this.gameStateManager.getState();
+        state.status = GameStatus.PLAYING;
+        this.gameStateManager.setState(state);
+
+        this.gameStateManager.endScreenTransition();
+
+        // コールバックの実行
+        if (this.currentTransition?.onComplete) {
+            this.currentTransition.onComplete();
+        }
+
         this.isTransitioning = false;
         this.currentTransition = null;
-        this.gameStateManager.endScreenTransition();
+        this.transitionRenderer.reset();
     }
 
     public isInTransition(): boolean {
+        return this.isTransitioning;
+    }
+
+    public shouldBlockInput(): boolean {
         return this.isTransitioning;
     }
 } 

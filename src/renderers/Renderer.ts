@@ -42,6 +42,13 @@ export abstract class Renderer {
     }
 
     /**
+     * ステージを取得する
+     */
+    public getStage(): PIXI.Container {
+        return this.app.stage;
+    }
+
+    /**
      * 矩形を描画する
      */
     public drawRect(x: number, y: number, width: number, height: number, color: string): void {
