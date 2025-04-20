@@ -139,4 +139,26 @@ export class GameStateManager {
     public isScreenTransitioning(): boolean {
         return this.getState().screen.isTransitioning;
     }
+    
+    // 画面遷移のためのヘルパーメソッド
+    public setTargetScreen(targetScreen: number): void {
+        this.setScreenState({ targetScreen });
+    }
+    
+    public setCurrentScreen(currentScreen: number): void {
+        this.setScreenState({ currentScreen });
+    }
+    
+    public setTransitioning(isTransitioning: boolean): void {
+        this.setScreenState({ isTransitioning });
+    }
+    
+    public reset(): void {
+        this.state = this.createInitialState();
+        this.eventEmitter.emit(GameEvent.STATE_CHANGE, {
+            type: 'STATUS_CHANGE',
+            oldState: {},
+            newState: this.state
+        });
+    }
 } 
