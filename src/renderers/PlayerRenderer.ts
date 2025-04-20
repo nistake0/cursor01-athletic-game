@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { PlayerManager } from '../managers/PlayerManager';
 import { Renderer } from './Renderer';
+import { PLAYER } from '../utils/constants';
 
 export class PlayerRenderer extends Renderer {
     private playerManager: PlayerManager;
@@ -180,11 +181,16 @@ export class PlayerRenderer extends Renderer {
     private drawDeadStickMan(): void {
         // プレーヤーを90度回転させて倒れた状態にする
         this.player.rotation = Math.PI / 2;
-        this.player.pivot.set(0, this.player.height / 2);
-        this.player.position.set(
-            this.player.position.x,
-            this.player.position.y + this.player.height / 2
-        );
+        
+        // ピボットポイントを設定（プレーヤーの中心）
+        const playerHeight = 35; // プレーヤーの高さ（推定値）
+        this.player.pivot.set(0, playerHeight / 2);
+        
+        // 位置を調整（回転後の位置が正しく表示されるように）
+        const currentX = this.player.position.x;
+        
+        // 常に地面に接地するように位置を設定
+        this.player.position.set(currentX, PLAYER.GROUND_Y + playerHeight / 2);
 
         // 頭
         this.graphics.beginFill(0xFF0000);

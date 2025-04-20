@@ -81,6 +81,8 @@ export class PlayerManager {
                 this.isDead = false;
                 this.playerRenderer.getPlayer().alpha = 1.0;  // 透明度を元に戻す
             }
+            // 死亡状態でも描画を更新する
+            this.playerRenderer.render();
             return;
         }
 
@@ -285,6 +287,8 @@ export class PlayerManager {
             this.isDead = true;
             this.deathTimer = Date.now();
             this.playerRenderer.getPlayer().alpha = 0.5;  // 半透明にして死亡状態を表現
+            this.velocityY = 0;  // 落下速度をリセット
+            this.isGrounded = true;  // 地面に接地している状態にする
         }
     }
 
