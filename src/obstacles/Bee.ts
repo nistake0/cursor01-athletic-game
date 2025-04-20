@@ -3,8 +3,8 @@ import { Game } from '../game';
 import { Obstacle } from './Obstacle';
 
 export class Bee extends Obstacle {
-    private _x: number;
-    private _y: number;
+    private x: number;
+    private y: number;
     private speed: number;
     private isActive: boolean;
     private graphics: PIXI.Graphics;
@@ -14,28 +14,10 @@ export class Bee extends Obstacle {
     private readonly MAX_Y: number = 400; // 最大の高さ
     private readonly GROUND_Y: number = 480; // 地面のY座標（600 - 120）
 
-    // xのアクセサを定義
-    public get x(): number {
-        return this._x;
-    }
-    
-    public set x(value: number) {
-        this._x = value;
-    }
-
-    // yのアクセサを定義
-    public get y(): number {
-        return this._y;
-    }
-    
-    public set y(value: number) {
-        this._y = value;
-    }
-
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
         super(app, obstacles, game);
-        this._x = 0;
-        this._y = 0;
+        this.x = 0;
+        this.y = 0;
         this.speed = 5;
         this.isActive = false;
         this.graphics = new PIXI.Graphics();
