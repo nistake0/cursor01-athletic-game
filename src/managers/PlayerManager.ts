@@ -39,11 +39,13 @@ export class PlayerManager {
     private deathTimer: number = 0;
     private readonly DEATH_DURATION: number = 2000; // 死亡表示時間（ミリ秒）
 
+    private isGameCleared: boolean = false;  // ゲームクリア状態を管理するフラグ
+
     constructor(app: PIXI.Application, game: Game, eventEmitter: EventEmitter) {
         this.app = app;
         this.game = game;
         this.eventEmitter = eventEmitter;
-        this.inputManager = new InputManager(eventEmitter);
+        this.inputManager = new InputManager(eventEmitter, game);
         
         // プレイヤーレンダラーを初期化
         this.playerRenderer = new PlayerRenderer(this.app, this);
@@ -61,15 +63,24 @@ export class PlayerManager {
 
     private setupEventListeners(): void {
         this.eventEmitter.on(GameEvent.JUMP, () => {
-            if (this.isGrounded && !this.game.getGameOverState()) {
+            console.log('PlayerManager: ジャンプイベントを受信', {
+                isGrounded: this.isGrounded,
+                isOnPlatform: this._isOnPlatform,
+                isOnRope: this._isOnRope,
+                velocityY: this.velocityY
+            });
+            
+            if (this.isGrounded || this._isOnPlatform) {
                 this.velocityY = PLAYER.JUMP_FORCE;
                 this.isGrounded = false;
+                console.log('PlayerManager: ジャンプを実行', { velocityY: this.velocityY });
             } else if (this._isOnRope && this._currentRope) {
                 // ロープにつかまっている状態でジャンプした場合、ロープから離れる
                 this._currentRope.releasePlayer();
                 this._isOnRope = false;
                 this._currentRope = null;
                 this.velocityY = PLAYER.JUMP_FORCE * 0.8; // ロープからジャンプする場合は少し弱めのジャンプ
+                console.log('PlayerManager: ロープからジャンプを実行', { velocityY: this.velocityY });
             }
         });
     }
@@ -110,9 +121,6 @@ export class PlayerManager {
                 this._currentPlatform = null;
                 // ジャンプ後は一定時間板に乗れないようにする
                 this.jumpCooldown = 10; // 10フレームのクールダウン
-                
-                // 板からジャンプする際は、velocityYを確実に更新
-                this.velocityY = PLAYER.JUMP_FORCE;
             }
         }
 
@@ -128,8 +136,6 @@ export class PlayerManager {
             if (platformBounds) {
                 // プレーヤーの位置を板の上に設定
                 this.playerRenderer.getPlayer().y = platformBounds.top - 35;  // プレーヤーの高さを考慮して調整
-                
-                // デバッグログを削除
             }
             this.playerRenderer.render();
             return;
@@ -199,6 +205,13 @@ export class PlayerManager {
             this.playerRenderer.getPlayer().y = PLAYER.GROUND_Y;
             this.velocityY = 0;
             this.isGrounded = true;
+            
+            // 地面に着地したら自動ジャンプを実行（ゲームクリア時）
+            if (this.game.getGameClearState() && this.inputManager.isActionActive(ActionType.JUMP)) {
+                this.velocityY = PLAYER.JUMP_FORCE;
+                this.isGrounded = false;
+                console.log('PlayerManager: 地面に着地して自動ジャンプを実行', { velocityY: this.velocityY });
+            }
         } else if (this.velocityY > 0) { // 落下中の場合のみisGroundedをfalseに設定
             this.isGrounded = false;
         }
@@ -224,9 +237,10 @@ export class PlayerManager {
         this.isMoving = false;
         this._isOnRope = false;
         this._currentRope = null;
-        this.isRising = false; // 上昇中フラグをリセット
-        this.lastMoveDirection = 0; // 最後の移動方向をリセット
-        this.moveMomentum = 0; // 移動の勢いをリセット
+        this.isRising = false;
+        this.lastMoveDirection = 0;
+        this.moveMomentum = 0;
+        this.isGameCleared = false;  // ゲームクリア状態をリセット
 
         // 死亡状態のリセット
         this.isDead = false;
@@ -350,5 +364,47 @@ export class PlayerManager {
 
     public getJumpCooldown(): number {
         return this.jumpCooldown;
+    }
+
+    public getInputManager(): InputManager {
+        return this.inputManager;
+    }
+
+    public onGameClear(): void {
+        // 既にゲームクリア処理が実行されている場合は何もしない
+        if (this.isGameCleared) {
+            return;
+        }
+
+        console.log('PlayerManager: ゲームクリア処理を開始');
+        
+        // ゲームクリア時の入力制御
+        this.inputManager.setInputEnabled(false);
+        this.inputManager.setAutoJumping(true);
+        
+        // 初期ジャンプを実行
+        this.velocityY = PLAYER.JUMP_FORCE;
+        this.isGrounded = false;
+        this._isOnPlatform = false;
+        this._currentPlatform = null;
+        
+        // 地面との衝突判定を有効にする
+        const player = this.playerRenderer.getPlayer();
+        if (player.y >= PLAYER.GROUND_Y) {
+            player.y = PLAYER.GROUND_Y;
+            this.velocityY = 0;
+            this.isGrounded = true;
+        }
+        
+        // ゲームクリア状態を設定
+        this.isGameCleared = true;
+        
+        console.log('PlayerManager: ゲームクリア処理完了', {
+            isInputEnabled: false,
+            isAutoJumping: true,
+            velocityY: this.velocityY,
+            isGrounded: this.isGrounded,
+            playerY: player.y
+        });
     }
 } 
