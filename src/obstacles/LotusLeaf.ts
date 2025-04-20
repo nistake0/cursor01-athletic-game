@@ -5,7 +5,7 @@ import { Obstacle } from './Obstacle';
 export class LotusLeaf extends Obstacle {
     private lotusX: number = 0;
     private lotusY: number = 0;
-    private rotation: number = 0;
+    private _rotation: number = 0;
     private poolBounds: any = null;
     private isInitialized: boolean = false;
     private lotusDirection: number = 1;
@@ -14,6 +14,14 @@ export class LotusLeaf extends Obstacle {
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
         super(app, obstacles, game);
         this.drawPriority = 5;  // 蓮の葉は池より前に描画
+    }
+
+    public get rotation(): number {
+        return this._rotation;
+    }
+    
+    public set rotation(value: number) {
+        this._rotation = value;
     }
 
     public draw(): void {
