@@ -49,4 +49,53 @@ describe('GameStateManager', () => {
             expect(callback).toHaveBeenCalledTimes(2);
         });
     });
+
+    describe('画面状態の更新メソッド', () => {
+        it('setTargetScreenで目標画面を設定できる', () => {
+            const targetScreen = 2;
+            gameStateManager.setTargetScreen(targetScreen);
+            expect(gameStateManager.getScreenState().targetScreen).toBe(targetScreen);
+        });
+
+        it('setCurrentScreenで現在の画面を設定できる', () => {
+            const currentScreen = 3;
+            gameStateManager.setCurrentScreen(currentScreen);
+            expect(gameStateManager.getScreenState().currentScreen).toBe(currentScreen);
+        });
+
+        it('setTransitioningで遷移状態を設定できる', () => {
+            gameStateManager.setTransitioning(true);
+            expect(gameStateManager.isScreenTransitioning()).toBe(true);
+            
+            gameStateManager.setTransitioning(false);
+            expect(gameStateManager.isScreenTransitioning()).toBe(false);
+        });
+    });
+
+    describe('リセット機能', () => {
+        it('resetで初期状態に戻る', () => {
+            // 状態を変更
+            gameStateManager.setStatus(GameStatus.GAME_OVER);
+            gameStateManager.setCurrentScreen(2);
+            gameStateManager.setTransitioning(true);
+            
+            // リセット
+            gameStateManager.reset();
+            
+            // 初期状態に戻っていることを確認
+            expect(gameStateManager.getStatus()).toBe(GameStatus.PLAYING);
+            expect(gameStateManager.getScreenState().currentScreen).toBe(1);
+            expect(gameStateManager.isScreenTransitioning()).toBe(false);
+        });
+
+        it('reset時に状態変更イベントが発火する', () => {
+            const callback = vi.fn();
+            gameStateManager.onStateChange(callback);
+            
+            gameStateManager.reset();
+            
+            expect(callback).toHaveBeenCalled();
+            expect(callback.mock.calls[0][0].type).toBe('STATUS_CHANGE');
+        });
+    });
 }); 
