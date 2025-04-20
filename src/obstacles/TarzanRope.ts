@@ -11,9 +11,9 @@ export class TarzanRope extends Obstacle {
   private swingSpeed: number;
   private swingAmplitude: number;
   private isLeftRope: boolean;
-  private x: number;
-  private y: number;
-  private rotation: number = 0;
+  private _x: number;
+  private _y: number;
+  private _rotation: number = 0;
   private isPlayerHolding: boolean = false;
   private playerVelocityY: number = 0;
   private invincibleUntil: number = 0; // 無敵時間の終了時刻
@@ -26,13 +26,40 @@ export class TarzanRope extends Obstacle {
   private readonly FIXED_POINT_Y = 200; // 固定点のY座標をさらに下げる（150→200）
   private readonly FIRST_SEGMENT_TENSION = 0.9; // 最初のセグメントの張力（強め）
 
+  // xのアクセサを定義
+  public get x(): number {
+    return this._x;
+  }
+  
+  public set x(value: number) {
+    this._x = value;
+  }
+
+  // yのアクセサを定義
+  public get y(): number {
+    return this._y;
+  }
+  
+  public set y(value: number) {
+    this._y = value;
+  }
+
+  // rotationのアクセサを定義
+  public get rotation(): number {
+    return this._rotation;
+  }
+  
+  public set rotation(value: number) {
+    this._rotation = value;
+  }
+
   constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game, x: number, y: number, isLeftRope: boolean) {
     super(app, obstacles, game);
     this.isLeftRope = isLeftRope;
     this.ropeLength = 180; // ロープの長さを短くする（225→180）
     this.anchorPoint = new PIXI.Point(x, y);
-    this.x = x;
-    this.y = this.FIXED_POINT_Y; // 固定点のY座標を使用
+    this._x = x;
+    this._y = this.FIXED_POINT_Y; // 固定点のY座標を使用
     
     // 左右のロープで揺れの速さをずらす
     this.swingSpeed = isLeftRope ? 0.02 : 0.015; // 左側は速く、右側は遅く
@@ -207,7 +234,7 @@ export class TarzanRope extends Obstacle {
     }
   }
 
-  checkCollision(player: PIXI.Container): boolean {
+  checkCollision(player: PIXI.Graphics): boolean {
     // 無敵時間中は掴めない
     if (Date.now() < this.invincibleUntil) {
       return false;
