@@ -39,7 +39,8 @@ export const SCREEN = {
     15: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
     16: { background: 'forest', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
     17: { background: 'night', obstacles: ['rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock', 'rock'] },
-    18: { background: 'night', obstacles: ['BouncingRockSpawner'] }
+    18: { background: 'night', obstacles: ['BouncingRockSpawner'] },
+    19: { background: 'night', obstacles: ['Rock', 'RollingRock', 'ChestnutSpawner'] }
   }
 };
 
@@ -331,5 +332,16 @@ export const screenConfigs: { [key: number]: ScreenConfig } = {
       isInForest: false
     },
     obstacles: ['BouncingRockSpawner']
+  },
+  19: {
+    background: {
+      drawSky: SkyType.NIGHT,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: true,
+      isInForest: true
+    },
+    obstacles: ['LargePool', 'FountainSpawner']
   }
 }; 

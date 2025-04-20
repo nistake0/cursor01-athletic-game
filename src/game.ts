@@ -90,6 +90,8 @@ export class Game {
     // プレイヤーの死亡処理を処理するメソッド
     public handlePlayerDeath(): void {
         this.decreaseLives();
+        // プレーヤーの状態をリセット
+        this.playerManager.reset();
     }
 
     // 残機を減らすメソッド
@@ -131,6 +133,8 @@ export class Game {
 
     private jumpToScreen(screenNumber: number): void {
         this.currentScreen = screenNumber - 1; // 次の画面に進むので-1する
+        // プレーヤーの状態をリセット
+        this.playerManager.reset();
         this.startTransition();
     }
 

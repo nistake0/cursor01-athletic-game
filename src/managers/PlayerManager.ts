@@ -24,12 +24,15 @@ export class PlayerManager {
     private _isOnLotus: boolean = false;
     private _isOnRope: boolean = false;
     private _currentRope: TarzanRope | null = null;
+    private _isOnPlatform: boolean = false;  // 板に乗っているかどうかを示すフラグ
+    private _currentPlatform: any = null;  // 現在乗っている板
     private eventEmitter: EventEmitter;
     private inputManager: InputManager;
     private isRising: boolean = false; // 上昇中かどうかを示すフラグ
     private lastMoveDirection: number = 0; // 最後に移動していた方向（-1: 左, 1: 右, 0: 移動なし）
     private moveMomentum: number = 0; // 移動の勢い
     private static readonly MOMENTUM_DECAY = 0.95; // 移動の勢いの減衰率
+    private jumpCooldown: number = 0; // ジャンプ後のクールダウン
 
     // 死亡演出関連のプロパティ
     private isDead: boolean = false;
@@ -93,6 +96,41 @@ export class PlayerManager {
         if (this._isOnRope) {
             // ロープにつかまっている状態では、ジャンプ以外の操作は受け付けない
             // ロープの揺れに合わせてプレイヤーの位置が更新される
+            this.playerRenderer.render();
+            return;
+        }
+
+        // ジャンプ処理（板に乗っている状態でもジャンプできるようにする）
+        if (this.inputManager.isActionActive(ActionType.JUMP) && (this.isGrounded || this._isOnPlatform)) {
+            this.velocityY = PLAYER.JUMP_FORCE;
+            this.isGrounded = false;
+            // 板に乗っている状態でジャンプした場合は、板から離れる
+            if (this._isOnPlatform) {
+                this._isOnPlatform = false;
+                this._currentPlatform = null;
+                // ジャンプ後は一定時間板に乗れないようにする
+                this.jumpCooldown = 10; // 10フレームのクールダウン
+                
+                // 板からジャンプする際は、velocityYを確実に更新
+                this.velocityY = PLAYER.JUMP_FORCE;
+            }
+        }
+
+        // ジャンプクールダウンの更新
+        if (this.jumpCooldown > 0) {
+            this.jumpCooldown--;
+        }
+
+        // 板に乗っている場合は、板の位置に合わせてプレーヤーの位置を更新
+        if (this._isOnPlatform && this._currentPlatform && this.jumpCooldown <= 0) {
+            // 板の位置を取得
+            const platformBounds = this._currentPlatform.getPlatformBounds();
+            if (platformBounds) {
+                // プレーヤーの位置を板の上に設定
+                this.playerRenderer.getPlayer().y = platformBounds.top - 35;  // プレーヤーの高さを考慮して調整
+                
+                // デバッグログを削除
+            }
             this.playerRenderer.render();
             return;
         }
@@ -176,6 +214,7 @@ export class PlayerManager {
     }
 
     public reset(): void {
+        // プレーヤーの位置を初期位置に戻す
         this.playerRenderer.getPlayer().x = PLAYER.INITIAL_X;
         this.playerRenderer.getPlayer().y = PLAYER.INITIAL_Y;
         this.velocityY = 0;
@@ -294,5 +333,22 @@ export class PlayerManager {
 
     public isDeadState(): boolean {
         return this.isDead;
+    }
+
+    public setOnPlatform(value: boolean, platform: any = null): void {
+        this._isOnPlatform = value;
+        this._currentPlatform = platform;
+    }
+
+    public isOnPlatform(): boolean {
+        return this._isOnPlatform;
+    }
+
+    public getCurrentPlatform(): any {
+        return this._currentPlatform;
+    }
+
+    public getJumpCooldown(): number {
+        return this.jumpCooldown;
     }
 } 

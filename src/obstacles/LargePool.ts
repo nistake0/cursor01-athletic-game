@@ -87,6 +87,7 @@ export class LargePool extends Obstacle {
     }
 
     private isInWater(playerBounds: any): boolean {
+        // プレーヤーが池の範囲内にいるかチェック
         return (
             playerBounds.right >= this.poolBounds.left && 
             playerBounds.left <= this.poolBounds.right && 
@@ -95,8 +96,8 @@ export class LargePool extends Obstacle {
     }
 
     public checkCollision(player: PIXI.Graphics): boolean {
-        // 蓮の葉に乗っている場合は衝突判定をスキップ
-        if (this.game.getPlayerManager().isOnLotus()) {
+        // 蓮の葉に乗っている場合、または板に乗っている場合は衝突判定をスキップ
+        if (this.game.getPlayerManager().isOnLotus() || this.game.getPlayerManager().isOnPlatform()) {
             return false;
         }
 
