@@ -5,6 +5,13 @@ export enum GameStatus {
     TRANSITIONING = 'TRANSITIONING'
 }
 
+export enum ScreenType {
+    TITLE = 0,
+    GAME = 1,
+    GAME_OVER = 2,
+    GAME_CLEAR = 3
+}
+
 export interface PlayerState {
     position: { x: number; y: number };
     velocityY: number;
@@ -18,6 +25,7 @@ export interface PlayerState {
 export interface ScreenState {
     currentScreen: number;
     targetScreen: number;
+    isTransitioning: boolean;
 }
 
 export interface ObstacleState {

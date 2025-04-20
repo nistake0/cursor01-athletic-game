@@ -24,7 +24,8 @@ export class GameStateManager {
             },
             screen: {
                 currentScreen: 1,
-                targetScreen: 1
+                targetScreen: 1,
+                isTransitioning: false
             },
             obstacle: {
                 obstacleList: []
@@ -118,5 +119,24 @@ export class GameStateManager {
 
     public offStateChange(callback: (event: GameStateChangeEvent) => void): void {
         this.eventEmitter.off(GameEvent.STATE_CHANGE, callback);
+    }
+
+    // 画面遷移状態の管理
+    public startScreenTransition(targetScreen: number): void {
+        const state = this.getState();
+        state.screen.isTransitioning = true;
+        state.screen.targetScreen = targetScreen;
+        this.setState(state);
+    }
+
+    public endScreenTransition(): void {
+        const state = this.getState();
+        state.screen.isTransitioning = false;
+        state.screen.currentScreen = state.screen.targetScreen;
+        this.setState(state);
+    }
+
+    public isScreenTransitioning(): boolean {
+        return this.getState().screen.isTransitioning;
     }
 } 

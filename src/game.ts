@@ -11,14 +11,14 @@ import { WipeEffect } from './effects/WipeEffect';
 import { EffectManager } from './effects/EffectManager';
 import { TarzanRope } from './obstacles/TarzanRope';
 import { BouncingRock } from './obstacles/BouncingRock';
+import { GameStateManager } from './managers/GameStateManager';
+import { GameStatus } from './types/GameState';
 
 export class Game {
     private app: PIXI.Application;
     private background: PIXI.Graphics;
     private obstacles: PIXI.Graphics;
     private currentScreen: number = 1;
-    private isGameOver: boolean = false;
-    private isGameClear: boolean = false;  // ゲームクリア状態を追加
     private backgroundRenderer: BackgroundRenderer;
     private eventEmitter: EventEmitter;
     private playerManager: PlayerManager;
@@ -28,6 +28,7 @@ export class Game {
     private effectManager: EffectManager;
     private lives: number = 3;  // 残機数
     private readonly MAX_LIVES: number = 3;  // 最大残機数
+    private stateManager: GameStateManager;
     
     // 新しい障害物管理用の変数
     public obstacleList: Obstacle[] = [];
@@ -35,6 +36,9 @@ export class Game {
     private targetScreen: number = 1;
 
     constructor() {
+        // 状態管理を初期化
+        this.stateManager = new GameStateManager();
+
         // PIXIアプリケーションを初期化
         this.app = new PIXI.Application({
             width: SCREEN.WIDTH,
@@ -86,6 +90,18 @@ export class Game {
 
         // ゲームループを開始
         this.app.ticker.add(() => this.gameLoop());
+
+        // 状態変更のリスナーを設定
+        this.stateManager.onStateChange((event) => {
+            if (event.type === 'STATUS_CHANGE') {
+                if (event.newState.status === GameStatus.GAME_OVER) {
+                    this.uiManager.showGameOver();
+                } else if (event.newState.status === GameStatus.GAME_CLEAR) {
+                    this.showGameClearUI();
+                    this.playerManager.onGameClear();
+                }
+            }
+        });
     }
 
     // プレイヤーの死亡処理を処理するメソッド
@@ -112,20 +128,20 @@ export class Game {
 
     private setupEventListeners(): void {
         this.eventEmitter.on(GameEvent.RESTART, () => {
-            if (this.isGameOver) {
+            if (this.stateManager.getStatus() === GameStatus.GAME_OVER) {
                 this.reset();
             }
         });
 
         this.eventEmitter.on(GameEvent.NEXT_SCREEN, () => {
-            if (!this.isGameOver && !this.isTransitioning) {
+            if (this.stateManager.getStatus() !== GameStatus.GAME_OVER && !this.isTransitioning) {
                 this.targetScreen = this.currentScreen + 1;
                 this.startTransition();
             }
         });
 
         this.eventEmitter.on(GameEvent.SCREEN_TRANSITION, (amount: number) => {
-            if (!this.isGameOver && !this.isTransitioning) {
+            if (this.stateManager.getStatus() !== GameStatus.GAME_OVER && !this.isTransitioning) {
                 this.targetScreen = this.currentScreen + amount;
                 this.startTransition();
             }
@@ -197,14 +213,11 @@ export class Game {
     }
 
     public gameOver(): void {
-        this.isGameOver = true;
-        this.uiManager.showGameOver();
+        this.stateManager.setStatus(GameStatus.GAME_OVER);
     }
 
     public gameClear(): void {
-        this.isGameClear = true;
-        this.showGameClearUI();
-        this.playerManager.onGameClear();
+        this.stateManager.setStatus(GameStatus.GAME_CLEAR);
     }
 
     private showGameClearUI(): void {
@@ -251,8 +264,7 @@ export class Game {
     }
 
     private reset(): void {
-        this.isGameOver = false;
-        this.isGameClear = false;  // ゲームクリア状態をリセット
+        this.stateManager.setStatus(GameStatus.PLAYING);
         this.currentScreen = 1;
         this.lives = this.MAX_LIVES;  // 残機を最大値にリセット
         this.playerManager.reset();
@@ -269,7 +281,7 @@ export class Game {
     }
 
     private gameLoop(): void {
-        if (this.isGameOver) {  // ゲームオーバー時のみ更新を停止
+        if (this.stateManager.getStatus() === GameStatus.GAME_OVER) {  // ゲームオーバー時のみ更新を停止
             return;
         }
 
@@ -300,7 +312,9 @@ export class Game {
         this.effectManager.update();
 
         // 障害物との衝突判定（死亡中はスキップ）
-        if (!this.playerManager.isDeadState() && !this.isGameClear && this.checkCollision()) {
+        if (!this.playerManager.isDeadState() && 
+            this.stateManager.getStatus() !== GameStatus.GAME_CLEAR && 
+            this.checkCollision()) {
             this.playerManager.die();  // 衝突時にプレイヤーを死亡状態にする
         }
 
@@ -350,11 +364,11 @@ export class Game {
     }
 
     public getGameOverState(): boolean {
-        return this.isGameOver;
+        return this.stateManager.getStatus() === GameStatus.GAME_OVER;
     }
 
     public getGameClearState(): boolean {
-        return this.isGameClear;
+        return this.stateManager.getStatus() === GameStatus.GAME_CLEAR;
     }
 
     public setPlayerPosition(x: number, y: number): void {
