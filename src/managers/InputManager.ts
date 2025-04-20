@@ -1,4 +1,5 @@
 import { EventEmitter, GameEvent } from '../utils/EventEmitter';
+import { Game } from '../game';
 
 // キーコードを定数として定義
 export enum KeyCode {
@@ -66,9 +67,13 @@ export class InputManager {
     private eventEmitter: EventEmitter;
     private keyStates: Map<KeyCode, KeyState> = new Map();
     private actionToKeyMap: Map<ActionType, KeyCode[]> = new Map();
+    private isInputEnabled: boolean = true;  // 操作可能かどうかのフラグ
+    private isAutoJumping: boolean = false;  // 自動ジャンプ中かどうかのフラグ
+    private game: Game;  // Gameインスタンスを保持
 
-    constructor(eventEmitter: EventEmitter) {
+    constructor(eventEmitter: EventEmitter, game: Game) {
         this.eventEmitter = eventEmitter;
+        this.game = game;
         this.initializeKeyStates();
         this.setupActionMapping();
         this.setupKeyboardInput();
@@ -130,9 +135,41 @@ export class InputManager {
         });
     }
 
-    // 毎フレーム呼び出して、キーの状態を更新
-    update(): void {
+    public setInputEnabled(enabled: boolean): void {
+        this.isInputEnabled = enabled;
+    }
+
+    public setAutoJumping(enabled: boolean): void {
+        this.isAutoJumping = enabled;
+    }
+
+    public update(): void {
+        // キーの状態を更新
         this.keyStates.forEach(state => state.update());
+
+        if (!this.isInputEnabled) {
+            // 操作不能時は自動ジャンプのみ処理
+            if (this.isAutoJumping && this.game.getPlayerManager().isGroundedState()) {
+                console.log('InputManager: 自動ジャンプイベントを発火');
+                this.eventEmitter.emit(GameEvent.JUMP);
+            }
+            return;
+        }
+
+        // 通常の入力処理
+        if (this.isActionActive(ActionType.MOVE_LEFT)) {
+            this.eventEmitter.emit(GameEvent.MOVE_LEFT);
+        }
+        if (this.isActionActive(ActionType.MOVE_RIGHT)) {
+            this.eventEmitter.emit(GameEvent.MOVE_RIGHT);
+        }
+        if (this.isActionActive(ActionType.JUMP)) {
+            console.log('InputManager: 通常のジャンプイベントを発火');
+            this.eventEmitter.emit(GameEvent.JUMP);
+        }
+        if (this.isActionActive(ActionType.RESTART)) {
+            this.eventEmitter.emit(GameEvent.RESTART);
+        }
     }
 
     // 特定のアクションが実行されているかどうかを確認

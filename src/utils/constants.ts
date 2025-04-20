@@ -131,6 +131,8 @@ export interface ScreenConfig {
   };
   // 障害物設定
   obstacles: string[];
+  // ゲームクリア画面かどうか
+  isGameClearScreen?: boolean;
 }
 
 // 統合された画面設定テーブル
@@ -343,5 +345,17 @@ export const screenConfigs: { [key: number]: ScreenConfig } = {
       isInForest: true
     },
     obstacles: ['LargePool', 'FountainSpawner']
+  },
+  20: {
+    background: {
+      drawSky: SkyType.NIGHT,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: false,
+      isInForest: false
+    },
+    obstacles: ['Signboard'],
+    isGameClearScreen: true
   }
 }; 

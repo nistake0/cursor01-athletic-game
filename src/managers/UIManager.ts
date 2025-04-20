@@ -4,6 +4,7 @@ import { TEXT, SCREEN } from '../utils/constants';
 export class UIManager {
     private screenText: PIXI.Text;
     private gameOverText: PIXI.Text;
+    private gameClearText: PIXI.Text;  // ゲームクリアテキストを追加
     private scoreText!: PIXI.Text;
     private highScoreText!: PIXI.Text;
     private comboText: PIXI.Text;
@@ -130,6 +131,20 @@ export class UIManager {
         this.gameOverText.y = app.screen.height / 2;
         this.gameOverText.visible = false;
 
+        // ゲームクリアテキストを作成（初期状態は非表示）
+        this.gameClearText = new PIXI.Text('GAME CLEAR!', {
+            fontFamily: TEXT.SCREEN.FONT_FAMILY,
+            fontSize: TEXT.SCREEN.FONT_SIZE + 24,
+            fill: 0xFFFF00,
+            stroke: TEXT.SCREEN.STROKE,
+            strokeThickness: TEXT.SCREEN.STROKE_THICKNESS,
+            align: 'center'
+        });
+        this.gameClearText.anchor.set(0.5);
+        this.gameClearText.x = app.screen.width / 2;
+        this.gameClearText.y = app.screen.height / 2;
+        this.gameClearText.visible = false;
+
         // ハイスコアの読み込み
         this.loadHighScore();
 
@@ -140,6 +155,7 @@ export class UIManager {
         app.stage.addChild(this.comboText);
         app.stage.addChild(this.livesText);
         app.stage.addChild(this.gameOverText);
+        app.stage.addChild(this.gameClearText);  // ゲームクリアテキストを追加
     }
 
     public updateScreenNumber(screenNumber: number): void {
@@ -229,6 +245,14 @@ export class UIManager {
 
     public hideGameOver(): void {
         this.gameOverText.visible = false;
+    }
+
+    public showGameClear(): void {
+        this.gameClearText.visible = true;
+    }
+
+    public hideGameClear(): void {
+        this.gameClearText.visible = false;
     }
 
     public reset(): void {

@@ -18,6 +18,7 @@ export class Game {
     private obstacles: PIXI.Graphics;
     private currentScreen: number = 1;
     private isGameOver: boolean = false;
+    private isGameClear: boolean = false;  // ゲームクリア状態を追加
     private backgroundRenderer: BackgroundRenderer;
     private eventEmitter: EventEmitter;
     private playerManager: PlayerManager;
@@ -207,6 +208,33 @@ export class Game {
         this.uiManager.showGameOver();
     }
 
+    public gameClear(): void {
+        this.isGameClear = true;
+        this.showGameClearUI();
+        this.playerManager.onGameClear();
+    }
+
+    private showGameClearUI(): void {
+        const gameClearText = new PIXI.Text('GAME CLEAR!', {
+            fontFamily: 'Arial',
+            fontSize: 64,
+            fill: 0x00ff00,
+            align: 'center'
+        });
+        gameClearText.anchor.set(0.5);
+        gameClearText.x = this.app.screen.width / 2;
+        gameClearText.y = this.app.screen.height / 2;
+        this.app.stage.addChild(gameClearText);
+    }
+
+    private hideGameClearUI(): void {
+        this.app.stage.children.forEach(child => {
+            if (child instanceof PIXI.Text && child.text === 'GAME CLEAR!') {
+                this.app.stage.removeChild(child);
+            }
+        });
+    }
+
     private moveToNextScreen(): void {
         // このメソッドは使用しなくなりました
     }
@@ -231,6 +259,7 @@ export class Game {
 
     private reset(): void {
         this.isGameOver = false;
+        this.isGameClear = false;  // ゲームクリア状態をリセット
         this.currentScreen = 1;
         this.lives = this.MAX_LIVES;  // 残機を最大値にリセット
         this.playerManager.reset();
@@ -243,10 +272,13 @@ export class Game {
         
         // UIマネージャーのゲームオーバー表示を非表示にする
         this.uiManager.hideGameOver();
+        this.uiManager.hideGameClear();  // ゲームクリア表示を非表示
     }
 
     private gameLoop(): void {
-        if (this.isGameOver) return;
+        if (this.isGameOver) {  // ゲームオーバー時のみ更新を停止
+            return;
+        }
 
         if (this.isTransitioning) {
             // ワイプエフェクトの更新
@@ -275,12 +307,21 @@ export class Game {
         this.effectManager.update();
 
         // 障害物との衝突判定（死亡中はスキップ）
-        if (!this.playerManager.isDeadState() && this.checkCollision()) {
+        if (!this.playerManager.isDeadState() && !this.isGameClear && this.checkCollision()) {
             this.playerManager.die();  // 衝突時にプレイヤーを死亡状態にする
         }
 
         // 障害物の再描画
         this.drawObstacles();
+
+        // ゲームクリア画面の判定
+        const screenConfig = screenConfigs[this.currentScreen];
+        if (screenConfig?.isGameClearScreen) {
+            const player = this.playerManager.getPlayer();
+            if (player.x >= SCREEN.WIDTH / 2) {
+                this.gameClear();
+            }
+        }
     }
 
     public getPlayer(): PIXI.Container {
@@ -317,6 +358,10 @@ export class Game {
 
     public getGameOverState(): boolean {
         return this.isGameOver;
+    }
+
+    public getGameClearState(): boolean {
+        return this.isGameClear;
     }
 
     public setPlayerPosition(x: number, y: number): void {
