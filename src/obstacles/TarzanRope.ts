@@ -251,7 +251,8 @@ export class TarzanRope extends Obstacle {
     // プレイヤーがジャンプ中で、ロープの先端に近い場合にロープにつかまる
     if (distance < 30 && player.y < PLAYER.GROUND_Y) { // 判定範囲を広げる（20→30）
       this.isPlayerHolding = true;
-      return true;
+      this.game.getPlayerManager().setOnRope(true, this);
+      return false; // 衝突しない（ゲームオーバーにならない）
     }
     
     return false;

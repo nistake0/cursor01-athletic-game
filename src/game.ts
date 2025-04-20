@@ -186,15 +186,8 @@ export class Game {
 
         // すべての障害物との衝突をチェック
         for (const obstacle of this.obstacleList) {
-            // ロープとの衝突判定
-            if (obstacle instanceof TarzanRope) {
-                if (obstacle.checkCollision(player)) {
-                    // ロープにつかまる
-                    this.playerManager.setOnRope(true, obstacle);
-                    return false; // 衝突しない（ゲームオーバーにならない）
-                }
-            } else if (obstacle.checkCollision(player)) {
-                // ロープ以外の障害物との衝突
+            if (obstacle.checkCollision(player)) {
+                // 衝突した場合
                 this.playerManager.die();
                 return true;
             }
