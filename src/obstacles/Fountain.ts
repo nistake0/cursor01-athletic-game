@@ -111,7 +111,7 @@ export class Fountain extends Obstacle {
         this.obstacles.lineStyle(1, 0x0000FF, 0.5);
         this.obstacles.drawRect(
             this.fountainBounds.left + 5,
-            this._y - this.waterHeight + 60,  // 噴水の下限を60ピクセル下げる
+            this._y - this.waterHeight + 70,  // 噴水の下限を70ピクセル下げる（60から70に変更）
             this._width - 10,
             this.waterHeight
         );
@@ -121,7 +121,7 @@ export class Fountain extends Obstacle {
         this.obstacles.beginFill(0x4169E1, 0.9);
         this.obstacles.drawRect(
             this.fountainBounds.left + 5,
-            this._y - this.waterHeight - 10 + 60,  // 噴出部分も60ピクセル下げる
+            this._y - this.waterHeight - 10 + 70,  // 噴出部分も70ピクセル下げる（60から70に変更）
             this._width - 10,
             10
         );
