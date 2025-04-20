@@ -4,7 +4,8 @@ export enum GameEvent {
     MOVE_LEFT = 'moveLeft',
     MOVE_RIGHT = 'moveRight',
     NEXT_SCREEN = 'next_screen',
-    SCREEN_TRANSITION = 'screen_transition'
+    SCREEN_TRANSITION = 'screen_transition',
+    STATE_CHANGE = 'state_change'
 }
 
 export class EventEmitter {
@@ -15,6 +16,16 @@ export class EventEmitter {
             this.listeners.set(event, []);
         }
         this.listeners.get(event)!.push(callback);
+    }
+
+    off(event: GameEvent, callback: Function) {
+        if (this.listeners.has(event)) {
+            const callbacks = this.listeners.get(event)!;
+            const index = callbacks.indexOf(callback);
+            if (index !== -1) {
+                callbacks.splice(index, 1);
+            }
+        }
     }
 
     emit(event: GameEvent, data?: any) {
