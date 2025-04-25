@@ -82,6 +82,11 @@ export class PlayerManager {
     }
 
     public update(): void {
+        // プレイヤーが破棄されている場合は更新をスキップ
+        if (!this.playerRenderer.getPlayer()) {
+            return;
+        }
+
         if (this.isDead) {
             // 死亡状態の更新
             const currentTime = Date.now();
@@ -89,7 +94,7 @@ export class PlayerManager {
                 // 死亡表示時間が経過したら、残機を減らすかゲームオーバーにする
                 this.game.handlePlayerDeath();
                 this.isDead = false;
-                this.playerRenderer.getPlayer().alpha = 1.0;  // 透明度を元に戻す
+                this.getPlayerOrThrow().alpha = 1.0;  // 透明度を元に戻す
             }
             // 死亡状態でも描画を更新する
             this.playerRenderer.render();
@@ -131,7 +136,7 @@ export class PlayerManager {
             const platformBounds = this._currentPlatform.getPlatformBounds();
             if (platformBounds) {
                 // プレーヤーの位置を板の上に設定
-                this.playerRenderer.getPlayer().y = platformBounds.top - 35;  // プレーヤーの高さを考慮して調整
+                this.getPlayerOrThrow().y = platformBounds.top - 35;  // プレーヤーの高さを考慮して調整
             }
             this.playerRenderer.render();
             return;
@@ -149,7 +154,7 @@ export class PlayerManager {
         // 重力とジャンプの処理
         if (!this.isGrounded) {
             this.velocityY += PLAYER.GRAVITY;
-            this.playerRenderer.getPlayer().y += this.velocityY;
+            this.getPlayerOrThrow().y += this.velocityY;
             
             // 上昇中かどうかを判断
             const wasRising = this.isRising;
@@ -171,39 +176,40 @@ export class PlayerManager {
         if (this.isRising || this.isGrounded) {
             // 上昇中または地面に接地している場合は通常の移動処理
             if (this.inputManager.isActionActive(ActionType.MOVE_LEFT)) {
-                this.playerRenderer.getPlayer().x -= PLAYER.MOVE_SPEED;
+                this.getPlayerOrThrow().x -= PLAYER.MOVE_SPEED;
                 this.direction = -1;
                 this.lastMoveDirection = -1;
                 this.moveMomentum = PLAYER.MOVE_SPEED;
             }
             if (this.inputManager.isActionActive(ActionType.MOVE_RIGHT)) {
-                this.playerRenderer.getPlayer().x += PLAYER.MOVE_SPEED;
+                this.getPlayerOrThrow().x += PLAYER.MOVE_SPEED;
                 this.direction = 1;
                 this.lastMoveDirection = 1;
                 this.moveMomentum = PLAYER.MOVE_SPEED;
             }
         } else if (this.moveMomentum > 0.1) {
             // 落下中で移動の勢いがある場合は、最後に移動していた方向に動き続ける
-            this.playerRenderer.getPlayer().x += this.lastMoveDirection * this.moveMomentum;
+            this.getPlayerOrThrow().x += this.lastMoveDirection * this.moveMomentum;
             // 移動の勢いを徐々に減衰させる
             this.moveMomentum *= PlayerManager.MOMENTUM_DECAY;
         }
 
         // 画面端での処理
-        if (this.playerRenderer.getPlayer().x <= 30) {
-            this.playerRenderer.getPlayer().x = 30;
-        } else if (this.playerRenderer.getPlayer().x >= this.app.screen.width - 30) {
+        const player = this.getPlayerOrThrow();
+        if (player.x <= 30) {
+            player.x = 30;
+        } else if (player.x >= this.app.screen.width - 30) {
             // ゲームクリア状態の場合は画面右端で止まる
             if (this.isGameCleared) {
-                this.playerRenderer.getPlayer().x = this.app.screen.width - 30;
+                player.x = this.app.screen.width - 30;
             } else {
                 this.eventEmitter.emit(GameEvent.NEXT_SCREEN);
             }
         }
 
         // 地面との衝突判定
-        if (this.playerRenderer.getPlayer().y >= PLAYER.GROUND_Y) {
-            this.playerRenderer.getPlayer().y = PLAYER.GROUND_Y;
+        if (player.y >= PLAYER.GROUND_Y) {
+            player.y = PLAYER.GROUND_Y;
             this.velocityY = 0;
             this.isGrounded = true;
             
@@ -220,7 +226,6 @@ export class PlayerManager {
         // スティックマンの再描画（常に最後に行う）
         this.playerRenderer.render();
         // プレイヤーを最前面に表示
-        const player = this.playerRenderer.getPlayer();
         if (player.parent) {
             player.parent.removeChild(player);
         }
@@ -228,9 +233,33 @@ export class PlayerManager {
     }
 
     public reset(): void {
-        // プレーヤーの位置を初期位置に戻す
-        this.playerRenderer.getPlayer().x = PLAYER.INITIAL_X;
-        this.playerRenderer.getPlayer().y = PLAYER.INITIAL_Y;
+        // プレイヤーを完全に破棄して再作成
+        if (this.playerRenderer) {
+            this.playerRenderer.destroy();
+        }
+        
+        // 新しいプレイヤーレンダラーを作成
+        this.playerRenderer = new PlayerRenderer(this.app, this);
+        this.playerRenderer.render();
+        
+        // プレイヤーオブジェクトを取得
+        const player = this.playerRenderer.getPlayer();
+        if (!player) {
+            console.error('Failed to create new player');
+            return;
+        }
+
+        // InputManagerを再初期化
+        this.inputManager = new InputManager(this.eventEmitter, this.game);
+        
+        // プレイヤーの位置と状態をリセット
+        player.x = PLAYER.INITIAL_X;
+        player.y = PLAYER.INITIAL_Y;
+        player.rotation = 0;
+        player.alpha = 1;
+        player.pivot.set(0, 0);
+
+        // その他の状態をリセット
         this.velocityY = 0;
         this.isGrounded = false;
         this.direction = 1;
@@ -241,21 +270,23 @@ export class PlayerManager {
         this.isRising = false;
         this.lastMoveDirection = 0;
         this.moveMomentum = 0;
-        this.isGameCleared = false;  // ゲームクリア状態をリセット
-
-        // 死亡状態のリセット
+        this.isGameCleared = false;
         this.isDead = false;
-        const player = this.playerRenderer.getPlayer();
-        player.rotation = 0;
-        player.alpha = 1;
-        player.pivot.set(0, 0);
         
         // プレーヤーの描画を更新
         this.playerRenderer.render();
     }
 
-    public getPlayer(): PIXI.Container {
-        return this.playerRenderer.getPlayer();
+    public getPlayer(): PIXI.Container | null {
+        return this.playerRenderer?.getPlayer() ?? null;
+    }
+
+    public getPlayerOrThrow(): PIXI.Container {
+        const player = this.playerRenderer?.getPlayer();
+        if (!player) {
+            throw new Error('Player is not initialized');
+        }
+        return player;
     }
 
     public getVelocityY(): number {
@@ -287,7 +318,7 @@ export class PlayerManager {
     }
 
     public setPlayerPosition(x: number, y: number): void {
-        const player = this.playerRenderer.getPlayer();
+        const player = this.getPlayerOrThrow();
         player.x = x;
         player.y = y;
     }
@@ -340,7 +371,7 @@ export class PlayerManager {
         if (!this.isDead) {
             this.isDead = true;
             this.deathTimer = Date.now();
-            this.playerRenderer.getPlayer().alpha = 0.5;  // 半透明にして死亡状態を表現
+            this.getPlayerOrThrow().alpha = 0.5;  // 半透明にして死亡状態を表現
             this.velocityY = 0;  // 落下速度をリセット
             this.isGrounded = true;  // 地面に接地している状態にする
         }
@@ -390,7 +421,7 @@ export class PlayerManager {
         this._currentPlatform = null;
         
         // 地面との衝突判定を有効にする
-        const player = this.playerRenderer.getPlayer();
+        const player = this.getPlayerOrThrow();
         if (player.y >= PLAYER.GROUND_Y) {
             player.y = PLAYER.GROUND_Y;
             this.velocityY = 0;
@@ -407,5 +438,17 @@ export class PlayerManager {
             isGrounded: this.isGrounded,
             playerY: player.y
         });
+    }
+
+    public destroy(): void {
+        // プレイヤーキャラクターを削除
+        const player = this.playerRenderer.getPlayer();
+        if (player && player.parent) {
+            player.parent.removeChild(player);
+        }
+        // イベントリスナーを解除
+        this.inputManager.destroy();
+        // プレイヤーレンダラーを破棄
+        this.playerRenderer.destroy();
     }
 } 

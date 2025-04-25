@@ -13,6 +13,7 @@ import { TarzanRope } from './obstacles/TarzanRope';
 import { BouncingRock } from './obstacles/BouncingRock';
 import { GameStateManager } from './managers/GameStateManager';
 import { GameStatus } from './types/GameState';
+import { TitleScene } from './scenes/TitleScene';
 
 export class Game {
     private app: PIXI.Application;
@@ -29,6 +30,8 @@ export class Game {
     private lives: number = 3;  // 残機数
     private readonly MAX_LIVES: number = 3;  // 最大残機数
     private stateManager: GameStateManager;
+    private titleScene: TitleScene;
+    private isTitleScreen: boolean = true;
     
     // 新しい障害物管理用の変数
     public obstacleList: Obstacle[] = [];
@@ -102,6 +105,23 @@ export class Game {
                 }
             }
         });
+
+        // タイトル画面の初期化
+        this.titleScene = new TitleScene();
+        this.app.stage.addChild(this.titleScene.getContainer());
+        this.titleScene.onStartButtonClick(() => this.startGame());
+        
+        // タイトル画面時はUIを非表示
+        this.uiManager.setVisible(false);
+    }
+
+    private startGame(): void {
+        this.isTitleScreen = false;
+        this.titleScene.destroy();
+        // ゲーム開始時にUIを表示
+        this.uiManager.setVisible(true);
+        this.initializeScreen(1);
+        this.gameLoop();
     }
 
     // プレイヤーの死亡処理を処理するメソッド
@@ -127,12 +147,6 @@ export class Game {
     }
 
     private setupEventListeners(): void {
-        this.eventEmitter.on(GameEvent.RESTART, () => {
-            if (this.stateManager.getStatus() === GameStatus.GAME_OVER) {
-                this.reset();
-            }
-        });
-
         this.eventEmitter.on(GameEvent.NEXT_SCREEN, () => {
             if (this.stateManager.getStatus() !== GameStatus.GAME_OVER && !this.isTransitioning) {
                 this.targetScreen = this.currentScreen + 1;
@@ -214,6 +228,19 @@ export class Game {
 
     public gameOver(): void {
         this.stateManager.setStatus(GameStatus.GAME_OVER);
+        // ゲームオーバー後にタイトル画面に戻る
+        setTimeout(() => {
+            // プレイヤーを完全に削除
+            this.playerManager.destroy();
+            // ゲームの状態をリセット
+            this.reset();
+            // タイトル画面の初期化
+            this.isTitleScreen = true;
+            this.titleScene = new TitleScene();
+            this.app.stage.addChild(this.titleScene.getContainer());
+            this.titleScene.onStartButtonClick(() => this.startGame());
+            this.uiManager.setVisible(false);
+        }, 2000); // 2秒後にタイトル画面に戻る
     }
 
     public gameClear(): void {
@@ -241,21 +268,24 @@ export class Game {
     private reset(): void {
         this.stateManager.setStatus(GameStatus.PLAYING);
         this.currentScreen = 1;
-        this.lives = this.MAX_LIVES;  // 残機を最大値にリセット
+        this.lives = this.MAX_LIVES;
+        // プレイヤーを再初期化
+        this.playerManager = new PlayerManager(this.app, this, this.eventEmitter);
         this.playerManager.reset();
         this.uiManager.updateScreenNumber(this.currentScreen);
         this.uiManager.updateLives(this.lives);
         this.backgroundRenderer.setScreen(1);
-        
-        // 画面1の初期化
         this.initializeScreen(1);
-        
-        // UIマネージャーのゲームオーバー表示を非表示にする
         this.uiManager.hideGameOver();
-        this.uiManager.hideGameClear();  // ゲームクリア表示を非表示
+        this.uiManager.hideGameClear();
     }
 
     private gameLoop(): void {
+        if (this.isTitleScreen) {
+            this.titleScene.update(1/60);
+            return;
+        }
+
         if (this.stateManager.getStatus() === GameStatus.GAME_OVER) {  // ゲームオーバー時のみ更新を停止
             return;
         }
