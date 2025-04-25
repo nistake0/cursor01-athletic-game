@@ -97,7 +97,7 @@ export class Game {
                 if (event.newState.status === GameStatus.GAME_OVER) {
                     this.uiManager.showGameOver();
                 } else if (event.newState.status === GameStatus.GAME_CLEAR) {
-                    this.showGameClearUI();
+                    this.uiManager.showGameClear();
                     this.playerManager.onGameClear();
                 }
             }
@@ -218,31 +218,6 @@ export class Game {
 
     public gameClear(): void {
         this.stateManager.setStatus(GameStatus.GAME_CLEAR);
-    }
-
-    private showGameClearUI(): void {
-        const gameClearText = new PIXI.Text('GAME CLEAR!', {
-            fontFamily: 'Arial',
-            fontSize: 64,
-            fill: 0x00ff00,
-            align: 'center'
-        });
-        gameClearText.anchor.set(0.5);
-        gameClearText.x = this.app.screen.width / 2;
-        gameClearText.y = this.app.screen.height / 2;
-        this.app.stage.addChild(gameClearText);
-    }
-
-    private hideGameClearUI(): void {
-        this.app.stage.children.forEach(child => {
-            if (child instanceof PIXI.Text && child.text === 'GAME CLEAR!') {
-                this.app.stage.removeChild(child);
-            }
-        });
-    }
-
-    private moveToNextScreen(): void {
-        // このメソッドは使用しなくなりました
     }
 
     private initializeScreen(screenNumber: number): void {
