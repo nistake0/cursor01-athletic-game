@@ -193,7 +193,12 @@ export class PlayerManager {
         if (this.playerRenderer.getPlayer().x <= 30) {
             this.playerRenderer.getPlayer().x = 30;
         } else if (this.playerRenderer.getPlayer().x >= this.app.screen.width - 30) {
-            this.eventEmitter.emit(GameEvent.NEXT_SCREEN);
+            // ゲームクリア状態の場合は画面右端で止まる
+            if (this.isGameCleared) {
+                this.playerRenderer.getPlayer().x = this.app.screen.width - 30;
+            } else {
+                this.eventEmitter.emit(GameEvent.NEXT_SCREEN);
+            }
         }
 
         // 地面との衝突判定
