@@ -176,13 +176,13 @@ export class Game {
         }
         
         this.isTransitioning = true;
-        this.playerManager.getPlayer().visible = false;
+        this.playerManager.getPlayerOrThrow().visible = false;
         this.wipeEffect.start();
     }
 
     private completeTransition(): void {
         this.currentScreen = this.targetScreen;
-        this.playerManager.getPlayer().x = PLAYER.INITIAL_X;
+        this.playerManager.getPlayerOrThrow().x = PLAYER.INITIAL_X;
         this.uiManager.updateScreenNumber(this.currentScreen);
         this.backgroundRenderer.setScreen(this.currentScreen);
         
@@ -194,7 +194,7 @@ export class Game {
 
         // プレーヤーをリセットして表示
         this.playerManager.reset();
-        this.playerManager.getPlayer().visible = true;
+        this.playerManager.getPlayerOrThrow().visible = true;
     }
 
     private drawObstacles(): void {
@@ -207,7 +207,7 @@ export class Game {
     }
 
     private checkCollision(): boolean {
-        const player = this.playerManager.getPlayer() as PIXI.Graphics;
+        const player = this.playerManager.getPlayerOrThrow() as PIXI.Graphics;
         
         // プレーヤーが死亡中なら衝突判定をスキップ
         if (this.playerManager.isDeadState()) {
@@ -299,7 +299,7 @@ export class Game {
             if (!this.wipeEffect.isActive()) {
                 this.isTransitioning = false;  // ここでトランジション完了フラグをリセット
                 // トランジション完了後にプレーヤーを表示
-                this.playerManager.getPlayer().visible = true;
+                this.playerManager.getPlayerOrThrow().visible = true;
             }
             return;
         }
@@ -329,7 +329,7 @@ export class Game {
         // ゲームクリア画面の判定
         const screenConfig = screenConfigs[this.currentScreen];
         if (screenConfig?.isGameClearScreen) {
-            const player = this.playerManager.getPlayer();
+            const player = this.playerManager.getPlayerOrThrow();
             if (player.x >= SCREEN.WIDTH / 2) {
                 this.gameClear();
             }
@@ -337,7 +337,7 @@ export class Game {
     }
 
     public getPlayer(): PIXI.Container {
-        return this.playerManager.getPlayer();
+        return this.playerManager.getPlayerOrThrow();
     }
 
     public getVelocityY(): number {

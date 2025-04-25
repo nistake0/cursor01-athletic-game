@@ -4,18 +4,21 @@ import { TEXT, SCREEN } from '../utils/constants';
 export class UIManager {
     private screenText: PIXI.Text;
     private gameOverText: PIXI.Text;
-    private gameClearText: PIXI.Text;  // ゲームクリアテキストを追加
+    private gameClearText: PIXI.Text;
     private scoreText!: PIXI.Text;
     private highScoreText!: PIXI.Text;
     private comboText: PIXI.Text;
-    private livesText: PIXI.Text;  // 残機表示用のテキスト
+    private livesText: PIXI.Text;
     private currentScreen: number = 1;
     private currentScore: number = 0;
     private highScore: number = 0;
     private comboCount: number = 0;
-    private readonly COMBO_TIMEOUT: number = 3000; // コンボのタイムアウト時間（ミリ秒）
+    private readonly COMBO_TIMEOUT: number = 3000;
     private lastScoreTime: number = 0;
     private app: PIXI.Application;
+    private isVisible: boolean = true;
+    private scoreContainer: PIXI.Container;
+    private highScoreContainer: PIXI.Container;
 
     constructor(app: PIXI.Application) {
         this.app = app;
@@ -30,11 +33,12 @@ export class UIManager {
         });
         this.screenText.x = 20;
         this.screenText.y = 20;
+        this.app.stage.addChild(this.screenText);
 
         // スコア表示用のコンテナを作成
-        const scoreContainer = new PIXI.Container();
-        scoreContainer.x = SCREEN.WIDTH - 20; // 右端から20pxの位置
-        scoreContainer.y = 20;
+        this.scoreContainer = new PIXI.Container();
+        this.scoreContainer.x = SCREEN.WIDTH - 20;
+        this.scoreContainer.y = 20;
 
         // スコアラベル
         const scoreLabel = new PIXI.Text('SCORE', {
@@ -45,8 +49,8 @@ export class UIManager {
             strokeThickness: TEXT.SCREEN.STROKE_THICKNESS,
             align: 'right'
         });
-        scoreLabel.anchor.set(1, 0); // 右端を基準点に
-        scoreContainer.addChild(scoreLabel);
+        scoreLabel.anchor.set(1, 0);
+        this.scoreContainer.addChild(scoreLabel);
 
         // スコア数値
         this.scoreText = new PIXI.Text('0', {
@@ -57,41 +61,41 @@ export class UIManager {
             strokeThickness: TEXT.SCREEN.STROKE_THICKNESS,
             align: 'right'
         });
-        this.scoreText.anchor.set(1, 0); // 右端を基準点に
+        this.scoreText.anchor.set(1, 0);
         this.scoreText.y = 30;
-        scoreContainer.addChild(this.scoreText);
+        this.scoreContainer.addChild(this.scoreText);
 
         // ハイスコア表示用のコンテナを作成
-        const highScoreContainer = new PIXI.Container();
-        highScoreContainer.x = SCREEN.WIDTH - 20; // 右端から20pxの位置
-        highScoreContainer.y = 100; // スコア表示の下に配置（80から100に変更）
+        this.highScoreContainer = new PIXI.Container();
+        this.highScoreContainer.x = SCREEN.WIDTH - 20;
+        this.highScoreContainer.y = 100;
 
         // ハイスコアラベル
         const highScoreLabel = new PIXI.Text('HIGH SCORE', {
             fontFamily: TEXT.SCREEN.FONT_FAMILY,
-            fontSize: TEXT.SCREEN.FONT_SIZE - 4, // フォントサイズを小さく
+            fontSize: TEXT.SCREEN.FONT_SIZE - 4,
             fill: 0xFFFF00,
             stroke: TEXT.SCREEN.STROKE,
             strokeThickness: TEXT.SCREEN.STROKE_THICKNESS,
             align: 'right'
         });
-        highScoreLabel.anchor.set(1, 0); // 右端を基準点に
-        highScoreContainer.addChild(highScoreLabel);
+        highScoreLabel.anchor.set(1, 0);
+        this.highScoreContainer.addChild(highScoreLabel);
 
         // ハイスコア数値
         this.highScoreText = new PIXI.Text('0', {
             fontFamily: TEXT.SCREEN.FONT_FAMILY,
-            fontSize: TEXT.SCREEN.FONT_SIZE + 4, // スコアより少し小さく
+            fontSize: TEXT.SCREEN.FONT_SIZE + 4,
             fill: 0xFFFF00,
             stroke: TEXT.SCREEN.STROKE,
             strokeThickness: TEXT.SCREEN.STROKE_THICKNESS,
             align: 'right'
         });
-        this.highScoreText.anchor.set(1, 0); // 右端を基準点に
-        this.highScoreText.y = 25; // ラベルとの間隔を調整
-        highScoreContainer.addChild(this.highScoreText);
+        this.highScoreText.anchor.set(1, 0);
+        this.highScoreText.y = 25;
+        this.highScoreContainer.addChild(this.highScoreText);
 
-        // コンボテキストを作成（初期状態は非表示）
+        // コンボテキストを作成
         this.comboText = new PIXI.Text('', {
             fontFamily: TEXT.SCREEN.FONT_FAMILY,
             fontSize: TEXT.SCREEN.FONT_SIZE + 4,
@@ -105,19 +109,19 @@ export class UIManager {
         this.comboText.y = 100;
         this.comboText.visible = false;
 
-        // 残機の表示
-        this.livesText = new PIXI.Text('Lives: 3', {
+        // 残機表示テキストを作成
+        this.livesText = new PIXI.Text(`Lives: ${3}`, {
             fontFamily: TEXT.SCREEN.FONT_FAMILY,
             fontSize: TEXT.SCREEN.FONT_SIZE,
             fill: TEXT.SCREEN.FILL,
             stroke: TEXT.SCREEN.STROKE,
-            strokeThickness: TEXT.SCREEN.STROKE_THICKNESS,
-            align: 'left'
+            strokeThickness: TEXT.SCREEN.STROKE_THICKNESS
         });
         this.livesText.x = 20;
-        this.livesText.y = 110;
+        this.livesText.y = 50;
+        this.app.stage.addChild(this.livesText);
 
-        // ゲームオーバーテキストを作成（初期状態は非表示）
+        // ゲームオーバーテキストを作成
         this.gameOverText = new PIXI.Text('GAME OVER', {
             fontFamily: TEXT.SCREEN.FONT_FAMILY,
             fontSize: TEXT.SCREEN.FONT_SIZE + 16,
@@ -131,7 +135,7 @@ export class UIManager {
         this.gameOverText.y = app.screen.height / 2;
         this.gameOverText.visible = false;
 
-        // ゲームクリアテキストを作成（初期状態は非表示）
+        // ゲームクリアテキストを作成
         this.gameClearText = new PIXI.Text('GAME CLEAR!', {
             fontFamily: TEXT.SCREEN.FONT_FAMILY,
             fontSize: TEXT.SCREEN.FONT_SIZE + 24,
@@ -149,13 +153,11 @@ export class UIManager {
         this.loadHighScore();
 
         // レイヤー順に追加
-        app.stage.addChild(this.screenText);
-        app.stage.addChild(scoreContainer);
-        app.stage.addChild(highScoreContainer);
-        app.stage.addChild(this.comboText);
-        app.stage.addChild(this.livesText);
-        app.stage.addChild(this.gameOverText);
-        app.stage.addChild(this.gameClearText);  // ゲームクリアテキストを追加
+        this.app.stage.addChild(this.scoreContainer);
+        this.app.stage.addChild(this.highScoreContainer);
+        this.app.stage.addChild(this.comboText);
+        this.app.stage.addChild(this.gameOverText);
+        this.app.stage.addChild(this.gameClearText);
     }
 
     public updateScreenNumber(screenNumber: number): void {
@@ -264,5 +266,14 @@ export class UIManager {
         this.updateComboDisplay();
         this.updateLives(3);  // 残機を3にリセット
         this.hideGameOver();
+    }
+
+    public setVisible(visible: boolean): void {
+        this.isVisible = visible;
+        this.screenText.visible = visible;
+        this.livesText.visible = visible;
+        this.scoreContainer.visible = visible;
+        this.highScoreContainer.visible = visible;
+        this.comboText.visible = visible;
     }
 } 

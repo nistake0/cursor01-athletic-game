@@ -70,12 +70,31 @@ export class InputManager {
     private isInputEnabled: boolean = true;  // 操作可能かどうかのフラグ
     private isAutoJumping: boolean = false;  // 自動ジャンプ中かどうかのフラグ
     private game: Game;  // Gameインスタンスを保持
+    private keyDownHandler: (e: KeyboardEvent) => void;
+    private keyUpHandler: (e: KeyboardEvent) => void;
 
     constructor(eventEmitter: EventEmitter, game: Game) {
         this.eventEmitter = eventEmitter;
         this.game = game;
         this.initializeKeyStates();
         this.setupActionMapping();
+        
+        // イベントハンドラーをクラスプロパティとして保存
+        this.keyDownHandler = (e) => {
+            const keyCode = e.key as KeyCode;
+            if (this.keyStates.has(keyCode)) {
+                this.keyStates.get(keyCode)!.setPressed(true);
+                this.triggerActionEvents(keyCode);
+            }
+        };
+        
+        this.keyUpHandler = (e) => {
+            const keyCode = e.key as KeyCode;
+            if (this.keyStates.has(keyCode)) {
+                this.keyStates.get(keyCode)!.setPressed(false);
+            }
+        };
+        
         this.setupKeyboardInput();
     }
 
@@ -96,22 +115,8 @@ export class InputManager {
     }
 
     private setupKeyboardInput(): void {
-        window.addEventListener('keydown', (e) => {
-            const keyCode = e.key as KeyCode;
-            if (this.keyStates.has(keyCode)) {
-                this.keyStates.get(keyCode)!.setPressed(true);
-                
-                // アクションに基づいてイベントを発火
-                this.triggerActionEvents(keyCode);
-            }
-        });
-
-        window.addEventListener('keyup', (e) => {
-            const keyCode = e.key as KeyCode;
-            if (this.keyStates.has(keyCode)) {
-                this.keyStates.get(keyCode)!.setPressed(false);
-            }
-        });
+        window.addEventListener('keydown', this.keyDownHandler);
+        window.addEventListener('keyup', this.keyUpHandler);
     }
 
     private triggerActionEvents(keyCode: KeyCode): void {
@@ -193,5 +198,11 @@ export class InputManager {
     // キーが今フレームで離されたかどうかを確認
     wasKeyJustReleased(keyCode: KeyCode): boolean {
         return this.keyStates.get(keyCode)?.wasJustReleased() || false;
+    }
+
+    public destroy(): void {
+        // キーボードイベントリスナーを解除
+        window.removeEventListener('keydown', this.keyDownHandler);
+        window.removeEventListener('keyup', this.keyUpHandler);
     }
 } 
