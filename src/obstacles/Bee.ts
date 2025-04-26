@@ -3,11 +3,13 @@ import { Game } from '../game';
 import { Obstacle } from './Obstacle';
 
 export class Bee extends Obstacle {
-    private x: number;
-    private y: number;
-    private speed: number;
-    private isActive: boolean;
     private graphics: PIXI.Graphics;
+    private isActive: boolean = false;
+    private _x: number = 0;
+    private _y: number = 0;
+    private velocityX: number = 0;
+    private velocityY: number = 0;
+    private speed: number;
     private readonly BEE_WIDTH: number = 30;
     private readonly BEE_HEIGHT: number = 20;
     private readonly MIN_Y: number = 100; // 最小の高さ
@@ -16,12 +18,25 @@ export class Bee extends Obstacle {
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
         super(app, obstacles, game);
-        this.x = 0;
-        this.y = 0;
         this.speed = 5;
-        this.isActive = false;
         this.graphics = new PIXI.Graphics();
         this.obstacles.addChild(this.graphics);
+    }
+
+    public get x(): number {
+        return this._x;
+    }
+
+    public set x(value: number) {
+        this._x = value;
+    }
+
+    public get y(): number {
+        return this._y;
+    }
+
+    public set y(value: number) {
+        this._y = value;
     }
 
     public spawn(): void {
@@ -94,14 +109,19 @@ export class Bee extends Obstacle {
 
     public checkCollision(player: PIXI.Graphics): boolean {
         if (!this.isActive) return false;
-
-        // プレイヤーと蜂の衝突判定
-        const distance = Math.sqrt(
-            Math.pow(player.x - this.x, 2) + 
-            Math.pow(player.y - this.y, 2)
-        );
-
-        return distance < 25; // 蜂の半径 + プレイヤーの当たり判定
+        
+        const playerBounds = player.getBounds();
+        const beeBounds = this.graphics.getBounds();
+        
+        // プレイヤーが蜂を飛び越えたかチェック
+        if (player.x > beeBounds.right && player.y < beeBounds.top) {
+            this.addScore(20);
+        }
+        
+        return !(playerBounds.right < beeBounds.left ||
+                playerBounds.left > beeBounds.right ||
+                playerBounds.bottom < beeBounds.top ||
+                playerBounds.top > beeBounds.bottom);
     }
 
     public reset(): void {
