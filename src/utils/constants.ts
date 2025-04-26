@@ -380,4 +380,9 @@ export const screenConfigs: { [key: number]: ScreenConfig } = {
     obstacles: ['Signboard'],
     isGameClearScreen: true
   }
-}; 
+};
+
+// 最大画面番号を取得する関数
+export function getMaxScreenNumber(): number {
+    return Math.max(...Object.keys(screenConfigs).map(Number));
+} 
