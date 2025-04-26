@@ -152,6 +152,7 @@ export class LotusLeaf extends Obstacle {
         
         if (this.isOnLotusLeaf(playerBounds, lotusBounds)) {
             this.game.getPlayerManager().setOnLotus(true);
+            this.addScore(10);
             return false;
         }
         
