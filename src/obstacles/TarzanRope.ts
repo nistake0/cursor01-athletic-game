@@ -25,6 +25,7 @@ export class TarzanRope extends Obstacle {
   private readonly CONSTRAINT_ITERATIONS = 5; // 制約の適用回数を増やす（3→5）
   private readonly FIXED_POINT_Y = 200; // 固定点のY座標をさらに下げる（150→200）
   private readonly FIRST_SEGMENT_TENSION = 0.9; // 最初のセグメントの張力（強め）
+  private hasScored: boolean = false; // スコア加算済みフラグ
 
   // xのアクセサを定義
   public get x(): number {
@@ -249,9 +250,16 @@ export class TarzanRope extends Obstacle {
     const distance = Math.sqrt(dx * dx + dy * dy);
     
     // プレイヤーがジャンプ中で、ロープの先端に近い場合にロープにつかまる
-    if (distance < 30 && player.y < PLAYER.GROUND_Y) { // 判定範囲を広げる（20→30）
+    if (distance < 30 && player.y < PLAYER.GROUND_Y) {
       this.isPlayerHolding = true;
       this.game.getPlayerManager().setOnRope(true, this);
+      
+      // スコア加算（まだ加算されていない場合のみ）
+      if (!this.hasScored) {
+        this.addScore(30);
+        this.hasScored = true;
+      }
+      
       return false; // 衝突しない（ゲームオーバーにならない）
     }
     
@@ -275,6 +283,7 @@ export class TarzanRope extends Obstacle {
     this.rotation = 0;
     this.isPlayerHolding = false;
     this.invincibleUntil = 0;
+    this.hasScored = false; // スコア加算フラグをリセット
     // ロープのグラフィックスをクリア
     this.ropeGraphics.clear();
     // 親コンテナからロープを削除
