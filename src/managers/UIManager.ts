@@ -305,6 +305,11 @@ export class UIManager {
         this.updateComboDisplay();
     }
 
+    public resetCombo(): void {
+        this.comboCount = 0;
+        this.comboText.visible = false;
+    }
+
     public reset(): void {
         this.currentScreen = 1;
         this.screenText.text = `Screen: ${this.currentScreen}`;
@@ -312,7 +317,7 @@ export class UIManager {
         this.comboCount = 0;
         this.isBonusScoreAdded = false;  // ボーナススコアフラグをリセット
         this.updateScoreDisplay();
-        this.updateComboDisplay();
+        this.comboText.visible = false;  // コンボ表示を確実に非表示に
         this.updateLives(3);  // 残機を3にリセット
         this.hideGameOver();
     }

@@ -221,6 +221,8 @@ export class Game {
         
         // 残機表示を更新
         this.uiManager.updateLives(this.lives);
+        // コンボ表示をリセット
+        this.uiManager.resetCombo();
 
         // プレーヤーをリセットして表示
         this.playerManager.reset();
@@ -258,6 +260,8 @@ export class Game {
 
     public gameOver(): void {
         this.stateManager.setStatus(GameStatus.GAME_OVER);
+        // コンボ表示をリセット
+        this.uiManager.resetCombo();
         // ゲームオーバー後にタイトル画面に戻る
         setTimeout(() => {
             // タイトル画面フラグを設定
