@@ -19,6 +19,8 @@ export class UIManager {
     private isVisible: boolean = true;
     private scoreContainer: PIXI.Container;
     private highScoreContainer: PIXI.Container;
+    private bonusScoreText: PIXI.Text;
+    private isBonusScoreAdded: boolean = false;
 
     constructor(app: PIXI.Application) {
         this.app = app;
@@ -146,8 +148,22 @@ export class UIManager {
         });
         this.gameClearText.anchor.set(0.5);
         this.gameClearText.x = app.screen.width / 2;
-        this.gameClearText.y = app.screen.height / 2;
+        this.gameClearText.y = app.screen.height / 3;
         this.gameClearText.visible = false;
+
+        // ボーナススコア表示のテキストを作成
+        this.bonusScoreText = new PIXI.Text('', {
+            fontFamily: TEXT.SCREEN.FONT_FAMILY,
+            fontSize: TEXT.SCREEN.FONT_SIZE + 8,
+            fill: 0xFFFF00,
+            stroke: TEXT.SCREEN.STROKE,
+            strokeThickness: TEXT.SCREEN.STROKE_THICKNESS,
+            align: 'center'
+        });
+        this.bonusScoreText.anchor.set(0.5);
+        this.bonusScoreText.x = app.screen.width / 2;
+        this.bonusScoreText.y = app.screen.height / 2;
+        this.bonusScoreText.visible = false;
 
         // ハイスコアの読み込み
         this.loadHighScore();
@@ -158,6 +174,7 @@ export class UIManager {
         this.app.stage.addChild(this.comboText);
         this.app.stage.addChild(this.gameOverText);
         this.app.stage.addChild(this.gameClearText);
+        this.app.stage.addChild(this.bonusScoreText);
     }
 
     public updateScreenNumber(screenNumber: number): void {
@@ -178,20 +195,32 @@ export class UIManager {
         }
     }
 
-    public addScore(points: number): void {
+    public addScore(points: number, isBonus: boolean = false): void {
         const currentTime = Date.now();
         
-        // コンボの更新
-        if (currentTime - this.lastScoreTime < this.COMBO_TIMEOUT) {
-            this.comboCount++;
-        } else {
-            this.comboCount = 1;
+        // ボーナススコアの場合は、既に加算済みならスキップ
+        if (isBonus && this.isBonusScoreAdded) {
+            return;
+        }
+        
+        // コンボの更新（ボーナススコアの場合はスキップ）
+        if (!isBonus) {
+            if (currentTime - this.lastScoreTime < this.COMBO_TIMEOUT) {
+                this.comboCount++;
+            } else {
+                this.comboCount = 1;
+            }
         }
         
         // スコアの計算と更新
-        const comboBonus = Math.pow(1.5, this.comboCount - 1);
+        const comboBonus = isBonus ? 1 : Math.pow(1.5, this.comboCount - 1);
         const score = Math.floor(points * comboBonus);
         this.currentScore += score;
+        
+        // ボーナススコアの場合はフラグを設定
+        if (isBonus) {
+            this.isBonusScoreAdded = true;
+        }
         
         // ハイスコアの更新
         if (this.currentScore > this.highScore) {
@@ -201,10 +230,14 @@ export class UIManager {
         
         // スコア表示の更新
         this.updateScoreDisplay();
-        this.updateComboDisplay();
+        if (!isBonus) {
+            this.updateComboDisplay();
+        }
         
-        // 最終スコア時間を更新
-        this.lastScoreTime = currentTime;
+        // 最終スコア時間の更新（ボーナススコアの場合はスキップ）
+        if (!isBonus) {
+            this.lastScoreTime = currentTime;
+        }
     }
 
     private updateScoreDisplay(): void {
@@ -255,6 +288,14 @@ export class UIManager {
 
     public hideGameClear(): void {
         this.gameClearText.visible = false;
+        this.bonusScoreText.visible = false;
+    }
+
+    public showBonusScore(bonusScore: number): void {
+        this.bonusScoreText.text = `ボーナススコア: ${bonusScore}点`;
+        this.bonusScoreText.x = this.app.screen.width / 2;
+        this.bonusScoreText.y = this.app.screen.height / 2;
+        this.bonusScoreText.visible = true;
     }
 
     public reset(): void {
@@ -262,6 +303,7 @@ export class UIManager {
         this.screenText.text = `Screen: ${this.currentScreen}`;
         this.currentScore = 0;
         this.comboCount = 0;
+        this.isBonusScoreAdded = false;  // ボーナススコアフラグをリセット
         this.updateScoreDisplay();
         this.updateComboDisplay();
         this.updateLives(3);  // 残機を3にリセット

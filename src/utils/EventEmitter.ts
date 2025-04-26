@@ -5,7 +5,8 @@ export enum GameEvent {
     MOVE_RIGHT = 'moveRight',
     NEXT_SCREEN = 'next_screen',
     SCREEN_TRANSITION = 'screen_transition',
-    STATE_CHANGE = 'state_change'
+    STATE_CHANGE = 'state_change',
+    SPACE_KEY_PRESSED = 'space_key_pressed'
 }
 
 export class EventEmitter {

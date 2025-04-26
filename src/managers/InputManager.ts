@@ -149,13 +149,27 @@ export class InputManager {
     }
 
     public update(): void {
+        const keyboard = this.game.getApp().renderer.plugins.interaction.keyboard;
+        if (keyboard) {
+            // スペースキーの入力を監視
+            if (keyboard.isKeyDown('Space')) {
+                this.eventEmitter.emit(GameEvent.SPACE_KEY_PRESSED);
+            }
+
+            // 左右の移動
+            if (keyboard.isKeyDown('ArrowLeft')) {
+                this.eventEmitter.emit(GameEvent.MOVE_LEFT);
+            } else if (keyboard.isKeyDown('ArrowRight')) {
+                this.eventEmitter.emit(GameEvent.MOVE_RIGHT);
+            }
+        }
+
         // キーの状態を更新
         this.keyStates.forEach(state => state.update());
 
         if (!this.isInputEnabled) {
             // 操作不能時は自動ジャンプのみ処理
             if (this.isAutoJumping && this.game.getPlayerManager().isGroundedState()) {
-                console.log('InputManager: 自動ジャンプイベントを発火');
                 this.eventEmitter.emit(GameEvent.JUMP);
             }
             return;
@@ -169,7 +183,6 @@ export class InputManager {
             this.eventEmitter.emit(GameEvent.MOVE_RIGHT);
         }
         if (this.isActionActive(ActionType.JUMP)) {
-            console.log('InputManager: 通常のジャンプイベントを発火');
             this.eventEmitter.emit(GameEvent.JUMP);
         }
         if (this.isActionActive(ActionType.RESTART)) {

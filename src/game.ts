@@ -174,6 +174,18 @@ export class Game {
                 this.startTransition();
             }
         });
+
+        // スペースキーの入力を処理
+        this.eventEmitter.on(GameEvent.SPACE_KEY_PRESSED, () => {
+            if (this.stateManager.getStatus() === GameStatus.GAME_CLEAR) {
+                this.reset();
+                this.isTitleScreen = true;
+                this.titleScene = new TitleScene();
+                this.app.stage.addChild(this.titleScene.getContainer());
+                this.titleScene.onStartButtonClick(() => this.startGame());
+                this.uiManager.setVisible(false);
+            }
+        });
     }
 
     private jumpToScreen(screenNumber: number): void {
@@ -268,6 +280,13 @@ export class Game {
 
     public gameClear(): void {
         this.stateManager.setStatus(GameStatus.GAME_CLEAR);
+        
+        // 残機数×1000点のスコアを加算（コンボなし）
+        const bonusScore = this.lives * 1000;
+        this.uiManager.addScore(bonusScore, true);
+        
+        // ボーナススコアの表示
+        this.uiManager.showBonusScore(bonusScore);
     }
 
     private initializeScreen(screenNumber: number): void {
@@ -431,6 +450,10 @@ export class Game {
 
     public getObstacles(): PIXI.Graphics {
         return this.obstacles;
+    }
+
+    public getUIManager(): UIManager {
+        return this.uiManager;
     }
 
     public getIsTitleScreen(): boolean {
