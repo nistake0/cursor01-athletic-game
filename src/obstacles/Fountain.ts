@@ -30,6 +30,7 @@ export class Fountain extends Obstacle {
         top: number;
         bottom: number;
     } = { left: 0, right: 0, top: 0, bottom: 0 };
+    private hasScored: boolean = false; // スコア加算済みフラグ
 
     // xのアクセサを定義
     public get x(): number {
@@ -179,15 +180,11 @@ export class Fountain extends Obstacle {
             // プレーヤーが板に乗っている間、板の上下と連動するようにする
             this.game.getPlayerManager().setOnPlatform(true, this);
             
-            // 板に乗った時のログを追加
-            console.log('板に乗りました（checkCollision）:', {
-                velocityY: this.game.getVelocityY(),
-                playerY: player.y,
-                platformTop: this.platformBounds.top,
-                isOnPlatform: this.game.getPlayerManager().isOnPlatform(),
-                currentPlatform: this.game.getPlayerManager().getCurrentPlatform(),
-                jumpCooldown: this.game.getPlayerManager().getJumpCooldown()
-            });
+            // スコア加算（まだ加算されていない場合のみ）
+            if (!this.hasScored) {
+                this.addScore(10);
+                this.hasScored = true;
+            }
             
             return false;
         } else {
@@ -238,6 +235,7 @@ export class Fountain extends Obstacle {
         this.waterDirection = 1;
         this.platformY = this._y - this.waterHeight;
         this.platformDirection = 1;
+        this.hasScored = false; // スコア加算フラグをリセット
         this.initializeBounds();
     }
 
