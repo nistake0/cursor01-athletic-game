@@ -30,7 +30,6 @@ export class EventEmitter {
     }
 
     emit(event: GameEvent, data?: any) {
-        console.log(`[EventEmitter] Emitting event: ${event}`, data ? `with data: ${JSON.stringify(data)}` : '');
         if (this.listeners.has(event)) {
             this.listeners.get(event)!.forEach(callback => callback(data));
         }
