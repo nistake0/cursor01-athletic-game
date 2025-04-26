@@ -83,7 +83,7 @@ export class Game {
         this.wipeEffect = new WipeEffect(this.app, () => this.completeTransition());
         
         // エフェクトマネージャーを初期化
-        this.effectManager = new EffectManager(this.app);
+        this.effectManager = new EffectManager(this.app, this);
         
         // プレイヤーの初期化
         this.playerManager.initializePlayer();

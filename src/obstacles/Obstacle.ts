@@ -22,6 +22,10 @@ export abstract class Obstacle extends PIXI.Container {
     protected addScore(points: number): void {
         if (!this.isScoreAdded) {
             this.isScoreAdded = true;
+            const effectManager = this.game.getEffectManager();
+            const player = this.game.getPlayer();
+            const { x, y } = player.position;
+            effectManager.addScorePopup(points, x, y);
             this.game.getUIManager().addScore(points);
         }
     }
