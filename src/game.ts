@@ -88,6 +88,15 @@ export class Game {
         // プレイヤーの初期化
         this.playerManager.initializePlayer();
         
+        // タイトル画面の初期化
+        this.titleScene = new TitleScene();
+        this.app.stage.addChild(this.titleScene.getContainer());
+        this.titleScene.onStartButtonClick(() => this.startGame());
+        
+        // タイトル画面時はUIとプレイヤーを非表示
+        this.uiManager.setVisible(false);
+        this.playerManager.getPlayerOrThrow().visible = false;
+        
         // 初期画面の障害物を設定
         this.initializeScreen(1);
 
@@ -108,21 +117,14 @@ export class Game {
                 }
             }
         });
-
-        // タイトル画面の初期化
-        this.titleScene = new TitleScene();
-        this.app.stage.addChild(this.titleScene.getContainer());
-        this.titleScene.onStartButtonClick(() => this.startGame());
-        
-        // タイトル画面時はUIを非表示
-        this.uiManager.setVisible(false);
     }
 
     private startGame(): void {
         this.isTitleScreen = false;
         this.titleScene.destroy();
-        // ゲーム開始時にUIを表示
+        // ゲーム開始時にUIとプレイヤーを表示
         this.uiManager.setVisible(true);
+        this.playerManager.getPlayerOrThrow().visible = true;
         this.initializeScreen(1);
         this.gameLoop();
     }
