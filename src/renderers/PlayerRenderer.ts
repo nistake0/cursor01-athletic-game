@@ -17,13 +17,6 @@ export class PlayerRenderer extends Renderer {
     }
 
     public render(): void {
-        console.log('PlayerRenderer.render() called:', {
-            isTitleScreen: this.game.getIsTitleScreen(),
-            playerExists: !!this.player,
-            playerParent: this.player?.parent,
-            playerVisible: this.player?.visible
-        });
-
         if (!this.player) return;
         
         // タイトル画面の時は描画しない

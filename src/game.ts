@@ -22,7 +22,7 @@ export class Game {
     private currentScreen: number = 1;
     private backgroundRenderer: BackgroundRenderer;
     private eventEmitter: EventEmitter;
-    private playerManager: PlayerManager | null;
+    private playerManager: PlayerManager;
     private uiManager: UIManager;
     private wipeEffect: WipeEffect;
     private isTransitioning: boolean = false;
@@ -122,11 +122,9 @@ export class Game {
     private startGame(): void {
         this.isTitleScreen = false;
         this.titleScene.destroy();
-        // プレイヤーマネージャーがnullの場合は初期化
-        if (!this.playerManager) {
-            this.playerManager = new PlayerManager(this.app, this, this.eventEmitter);
-            this.playerManager.initializePlayer();
-        }
+        // プレイヤーマネージャーを再初期化
+        this.playerManager = new PlayerManager(this.app, this, this.eventEmitter);
+        this.playerManager.initializePlayer();
         // ゲーム開始時にUIとプレイヤーを表示
         this.uiManager.setVisible(true);
         const player = this.playerManager.getPlayerOrThrow();
@@ -249,7 +247,6 @@ export class Game {
             // プレイヤーを完全に破棄
             if (this.playerManager) {
                 this.playerManager.destroy();
-                this.playerManager = null;  // プレイヤーマネージャーをnullに設定
             }
             // ゲームの状態をリセット
             this.reset();
