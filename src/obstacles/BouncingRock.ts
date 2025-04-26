@@ -9,17 +9,19 @@ export class BouncingRock extends Obstacle {
     private isGrounded: boolean = false;
     private active: boolean = true;
     private graphics: PIXI.Graphics;
-    private readonly GROUND_Y: number = 500; // 地面の位置を下げる（画面下端に近づける）
+    private readonly GROUND_Y: number = 520; // 地面の位置をさらに下げる（500→520）
     private readonly ROCK_RADIUS: number = 40; // 岩の基本サイズを30から40に増加
     private readonly COLLISION_RADIUS: number = 45; // 衝突判定の半径を30から45に増加
+    private hasScored: boolean = false; // スコア加算済みフラグ
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game, x: number, y: number) {
         super(app, obstacles, game);
-        this.position.set(x, this.GROUND_Y);
-        this.velocity = { x: -5, y: -20 }; // Y方向の初速を-15から-20に増加
+        this.position = new PIXI.Point(x, y);
+        this.velocity = { x: -5, y: -20 }; // 初速を設定
         this.graphics = new PIXI.Graphics();
-        this.graphics.visible = true;
         this.obstacles.addChild(this.graphics);
+        this.active = true;
+        this.isGrounded = false;
     }
 
     public update(currentTime: number): void {
@@ -90,12 +92,24 @@ export class BouncingRock extends Obstacle {
 
     public checkCollision(player: PIXI.Graphics): boolean {
         if (!this.active) return false;
-
-        const dx = this.position.x - player.x;
-        const dy = this.position.y - player.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        return distance < this.COLLISION_RADIUS; // 衝突判定の半径を使用
+        
+        const playerBounds = player.getBounds();
+        const rockBounds = this.graphics.getBounds();
+        
+        // プレイヤーが岩の上を超えたかチェック
+        if (player.x > rockBounds.left && 
+            player.x < rockBounds.right && 
+            player.y < rockBounds.top) {
+            if (!this.hasScored) {
+                this.addScore(500);
+                this.hasScored = true;
+            }
+        }
+        
+        return !(playerBounds.right < rockBounds.left ||
+                playerBounds.left > rockBounds.right ||
+                playerBounds.bottom < rockBounds.top ||
+                playerBounds.top > rockBounds.bottom);
     }
 
     public reset(): void {
@@ -103,6 +117,7 @@ export class BouncingRock extends Obstacle {
         this.velocity = { x: -5, y: -20 }; // リセット時も同じ初速を設定
         this.isGrounded = false;
         this.active = true;
+        this.hasScored = false; // スコア加算フラグをリセット
     }
 
     public isActive(): boolean {
