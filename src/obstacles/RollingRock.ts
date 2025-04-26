@@ -155,6 +155,11 @@ export class RollingRock extends Obstacle {
             bottom: this.app.screen.height - 100
         };
 
+        // プレイヤーが岩を飛び越えたかチェック
+        if (player.x > rockBounds.right && player.y < rockBounds.top) {
+            this.addScore(20);
+        }
+
         return !(playerBounds.right < rockBounds.left || 
                 playerBounds.left > rockBounds.right || 
                 playerBounds.bottom < rockBounds.top || 
