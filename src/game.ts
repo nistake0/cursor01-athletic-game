@@ -318,6 +318,7 @@ export class Game {
         }
         this.uiManager.updateScreenNumber(this.currentScreen);
         this.uiManager.updateLives(this.lives);
+        this.uiManager.resetScore();  // スコアをリセット
         this.backgroundRenderer.setScreen(1);
         this.initializeScreen(1);
         this.uiManager.hideGameOver();

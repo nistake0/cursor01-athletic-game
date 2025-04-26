@@ -298,6 +298,13 @@ export class UIManager {
         this.bonusScoreText.visible = true;
     }
 
+    public resetScore(): void {
+        this.currentScore = 0;
+        this.comboCount = 0;
+        this.updateScoreDisplay();
+        this.updateComboDisplay();
+    }
+
     public reset(): void {
         this.currentScreen = 1;
         this.screenText.text = `Screen: ${this.currentScreen}`;

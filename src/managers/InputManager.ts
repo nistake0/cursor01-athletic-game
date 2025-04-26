@@ -129,6 +129,10 @@ export class InputManager {
                         break;
                     case ActionType.RESTART:
                         this.eventEmitter.emit(GameEvent.RESTART);
+                        // スペースキーの場合はSPACE_KEY_PRESSEDも発行
+                        if (keyCode === KeyCode.SPACE) {
+                            this.eventEmitter.emit(GameEvent.SPACE_KEY_PRESSED);
+                        }
                         break;
                     case ActionType.NEXT_SCREEN:
                         // キーに応じて画面遷移量を設定
@@ -149,21 +153,6 @@ export class InputManager {
     }
 
     public update(): void {
-        const keyboard = this.game.getApp().renderer.plugins.interaction.keyboard;
-        if (keyboard) {
-            // スペースキーの入力を監視
-            if (keyboard.isKeyDown('Space')) {
-                this.eventEmitter.emit(GameEvent.SPACE_KEY_PRESSED);
-            }
-
-            // 左右の移動
-            if (keyboard.isKeyDown('ArrowLeft')) {
-                this.eventEmitter.emit(GameEvent.MOVE_LEFT);
-            } else if (keyboard.isKeyDown('ArrowRight')) {
-                this.eventEmitter.emit(GameEvent.MOVE_RIGHT);
-            }
-        }
-
         // キーの状態を更新
         this.keyStates.forEach(state => state.update());
 
