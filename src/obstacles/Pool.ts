@@ -81,6 +81,15 @@ export class Pool extends Obstacle {
                     return true;
                 }
             }
+        } else {
+            // プレイヤーが空中にいる場合、池を飛び越えたかチェック
+            for (let i = 0; i < 4; i++) {
+                const poolX = startX + i * poolSpacing;
+                if (player.x > poolX + poolWidth / 2 && player.y < poolY) {
+                    this.addScore(10);
+                    break; // 1つの池を飛び越えたらスコアを加算して終了
+                }
+            }
         }
         
         return false;
