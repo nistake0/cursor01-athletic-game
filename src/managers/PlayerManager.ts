@@ -62,16 +62,30 @@ export class PlayerManager {
 
     private setupEventListeners(): void {
         this.eventEmitter.on(GameEvent.JUMP, () => {
+            console.log('GameEvent.JUMP イベント発生:', {
+                isGrounded: this.isGrounded,
+                isOnPlatform: this._isOnPlatform,
+                isOnRope: this._isOnRope
+            });
             if (this.isGrounded || this._isOnPlatform) {
                 this.velocityY = PLAYER.JUMP_FORCE;
                 this.isGrounded = false;
                 this._isOnPlatform = false;
+                console.log('通常ジャンプ実行:', {
+                    velocityY: this.velocityY,
+                    isGrounded: this.isGrounded,
+                    isOnPlatform: this._isOnPlatform
+                });
             } else if (this._isOnRope && this._currentRope) {
                 // ロープにつかまっている状態でジャンプした場合、ロープから離れる
                 this._currentRope.releasePlayer();
                 this._isOnRope = false;
                 this._currentRope = null;
                 this.velocityY = PLAYER.JUMP_FORCE * 0.8; // ロープからジャンプする場合は少し弱めのジャンプ
+                console.log('ロープからのジャンプ実行:', {
+                    velocityY: this.velocityY,
+                    isOnRope: this._isOnRope
+                });
             }
         });
     }
@@ -105,19 +119,6 @@ export class PlayerManager {
             // ロープの揺れに合わせてプレイヤーの位置が更新される
             this.playerRenderer.render();
             return;
-        }
-
-        // ジャンプ処理（板に乗っている状態でもジャンプできるようにする）
-        if (this.inputManager.isActionActive(ActionType.JUMP) && (this.isGrounded || this._isOnPlatform)) {
-            this.velocityY = PLAYER.JUMP_FORCE;
-            this.isGrounded = false;
-            // 板に乗っている状態でジャンプした場合は、板から離れる
-            if (this._isOnPlatform) {
-                this._isOnPlatform = false;
-                this._currentPlatform = null;
-                // ジャンプ後は一定時間板に乗れないようにする
-                this.jumpCooldown = 10; // 10フレームのクールダウン
-            }
         }
 
         // ジャンプクールダウンの更新
@@ -212,6 +213,10 @@ export class PlayerManager {
             if (this.game.getGameClearState() && this.inputManager.isActionActive(ActionType.JUMP)) {
                 this.velocityY = PLAYER.JUMP_FORCE;
                 this.isGrounded = false;
+                console.log('ゲームクリア時の自動ジャンプ実行:', {
+                    velocityY: this.velocityY,
+                    isGrounded: this.isGrounded
+                });
             }
         } else if (this.velocityY > 0) { // 落下中の場合のみisGroundedをfalseに設定
             this.isGrounded = false;

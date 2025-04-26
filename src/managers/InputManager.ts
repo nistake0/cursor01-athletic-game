@@ -83,8 +83,13 @@ export class InputManager {
         this.keyDownHandler = (e) => {
             const keyCode = e.key as KeyCode;
             if (this.keyStates.has(keyCode)) {
-                this.keyStates.get(keyCode)!.setPressed(true);
-                this.triggerActionEvents(keyCode);
+                const state = this.keyStates.get(keyCode)!;
+                const wasPressed = state.isPressed();
+                state.setPressed(true);
+                // キーが押された瞬間のみイベントを発行
+                if (!wasPressed) {
+                    this.triggerActionEvents(keyCode);
+                }
             }
         };
         
@@ -125,7 +130,10 @@ export class InputManager {
             if (keys.includes(keyCode)) {
                 switch (action) {
                     case ActionType.JUMP:
-                        this.eventEmitter.emit(GameEvent.JUMP);
+                        // キーが押された瞬間のみジャンプイベントを発行
+                        if (this.keyStates.get(keyCode)?.wasJustPressed()) {
+                            this.eventEmitter.emit(GameEvent.JUMP);
+                        }
                         break;
                     case ActionType.RESTART:
                         this.eventEmitter.emit(GameEvent.RESTART);
@@ -171,12 +179,24 @@ export class InputManager {
         if (this.isActionActive(ActionType.MOVE_RIGHT)) {
             this.eventEmitter.emit(GameEvent.MOVE_RIGHT);
         }
-        if (this.isActionActive(ActionType.JUMP)) {
+        // ジャンプはキーが押された瞬間のみ発火
+        if (this.isActionJustPressed(ActionType.JUMP)) {
             this.eventEmitter.emit(GameEvent.JUMP);
         }
         if (this.isActionActive(ActionType.RESTART)) {
             this.eventEmitter.emit(GameEvent.RESTART);
         }
+    }
+
+    // アクションが押された瞬間かどうかを判定
+    private isActionJustPressed(action: ActionType): boolean {
+        const keys = this.actionToKeyMap.get(action);
+        if (!keys) return false;
+        
+        return keys.some(key => {
+            const state = this.keyStates.get(key);
+            return state?.wasJustPressed() || false;
+        });
     }
 
     // 特定のアクションが実行されているかどうかを確認
