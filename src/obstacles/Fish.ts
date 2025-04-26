@@ -141,6 +141,11 @@ export class Fish extends Obstacle {
         const playerBounds = player.getBounds();
         const fishBounds = this.fish.getBounds();
         
+        // プレイヤーが魚を飛び越えたかチェック
+        if (player.x > fishBounds.right && player.y < fishBounds.top) {
+            this.addScore(20);
+        }
+        
         return !(playerBounds.right < fishBounds.left ||
                 playerBounds.left > fishBounds.right ||
                 playerBounds.bottom < fishBounds.top ||
