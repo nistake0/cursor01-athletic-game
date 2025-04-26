@@ -6,6 +6,7 @@ export abstract class Obstacle extends PIXI.Container {
     protected obstacles: PIXI.Graphics;
     protected game: Game;
     protected drawPriority: number = 0;  // 描画優先度（低い数値ほど上に描画される）
+    protected isScoreAdded: boolean = false;  // スコア加算フラグ
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
         super();
@@ -16,6 +17,17 @@ export abstract class Obstacle extends PIXI.Container {
 
     public getDrawPriority(): number {
         return this.drawPriority;
+    }
+
+    protected addScore(points: number): void {
+        if (!this.isScoreAdded) {
+            this.isScoreAdded = true;
+            this.game.getUIManager().addScore(points);
+        }
+    }
+
+    protected resetScore(): void {
+        this.isScoreAdded = false;
     }
 
     public abstract draw(): void;

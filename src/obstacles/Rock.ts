@@ -6,6 +6,7 @@ export class Rock extends Obstacle {
     private player: PIXI.Graphics;
     private rock: PIXI.Graphics;
     private currentRockY: number = 0; // 現在の岩のY座標を保持
+    private isScoreAdded: boolean = false; // スコア加算フラグ
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
         super(app, obstacles, game);
@@ -112,6 +113,11 @@ export class Rock extends Obstacle {
             bottom: this.currentRockY
         };
 
+        // プレイヤーが岩を飛び越えたかチェック
+        if (player.x > rockBounds.right && player.y < rockBounds.top) {
+            this.addScore(10);
+        }
+
         return !(playerBounds.right < rockBounds.left || 
                 playerBounds.left > rockBounds.right || 
                 playerBounds.bottom < rockBounds.top || 
@@ -131,5 +137,8 @@ export class Rock extends Obstacle {
         // 新しいGraphicsオブジェクトを作成
         this.rock = new PIXI.Graphics();
         this.obstacles.addChild(this.rock);
+
+        // スコアをリセット
+        this.resetScore();
     }
 } 
