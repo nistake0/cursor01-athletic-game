@@ -22,7 +22,7 @@ export class Game {
     private currentScreen: number = 1;
     private backgroundRenderer: BackgroundRenderer;
     private eventEmitter: EventEmitter;
-    private playerManager: PlayerManager;
+    private playerManager: PlayerManager | null;
     private uiManager: UIManager;
     private wipeEffect: WipeEffect;
     private isTransitioning: boolean = false;
@@ -122,9 +122,20 @@ export class Game {
     private startGame(): void {
         this.isTitleScreen = false;
         this.titleScene.destroy();
+        // プレイヤーマネージャーがnullの場合は初期化
+        if (!this.playerManager) {
+            this.playerManager = new PlayerManager(this.app, this, this.eventEmitter);
+            this.playerManager.initializePlayer();
+        }
         // ゲーム開始時にUIとプレイヤーを表示
         this.uiManager.setVisible(true);
-        this.playerManager.getPlayerOrThrow().visible = true;
+        const player = this.playerManager.getPlayerOrThrow();
+        player.visible = true;
+        // プレイヤーをobstaclesに追加
+        const obstacles = this.getObstacles();
+        if (!player.parent) {
+            obstacles.addChild(player);
+        }
         this.initializeScreen(1);
         this.gameLoop();
     }
@@ -235,16 +246,26 @@ export class Game {
         this.stateManager.setStatus(GameStatus.GAME_OVER);
         // ゲームオーバー後にタイトル画面に戻る
         setTimeout(() => {
-            // プレイヤーを完全に削除
-            this.playerManager.destroy();
+            // プレイヤーを完全に破棄
+            if (this.playerManager) {
+                this.playerManager.destroy();
+                this.playerManager = null;  // プレイヤーマネージャーをnullに設定
+            }
             // ゲームの状態をリセット
             this.reset();
             // タイトル画面の初期化
-            this.isTitleScreen = true;
+            this.isTitleScreen = true;  // タイトル画面フラグを設定
             this.titleScene = new TitleScene();
             this.app.stage.addChild(this.titleScene.getContainer());
             this.titleScene.onStartButtonClick(() => this.startGame());
             this.uiManager.setVisible(false);
+            // タイトル画面の状態を確実に反映
+            this.app.ticker.addOnce(() => {
+                console.log('Title screen state:', {
+                    isTitleScreen: this.isTitleScreen,
+                    hasPlayerManager: !!this.playerManager
+                });
+            });
         }, 2000); // 2秒後にタイトル画面に戻る
     }
 
@@ -274,9 +295,11 @@ export class Game {
         this.stateManager.setStatus(GameStatus.PLAYING);
         this.currentScreen = 1;
         this.lives = this.MAX_LIVES;
-        // プレイヤーを再初期化
-        this.playerManager = new PlayerManager(this.app, this, this.eventEmitter);
-        this.playerManager.reset();
+        // プレイヤーマネージャーがnullの場合のみ新しいインスタンスを作成
+        if (!this.playerManager) {
+            this.playerManager = new PlayerManager(this.app, this, this.eventEmitter);
+            this.playerManager.initializePlayer();  // プレイヤーを初期化
+        }
         this.uiManager.updateScreenNumber(this.currentScreen);
         this.uiManager.updateLives(this.lives);
         this.backgroundRenderer.setScreen(1);
@@ -287,6 +310,13 @@ export class Game {
 
     private gameLoop(): void {
         if (this.isTitleScreen) {
+            // タイトル画面時はプレイヤーを非表示にする
+            if (this.playerManager) {
+                const player = this.playerManager.getPlayer();
+                if (player && player.parent) {
+                    player.parent.removeChild(player);
+                }
+            }
             this.titleScene.update(1/60);
             return;
         }
@@ -404,6 +434,10 @@ export class Game {
 
     public getObstacles(): PIXI.Graphics {
         return this.obstacles;
+    }
+
+    public getIsTitleScreen(): boolean {
+        return this.isTitleScreen;
     }
 }
 

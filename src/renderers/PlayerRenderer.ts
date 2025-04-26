@@ -17,7 +17,22 @@ export class PlayerRenderer extends Renderer {
     }
 
     public render(): void {
+        console.log('PlayerRenderer.render() called:', {
+            isTitleScreen: this.game.getIsTitleScreen(),
+            playerExists: !!this.player,
+            playerParent: this.player?.parent,
+            playerVisible: this.player?.visible
+        });
+
         if (!this.player) return;
+        
+        // タイトル画面の時は描画しない
+        if (this.game.getIsTitleScreen()) {
+            if (this.player.parent) {
+                this.player.parent.removeChild(this.player);
+            }
+            return;
+        }
         
         // プレイヤーがまだobstaclesに追加されていない場合のみ追加
         if (!this.player.parent) {
