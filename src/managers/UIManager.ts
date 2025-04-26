@@ -5,6 +5,7 @@ export class UIManager {
     private screenText: PIXI.Text;
     private gameOverText: PIXI.Text;
     private gameClearText: PIXI.Text;
+    private returnToTitleText: PIXI.Text;
     private scoreText!: PIXI.Text;
     private highScoreText!: PIXI.Text;
     private comboText: PIXI.Text;
@@ -153,6 +154,20 @@ export class UIManager {
         this.gameClearText.y = app.screen.height / 3;
         this.gameClearText.visible = false;
 
+        // タイトルへ戻るテキストを作成
+        this.returnToTitleText = new PIXI.Text('スペースキーを押してタイトルへ戻る', {
+            fontFamily: TEXT.SCREEN.FONT_FAMILY,
+            fontSize: TEXT.SCREEN.FONT_SIZE,
+            fill: 0xFFFFFF,
+            stroke: TEXT.SCREEN.STROKE,
+            strokeThickness: TEXT.SCREEN.STROKE_THICKNESS,
+            align: 'center'
+        });
+        this.returnToTitleText.anchor.set(0.5);
+        this.returnToTitleText.x = app.screen.width / 2;
+        this.returnToTitleText.y = app.screen.height * 2 / 3;
+        this.returnToTitleText.visible = false;
+
         // ボーナススコア表示のテキストを作成
         this.bonusScoreText = new PIXI.Text('', {
             fontFamily: TEXT.SCREEN.FONT_FAMILY,
@@ -176,6 +191,7 @@ export class UIManager {
         this.app.stage.addChild(this.comboText);
         this.app.stage.addChild(this.gameOverText);
         this.app.stage.addChild(this.gameClearText);
+        this.app.stage.addChild(this.returnToTitleText);
         this.app.stage.addChild(this.bonusScoreText);
     }
 
@@ -301,10 +317,12 @@ export class UIManager {
 
     public showGameClear(): void {
         this.gameClearText.visible = true;
+        this.returnToTitleText.visible = true;
     }
 
     public hideGameClear(): void {
         this.gameClearText.visible = false;
+        this.returnToTitleText.visible = false;
         this.bonusScoreText.visible = false;
     }
 
