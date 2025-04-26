@@ -11,7 +11,7 @@ export class BouncingRock extends Obstacle {
     private graphics: PIXI.Graphics;
     private readonly GROUND_Y: number = 520; // 地面の位置をさらに下げる（500→520）
     private readonly ROCK_RADIUS: number = 40; // 岩の基本サイズを30から40に増加
-    private readonly COLLISION_RADIUS: number = 45; // 衝突判定の半径を30から45に増加
+    private readonly COLLISION_RADIUS: number = 35; // 衝突判定の半径を45から35に減少
     private hasScored: boolean = false; // スコア加算済みフラグ
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game, x: number, y: number) {
