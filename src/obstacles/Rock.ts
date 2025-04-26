@@ -5,6 +5,7 @@ import { Obstacle } from './Obstacle';
 export class Rock extends Obstacle {
     private player: PIXI.Graphics;
     private rock: PIXI.Graphics;
+    private currentRockY: number = 0; // 現在の岩のY座標を保持
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
         super(app, obstacles, game);
@@ -85,6 +86,15 @@ export class Rock extends Obstacle {
         this.rock.endFill();
     }
 
+    // 岩の更新処理
+    public update(currentTime: number): void {
+        // 岩の位置を少し上下に揺らす
+        this.currentRockY = this.app.screen.height - 80 + Math.sin(currentTime) * 5; // 20ピクセル下に移動
+        
+        // 岩を再描画
+        this.draw();
+    }
+
     // 岩との衝突判定
     public checkCollision(player: PIXI.Graphics): boolean {
         const playerBounds = {
@@ -94,32 +104,18 @@ export class Rock extends Obstacle {
             bottom: player.y
         };
 
-        // 岩の位置を取得（updateメソッドで動かした場合の位置を考慮）
-        const time = Date.now() / 1000;
-        const rockY = this.app.screen.height - 80 + Math.sin(time) * 5; // 20ピクセル下に移動
-        
         // 多角形の岩の衝突判定（簡易的な矩形判定）
         const rockBounds = {
             left: 400,
             right: 460,
-            top: rockY - 40, // 岩の高さを考慮
-            bottom: rockY
+            top: this.currentRockY - 40, // 岩の高さを考慮
+            bottom: this.currentRockY
         };
 
         return !(playerBounds.right < rockBounds.left || 
                 playerBounds.left > rockBounds.right || 
                 playerBounds.bottom < rockBounds.top || 
                 playerBounds.top > rockBounds.bottom);
-    }
-
-    // 岩の更新処理
-    public update(currentTime: number): void {
-        // 画面7では岩が動くようにする
-        // 岩の位置を少し上下に揺らす
-        const rockY = this.app.screen.height - 80 + Math.sin(currentTime) * 5; // 20ピクセル下に移動
-        
-        // 岩を再描画
-        this.draw();
     }
 
     // 岩のリセット処理
