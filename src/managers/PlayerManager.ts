@@ -62,24 +62,16 @@ export class PlayerManager {
 
     private setupEventListeners(): void {
         this.eventEmitter.on(GameEvent.JUMP, () => {
-            console.log('PlayerManager: ジャンプイベントを受信', {
-                isGrounded: this.isGrounded,
-                isOnPlatform: this._isOnPlatform,
-                isOnRope: this._isOnRope,
-                velocityY: this.velocityY
-            });
-            
             if (this.isGrounded || this._isOnPlatform) {
                 this.velocityY = PLAYER.JUMP_FORCE;
                 this.isGrounded = false;
-                console.log('PlayerManager: ジャンプを実行', { velocityY: this.velocityY });
+                this._isOnPlatform = false;
             } else if (this._isOnRope && this._currentRope) {
                 // ロープにつかまっている状態でジャンプした場合、ロープから離れる
                 this._currentRope.releasePlayer();
                 this._isOnRope = false;
                 this._currentRope = null;
                 this.velocityY = PLAYER.JUMP_FORCE * 0.8; // ロープからジャンプする場合は少し弱めのジャンプ
-                console.log('PlayerManager: ロープからジャンプを実行', { velocityY: this.velocityY });
             }
         });
     }
@@ -220,7 +212,6 @@ export class PlayerManager {
             if (this.game.getGameClearState() && this.inputManager.isActionActive(ActionType.JUMP)) {
                 this.velocityY = PLAYER.JUMP_FORCE;
                 this.isGrounded = false;
-                console.log('PlayerManager: 地面に着地して自動ジャンプを実行', { velocityY: this.velocityY });
             }
         } else if (this.velocityY > 0) { // 落下中の場合のみisGroundedをfalseに設定
             this.isGrounded = false;
