@@ -97,8 +97,9 @@ export class Game {
         this.uiManager.setVisible(false);
         this.playerManager.getPlayerOrThrow().visible = false;
         
+        console.log('コンストラクタ: isTitleScreen =', this.isTitleScreen);
         // 初期画面の障害物を設定
-        this.initializeScreen(1);
+        this.initializeScreen(this.isTitleScreen ? 0 : 1);
 
         // イベントリスナーの設定
         this.setupEventListeners();
@@ -120,6 +121,7 @@ export class Game {
     }
 
     private startGame(): void {
+        console.log('startGame: isTitleScreen =', this.isTitleScreen);
         this.isTitleScreen = false;
         this.titleScene.destroy();
         // プレイヤーマネージャーを再初期化
@@ -134,7 +136,9 @@ export class Game {
         if (!player.parent) {
             obstacles.addChild(player);
         }
-        this.initializeScreen(1);
+        const targetScreen = this.isTitleScreen ? 0 : 1;
+        console.log('startGame: targetScreen =', targetScreen);
+        this.initializeScreen(targetScreen);
         this.gameLoop();
     }
 
@@ -256,6 +260,8 @@ export class Game {
         this.stateManager.setStatus(GameStatus.GAME_OVER);
         // ゲームオーバー後にタイトル画面に戻る
         setTimeout(() => {
+            // タイトル画面フラグを設定
+            this.isTitleScreen = true;
             // プレイヤーを完全に破棄
             if (this.playerManager) {
                 this.playerManager.destroy();
@@ -263,7 +269,6 @@ export class Game {
             // ゲームの状態をリセット
             this.reset();
             // タイトル画面の初期化
-            this.isTitleScreen = true;  // タイトル画面フラグを設定
             this.titleScene = new TitleScene();
             this.app.stage.addChild(this.titleScene.getContainer());
             this.titleScene.onStartButtonClick(() => this.startGame());
@@ -290,12 +295,14 @@ export class Game {
     }
 
     private initializeScreen(screenNumber: number): void {
+        console.log('現在の画面番号:', screenNumber);
         // 既存の障害物をクリア
         this.obstacleList.forEach(obstacle => obstacle.reset());
         this.obstacleList = [];
         
         // 新しい画面の障害物を生成
         const screenConfig = screenConfigs[screenNumber];
+        console.log('screenConfig:', screenConfig);
         if (screenConfig) {
             this.obstacleList = this.obstacleFactory.createObstacles(screenConfig.obstacles);
         }
@@ -308,8 +315,10 @@ export class Game {
     }
 
     private reset(): void {
+        console.log('reset: isTitleScreen =', this.isTitleScreen);
         this.stateManager.setStatus(GameStatus.PLAYING);
-        this.currentScreen = 1;
+        this.currentScreen = this.isTitleScreen ? 0 : 1;
+        console.log('reset: currentScreen =', this.currentScreen);
         this.lives = this.MAX_LIVES;
         // プレイヤーマネージャーがnullの場合のみ新しいインスタンスを作成
         if (!this.playerManager) {
@@ -319,14 +328,15 @@ export class Game {
         this.uiManager.updateScreenNumber(this.currentScreen);
         this.uiManager.updateLives(this.lives);
         this.uiManager.resetScore();  // スコアをリセット
-        this.backgroundRenderer.setScreen(1);
-        this.initializeScreen(1);
+        this.backgroundRenderer.setScreen(this.currentScreen);
+        this.initializeScreen(this.currentScreen);
         this.uiManager.hideGameOver();
         this.uiManager.hideGameClear();
     }
 
     private gameLoop(): void {
         if (this.isTitleScreen) {
+            console.log('gameLoop: タイトル画面中, isTitleScreen =', this.isTitleScreen);
             // タイトル画面時はプレイヤーを非表示にする
             if (this.playerManager) {
                 const player = this.playerManager.getPlayer();

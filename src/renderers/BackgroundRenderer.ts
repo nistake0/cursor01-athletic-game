@@ -27,6 +27,8 @@ export class BackgroundRenderer extends Renderer {
     public setScreen(screenNumber: number): void {
         this.currentScreen = screenNumber;
         this.clear();
+        const screenConfig = screenConfigs[this.currentScreen];
+        console.log('BackgroundRenderer: screenConfig:', screenConfig);
         this.drawBackground();
     }
 

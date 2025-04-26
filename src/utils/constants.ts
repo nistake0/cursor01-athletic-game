@@ -137,6 +137,17 @@ export interface ScreenConfig {
 
 // 統合された画面設定テーブル
 export const screenConfigs: { [key: number]: ScreenConfig } = {
+  0: {
+    background: {
+      drawSky: SkyType.NORMAL,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
+      drawForestCanopy: false,
+      isInForest: false
+    },
+    obstacles: []
+  },
   1: {
     background: {
       drawSky: SkyType.NORMAL,
