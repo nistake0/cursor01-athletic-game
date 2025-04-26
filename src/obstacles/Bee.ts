@@ -10,8 +10,8 @@ export class Bee extends Obstacle {
     private velocityX: number = 0;
     private velocityY: number = 0;
     private speed: number;
-    private readonly BEE_WIDTH: number = 30;
-    private readonly BEE_HEIGHT: number = 20;
+    private readonly BEE_WIDTH: number = 15;
+    private readonly BEE_HEIGHT: number = 10;
     private readonly MIN_Y: number = 100; // 最小の高さ
     private readonly MAX_Y: number = 400; // 最大の高さ
     private readonly GROUND_Y: number = 480; // 地面のY座標（600 - 120）
@@ -118,10 +118,12 @@ export class Bee extends Obstacle {
             this.addScore(20);
         }
         
-        return !(playerBounds.right < beeBounds.left ||
-                playerBounds.left > beeBounds.right ||
-                playerBounds.bottom < beeBounds.top ||
-                playerBounds.top > beeBounds.bottom);
+        // 衝突判定の範囲をさらに小さくする
+        const collisionMargin = 8;  // 5から8に変更（より内側で判定）
+        return !(playerBounds.right < beeBounds.left + collisionMargin ||
+                playerBounds.left > beeBounds.right - collisionMargin ||
+                playerBounds.bottom < beeBounds.top + collisionMargin ||
+                playerBounds.top > beeBounds.bottom - collisionMargin);
     }
 
     public reset(): void {
