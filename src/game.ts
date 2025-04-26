@@ -174,8 +174,12 @@ export class Game {
 
         this.eventEmitter.on(GameEvent.SCREEN_TRANSITION, (amount: number) => {
             if (this.stateManager.getStatus() !== GameStatus.GAME_OVER && !this.isTransitioning) {
-                this.targetScreen = this.currentScreen + amount;
-                this.startTransition();
+                const nextScreen = this.currentScreen + amount;
+                const maxScreenNumber = Math.max(...Object.keys(screenConfigs).map(Number));
+                if (nextScreen <= maxScreenNumber) {
+                    this.targetScreen = nextScreen;
+                    this.startTransition();
+                }
             }
         });
 
