@@ -350,7 +350,6 @@ export class Game {
 
     private gameLoop(): void {
         if (this.isTitleScreen) {
-            console.log('gameLoop: タイトル画面中, isTitleScreen =', this.isTitleScreen);
             // タイトル画面時はプレイヤーを非表示にする
             if (this.playerManager) {
                 const player = this.playerManager.getPlayer();
