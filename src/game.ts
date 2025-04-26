@@ -186,8 +186,14 @@ export class Game {
         // スペースキーの入力を処理
         this.eventEmitter.on(GameEvent.SPACE_KEY_PRESSED, () => {
             if (this.stateManager.getStatus() === GameStatus.GAME_CLEAR) {
-                this.reset();
+                // 既存の障害物をクリア
+                this.obstacleList.forEach(obstacle => obstacle.reset());
+                this.obstacleList = [];
+                this.obstacles.clear();
+                
                 this.isTitleScreen = true;
+                this.currentScreen = 0;  // タイトル画面は0
+                this.reset();
                 this.titleScene = new TitleScene();
                 this.app.stage.addChild(this.titleScene.getContainer());
                 this.titleScene.onStartButtonClick(() => this.startGame());
