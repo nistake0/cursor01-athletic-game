@@ -48,6 +48,7 @@ export class AppleSpawner extends Obstacle {
   public reset(): void {
     this.cleanup();
     this.hasSpawned = false;
+    this.apple = null; // 念のため明示的にnullに設定
     this.startSpawning();
   }
 
@@ -90,5 +91,6 @@ export class AppleSpawner extends Obstacle {
       this.obstacles.removeChild(this.apple);
       this.apple = null;
     }
+    this.hasSpawned = false; // 生成済みフラグもリセット
   }
 } 
