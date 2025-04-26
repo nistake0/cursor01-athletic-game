@@ -17,6 +17,7 @@ import { TarzanRope } from './TarzanRope';
 import { BouncingRock } from './BouncingRock';
 import { BouncingRockSpawner } from './BouncingRockSpawner';
 import { FountainSpawner } from './FountainSpawner';
+import { AppleSpawner } from './AppleSpawner';
 
 export class ObstacleFactory {
     private app: PIXI.Application;
@@ -66,6 +67,8 @@ export class ObstacleFactory {
                 return [new BouncingRockSpawner(this.app, this.obstacles, this.game)];
             case 'FountainSpawner':
                 return [new FountainSpawner(this.app, this.obstacles, this.game)];
+            case 'AppleSpawner':
+                return [new AppleSpawner(this.app, this.obstacles, this.game)];
             default:
                 throw new Error(`Unknown obstacle type: ${type}`);
         }
