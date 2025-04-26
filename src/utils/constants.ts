@@ -352,6 +352,17 @@ export const screenConfigs: { [key: number]: ScreenConfig } = {
       drawGround: true,
       drawGrass: true,
       drawTrees: true,
+      drawForestCanopy: true,
+      isInForest: true
+    },
+    obstacles: ['SpringSpawner', 'BeeSpawner', 'LargePool']
+  },
+  21: {
+    background: {
+      drawSky: SkyType.NIGHT,
+      drawGround: true,
+      drawGrass: true,
+      drawTrees: true,
       drawForestCanopy: false,
       isInForest: false
     },
