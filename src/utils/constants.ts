@@ -366,7 +366,7 @@ export const screenConfigs: { [key: number]: ScreenConfig } = {
       drawForestCanopy: true,
       isInForest: true
     },
-    obstacles: ['SpringSpawner', 'BeeSpawner', 'LargePool']
+    obstacles: ['SpringSpawner', 'BeeSpawner', 'LargePool', 'AppleSpawner']
   },
   21: {
     background: {
