@@ -15,6 +15,8 @@ export class UIManager {
     private comboCount: number = 0;
     private readonly COMBO_TIMEOUT: number = 3000;
     private lastScoreTime: number = 0;
+    private comboHideTimer: number | null = null;
+    private readonly COMBO_DISPLAY_TIME: number = 2000;  // コンボ表示時間（ミリ秒）
     private app: PIXI.Application;
     private isVisible: boolean = true;
     private scoreContainer: PIXI.Container;
@@ -249,8 +251,23 @@ export class UIManager {
         if (this.comboCount > 1) {
             this.comboText.text = `${this.comboCount} Combo!`;
             this.comboText.visible = true;
+            
+            // 既存のタイマーをクリア
+            if (this.comboHideTimer !== null) {
+                clearTimeout(this.comboHideTimer);
+            }
+            
+            // 新しいタイマーを設定
+            this.comboHideTimer = setTimeout(() => {
+                this.comboText.visible = false;
+                this.comboHideTimer = null;
+            }, this.COMBO_DISPLAY_TIME);
         } else {
             this.comboText.visible = false;
+            if (this.comboHideTimer !== null) {
+                clearTimeout(this.comboHideTimer);
+                this.comboHideTimer = null;
+            }
         }
     }
 
@@ -308,6 +325,10 @@ export class UIManager {
     public resetCombo(): void {
         this.comboCount = 0;
         this.comboText.visible = false;
+        if (this.comboHideTimer !== null) {
+            clearTimeout(this.comboHideTimer);
+            this.comboHideTimer = null;
+        }
     }
 
     public reset(): void {
