@@ -85,6 +85,9 @@ export class Game {
         // エフェクトマネージャーを初期化
         this.effectManager = new EffectManager(this.app);
         
+        // プレイヤーの初期化
+        this.playerManager.initializePlayer();
+        
         // 初期画面の障害物を設定
         this.initializeScreen(1);
 
@@ -395,6 +398,10 @@ export class Game {
 
     public getEffectManager(): EffectManager {
         return this.effectManager;
+    }
+
+    public getObstacles(): PIXI.Graphics {
+        return this.obstacles;
     }
 }
 

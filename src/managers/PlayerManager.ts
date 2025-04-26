@@ -45,16 +45,19 @@ export class PlayerManager {
         
         // プレイヤーレンダラーを初期化
         this.playerRenderer = new PlayerRenderer(this.app, this);
-        this.playerRenderer.render();
-        const player = this.playerRenderer.getPlayer();
-        player.x = PLAYER.INITIAL_X;
-        player.y = PLAYER.INITIAL_Y;
-        
-        // レイヤー順に追加（プレイヤーは最後に追加して最前面に表示）
-        this.app.stage.addChild(player);
         
         // イベントリスナーの設定
         this.setupEventListeners();
+    }
+
+    public initializePlayer(): void {
+        // プレイヤーの初期化と追加
+        this.playerRenderer.render();
+        const player = this.playerRenderer.getPlayer();
+        if (player) {
+            player.x = PLAYER.INITIAL_X;
+            player.y = PLAYER.INITIAL_Y;
+        }
     }
 
     private setupEventListeners(): void {

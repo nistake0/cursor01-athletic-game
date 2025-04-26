@@ -14,10 +14,17 @@ export class PlayerRenderer extends Renderer {
         this.player = new PIXI.Container();
         this.graphics = new PIXI.Graphics();
         this.player.addChild(this.graphics);
-        this.app.stage.addChild(this.player);
     }
 
     public render(): void {
+        if (!this.player) return;
+        
+        // プレイヤーがまだobstaclesに追加されていない場合のみ追加
+        if (!this.player.parent) {
+            const obstacles = this.game.getObstacles();
+            obstacles.addChild(this.player);
+        }
+        
         this.clear();
         this.drawStickMan();
     }
