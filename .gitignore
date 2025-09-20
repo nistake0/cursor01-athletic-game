@@ -8,6 +8,15 @@
 /build
 /out
 
+# GitHub Pages用 - 開発ファイルを除外
+/src
+/node_modules
+package.json
+package-lock.json
+tsconfig.json
+vite.config.ts
+vitest.config.ts
+
 # キャッシュ
 .npm
 .eslintcache
