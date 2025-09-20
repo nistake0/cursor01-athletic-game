@@ -14,6 +14,12 @@
 
 TypeScriptとPixiJSを使用した2Dアクションゲームプロジェクトです。
 
+## 🎮 ゲームをプレイ
+
+**ライブデモ**: [https://nistake0.github.io/cursor01-athletic-game/](https://nistake0.github.io/cursor01-athletic-game/)
+
+インストール不要で、ブラウザで直接ゲームをプレイできます！
+
 ## プロジェクトについて
 
 このプロジェクトは、**完全にCursor AIによって作成されました**。コーディングはすべてAIによって行われ、人間の手は一切借りていません。Cursor AIは、コードの生成、リファクタリング、テストの作成など、開発の全工程をサポートするAIアシスタントです。このプロジェクトでは、Cursor AIが以下の役割を果たしました：
@@ -49,6 +55,8 @@ npm run dev
 
 開発サーバーが起動し、ブラウザで`http://localhost:5173`にアクセスすることでゲームをプレイできます。
 コードの変更は自動的に反映されます。
+
+**注意**: ライブ版は [https://nistake0.github.io/cursor01-athletic-game/](https://nistake0.github.io/cursor01-athletic-game/) でご利用いただけます。
 
 ### ビルド
 

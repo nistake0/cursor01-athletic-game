@@ -14,6 +14,12 @@
 
 A 2D action game project built with TypeScript and PixiJS.
 
+## 🎮 Play the Game
+
+**Live Demo**: [https://nistake0.github.io/cursor01-athletic-game/](https://nistake0.github.io/cursor01-athletic-game/)
+
+You can play the game directly in your browser without any installation!
+
 ## About the Project
 
 This project was **completely created by Cursor AI**. All coding was done by AI without any human intervention. Cursor AI is an AI assistant that supports the entire development process, including code generation, refactoring, test creation, and more. In this project, Cursor AI played the following roles:
@@ -49,6 +55,8 @@ npm run dev
 
 The development server will start, and you can play the game by accessing `http://localhost:5173` in your browser.
 Code changes are automatically reflected.
+
+**Note**: For the live version, visit [https://nistake0.github.io/cursor01-athletic-game/](https://nistake0.github.io/cursor01-athletic-game/)
 
 ### Build
 
