@@ -185,7 +185,11 @@ export class Game {
 
         // スペースキーの入力を処理
         this.eventEmitter.on(GameEvent.SPACE_KEY_PRESSED, () => {
-            if (this.stateManager.getStatus() === GameStatus.GAME_CLEAR) {
+            if (this.isTitleScreen) {
+                // タイトル画面でスペースキーを押した場合、ゲーム開始
+                this.startGame();
+            } else if (this.stateManager.getStatus() === GameStatus.GAME_CLEAR) {
+                // ゲームクリア後にスペースキーを押した場合、タイトル画面に戻る
                 // 既存の障害物をクリア
                 this.obstacleList.forEach(obstacle => obstacle.reset());
                 this.obstacleList = [];

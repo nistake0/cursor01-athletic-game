@@ -70,6 +70,18 @@ export class TitleScene implements Scene {
         });
 
         this.container.addChild(this.startButton);
+
+        // スペースキーでゲーム開始できることを示すテキスト
+        const spaceKeyText = new PIXI.Text('Press SPACE to Start', {
+            fontFamily: 'Arial',
+            fontSize: 18,
+            fill: 0xcccccc,
+            align: 'center'
+        });
+        spaceKeyText.anchor.set(0.5);
+        spaceKeyText.x = 400; // 画面中央
+        spaceKeyText.y = 520; // スタートボタンの下
+        this.container.addChild(spaceKeyText);
     }
 
     public getContainer(): PIXI.Container {
