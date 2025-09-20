@@ -127,7 +127,7 @@ export class Spring extends Obstacle {
 
         // プレイヤーとの衝突判定
         const player = this.playerManager.getPlayer();
-        if (this.checkCollision(player) && !this.isCompressed) {
+        if (this.checkCollision(player as PIXI.Graphics) && !this.isCompressed) {
             // プレイヤーがばねの上にいる場合のみ跳ね返る
             const playerBounds = player.getBounds();
             const springBounds = this.spring.getBounds();

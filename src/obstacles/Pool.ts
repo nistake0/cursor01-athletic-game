@@ -3,7 +3,7 @@ import { Game } from '../game';
 import { Obstacle } from './Obstacle';
 
 export class Pool extends Obstacle {
-    private player: PIXI.Graphics;
+    private player: PIXI.Container;
     private poolPositions: { x: number, y: number, width: number, height: number }[] = [];
     private visualOffset: number = 20; // 描画位置のオフセット
 

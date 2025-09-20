@@ -3,10 +3,9 @@ import { Game } from '../game';
 import { Obstacle } from './Obstacle';
 
 export class Rock extends Obstacle {
-    private player: PIXI.Graphics;
+    private player: PIXI.Container;
     private rock: PIXI.Graphics;
     private currentRockY: number = 0; // 現在の岩のY座標を保持
-    private isScoreAdded: boolean = false; // スコア加算フラグ
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
         super(app, obstacles, game);

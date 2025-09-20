@@ -12,13 +12,11 @@ export class Fish extends Obstacle {
     private gravity: number = FISH_GRAVITY;
     private hasReachedPeak: boolean = false;
     private hasCreatedSplash: boolean = false;
-    protected game: Game;
 
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
         super(app, obstacles, game);
         this.fish = new PIXI.Graphics();
         this.obstacles.addChild(this.fish);
-        this.game = game;
     }
 
     public spawn(x: number, y: number): void {

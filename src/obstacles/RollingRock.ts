@@ -3,10 +3,10 @@ import { Game } from '../game';
 import { Obstacle } from '../obstacles/Obstacle';
 
 export class RollingRock extends Obstacle {
-    private player: PIXI.Graphics;
-    private x: number;
+    private player: PIXI.Container;
+    private rockX: number;
     private speed: number;
-    private rotation: number;
+    private rockRotation: number;
     private rock: PIXI.Graphics;
     private irregularLines: { startX: number; startY: number; endX: number; endY: number }[] = [];
     private surfaceLines: { startX: number; startY: number; endX: number; endY: number }[] = [];
@@ -15,9 +15,9 @@ export class RollingRock extends Obstacle {
     constructor(app: PIXI.Application, obstacles: PIXI.Graphics, game: Game) {
         super(app, obstacles, game);
         this.player = game.getPlayer();
-        this.x = app.screen.width + 50;
+        this.rockX = app.screen.width + 50;
         this.speed = 4;
-        this.rotation = 0;
+        this.rockRotation = 0;
         
         // 岩のGraphicsオブジェクトを一度だけ作成
         this.rock = new PIXI.Graphics();
@@ -85,7 +85,7 @@ export class RollingRock extends Obstacle {
 
     // 転がる岩の描画処理
     public draw(): void {
-        const rockCenterX = this.x;
+        const rockCenterX = this.rockX;
         const rockCenterY = this.app.screen.height - 115;
         
         // 既存のGraphicsオブジェクトをクリア
@@ -136,7 +136,7 @@ export class RollingRock extends Obstacle {
         
         // 回転と位置を設定
         this.rock.position.set(rockCenterX, rockCenterY);
-        this.rock.rotation = this.rotation;
+        this.rock.rotation = this.rockRotation;
     }
 
     // 転がる岩との衝突判定
@@ -149,8 +149,8 @@ export class RollingRock extends Obstacle {
         };
 
         const rockBounds = {
-            left: this.x - 35,
-            right: this.x + 35,
+            left: this.rockX - 35,
+            right: this.rockX + 35,
             top: this.app.screen.height - 150,
             bottom: this.app.screen.height - 100
         };
@@ -168,19 +168,19 @@ export class RollingRock extends Obstacle {
 
     // 転がる岩の更新処理
     public update(currentTime: number): void {
-        this.x -= this.speed;
-        this.rotation -= 0.1; // 回転速度を元に戻す
+        this.rockX -= this.speed;
+        this.rockRotation -= 0.1; // 回転速度を元に戻す
         
         // 岩が画面外に出たら右端に戻す
-        if (this.x < -50) {
-            this.x = this.app.screen.width + 50;
+        if (this.rockX < -50) {
+            this.rockX = this.app.screen.width + 50;
         }
     }
 
     // 転がる岩のリセット処理
     public reset(): void {
-        this.x = this.app.screen.width + 50;
-        this.rotation = 0;
+        this.rockX = this.app.screen.width + 50;
+        this.rockRotation = 0;
         this.rock.clear();
     }
 } 
