@@ -74,6 +74,20 @@ npm run preview
 
 ビルドされたゲームをローカルでプレビューできます。
 
+### GitHub Pagesへのデプロイ
+
+```sh
+npm run deploy
+```
+
+このコマンドは自動的に以下を実行します：
+1. プロジェクトをビルド
+2. ファイルをルートディレクトリにコピー
+3. 変更をコミットしてGitHubにプッシュ
+4. GitHub Pagesにデプロイ
+
+ゲームは以下のURLで利用可能になります：https://nistake0.github.io/cursor01-athletic-game/
+
 ## プロジェクト構造
 
 ```

@@ -74,6 +74,20 @@ npm run preview
 
 You can preview the built game locally.
 
+### Deploy to GitHub Pages
+
+```sh
+npm run deploy
+```
+
+This command will automatically:
+1. Build the project
+2. Copy files to the root directory
+3. Commit and push changes to GitHub
+4. Deploy to GitHub Pages
+
+Your game will be available at: https://nistake0.github.io/cursor01-athletic-game/
+
 ## Project Structure
 
 ```
